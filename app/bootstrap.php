@@ -14,6 +14,8 @@ $config = array_replace_recursive($app, $local);
 require_once __DIR__ . '/BootstrapOwnerService.php';
 require_once __DIR__ . '/Security/AuthorizationService.php';
 require_once __DIR__ . '/Security/UserListRepository.php';
+require_once __DIR__ . '/Security/UserCreateService.php';
+require_once __DIR__ . '/Security/UserApprovalService.php';
 
 date_default_timezone_set((string) $config['timezone']);
 
@@ -79,6 +81,16 @@ function user_list_repository(): UserListRepository
     return new UserListRepository(db());
 }
 
+function user_create_service(): UserCreateService
+{
+    return new UserCreateService(db());
+}
+
+function user_approval_service(): UserApprovalService
+{
+    return new UserApprovalService(db());
+}
+
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -128,8 +140,7 @@ function current_user(): ?array
         return null;
     }
     $stmt = db()->prepare(
-        'SELECT id, username, display_name, is_temporary, must_change_password, last_login_at '
-        . 'FROM users WHERE id = :id AND is_active = 1 AND deleted_at IS NULL LIMIT 1'
+        "SELECT id, username, display_name, is_temporary, must_change_password, last_login_at FROM users WHERE id = :id AND is_active = 1 AND approval_status = 'approved' AND deleted_at IS NULL LIMIT 1"
     );
     $stmt->execute(['id' => (int) $id]);
     $row = $stmt->fetch();
