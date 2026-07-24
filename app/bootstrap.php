@@ -12,6 +12,8 @@ $local = require $localFile;
 $config = array_replace_recursive($app, $local);
 
 require_once __DIR__ . '/BootstrapOwnerService.php';
+require_once __DIR__ . '/Security/AuthorizationService.php';
+require_once __DIR__ . '/Security/UserListRepository.php';
 
 date_default_timezone_set((string) $config['timezone']);
 
@@ -63,6 +65,20 @@ function bootstrap_owner_service(): BootstrapOwnerService
     return new BootstrapOwnerService(db());
 }
 
+function authorization_service(): AuthorizationService
+{
+    static $service = null;
+    if (!$service instanceof AuthorizationService) {
+        $service = new AuthorizationService(db());
+    }
+    return $service;
+}
+
+function user_list_repository(): UserListRepository
+{
+    return new UserListRepository(db());
+}
+
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -100,20 +116,64 @@ function installation_completed(): bool
 
 function current_user(): ?array
 {
+    static $loaded = false;
+    static $user = null;
+    if ($loaded) {
+        return $user;
+    }
+    $loaded = true;
+
     $id = $_SESSION['user_id'] ?? null;
     if (!is_int($id) && !ctype_digit((string) $id)) {
         return null;
     }
-    $stmt = db()->prepare('SELECT u.id, u.username, u.display_name, u.is_temporary, u.last_login_at, r.code AS role_code, r.name AS role_name FROM users u JOIN user_roles ur ON ur.user_id = u.id JOIN roles r ON r.id = ur.role_id WHERE u.id = :id AND u.is_active = 1 AND u.deleted_at IS NULL LIMIT 1');
+    $stmt = db()->prepare(
+        'SELECT id, username, display_name, is_temporary, must_change_password, last_login_at '
+        . 'FROM users WHERE id = :id AND is_active = 1 AND deleted_at IS NULL LIMIT 1'
+    );
     $stmt->execute(['id' => (int) $id]);
-    $user = $stmt->fetch();
-    return $user ?: null;
+    $row = $stmt->fetch();
+    $user = $row ?: null;
+    return $user;
+}
+
+/** @return list<string> */
+function current_user_role_codes(): array
+{
+    $user = current_user();
+    return $user === null ? [] : authorization_service()->roleCodesForUser((int) $user['id']);
+}
+
+/** @return list<string> */
+function current_user_permission_codes(): array
+{
+    $user = current_user();
+    return $user === null ? [] : authorization_service()->permissionCodesForUser((int) $user['id']);
+}
+
+function has_permission(string $permission): bool
+{
+    $user = current_user();
+    return $user !== null && authorization_service()->hasPermission((int) $user['id'], $permission);
+}
+
+function require_permission(string $permission): array
+{
+    $user = current_user();
+    if ($user === null) {
+        redirect('/');
+    }
+    if (!has_permission($permission)) {
+        http_response_code(403);
+        exit('<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Доступ запрещен — АСУ-ВЧ</title><link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css"></head><body><main class="site-main"><section class="auth-card glass-tile"><h1 class="auth-heading">Доступ запрещен</h1><p class="auth-description">У вашей учетной записи нет разрешения на открытие этого раздела.</p><a class="secondary-button" href="/admin/">К панели</a></section></main></body></html>');
+    }
+    return $user;
 }
 
 function require_system_owner(): array
 {
     $user = current_user();
-    if ($user === null || $user['role_code'] !== 'system_owner') {
+    if ($user === null || !in_array('system_owner', current_user_role_codes(), true)) {
         redirect('/');
     }
     return $user;
