@@ -119,9 +119,27 @@ a { color: inherit; }
 .diagnostic-row span { color: var(--text-secondary); }
 .diagnostic-row strong { text-align: right; overflow-wrap: anywhere; }
 
+.technical-panel { padding: 22px; }
+.technical-panel-title { margin: 0 0 18px; font-size: 21px; }
+.technical-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.technical-list { margin: 0; overflow: hidden; border: 1px solid rgba(24,172,234,.28); border-radius: 12px; background: rgba(7,36,61,.30); }
+.technical-row { min-height: 58px; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.technical-row + .technical-row { border-top: 1px solid rgba(184,202,216,.14); }
+.technical-row dt { color: var(--text-secondary); }
+.technical-row dd { margin: 0; display: flex; align-items: center; justify-content: flex-end; gap: 9px; text-align: right; overflow-wrap: anywhere; }
+.technical-row strong { font-size: 15px; }
+.state-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 999px; font-size: 12px; font-weight: 750; white-space: nowrap; }
+.state-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.state-badge--success { border: 1px solid rgba(53,212,146,.75); color: #66e8ad; background: rgba(23,165,139,.18); }
+.state-badge--error { border: 1px solid rgba(255,112,112,.75); color: #ff9a9a; background: rgba(158,33,33,.20); }
+.state-badge--muted { border: 1px solid rgba(184,202,216,.50); color: var(--text-secondary); background: rgba(184,202,216,.08); }
+
 @media (max-width: 900px) {
     .dashboard-grid, .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+    .technical-columns { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
     .container { width: min(100% - 20px, 1180px); }
@@ -140,6 +158,9 @@ a { color: inherit; }
     .dashboard-tile { min-height: 220px; }
     .diagnostic-row { align-items: flex-start; flex-direction: column; gap: 7px; }
     .diagnostic-row strong { text-align: left; }
+    .technical-panel { padding: 17px; }
+    .technical-row { align-items: flex-start; flex-direction: column; gap: 7px; }
+    .technical-row dd { justify-content: flex-start; text-align: left; }
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
