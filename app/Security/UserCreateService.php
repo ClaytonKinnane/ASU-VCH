@@ -79,8 +79,16 @@ final class UserCreateService
         $usernameCanonical = mb_strtolower($username, 'UTF-8');
         $emailCanonical = $email === '' ? null : mb_strtolower($email, 'UTF-8');
         if ($errors === []) {
-            $stmt = $this->pdo->prepare('SELECT username_canonical, email_canonical FROM users WHERE username_canonical = :username OR (:email IS NOT NULL AND email_canonical = :email) LIMIT 1');
-            $stmt->execute(['username' => $usernameCanonical, 'email' => $emailCanonical]);
+            $stmt = $this->pdo->prepare(
+                'SELECT username_canonical, email_canonical FROM users '
+                . 'WHERE username_canonical = :username '
+                . 'OR (:email_check IS NOT NULL AND email_canonical = :email_value) LIMIT 1'
+            );
+            $stmt->execute([
+                'username' => $usernameCanonical,
+                'email_check' => $emailCanonical,
+                'email_value' => $emailCanonical,
+            ]);
             $duplicate = $stmt->fetch();
             if ($duplicate) {
                 if ($duplicate['username_canonical'] === $usernameCanonical) {
