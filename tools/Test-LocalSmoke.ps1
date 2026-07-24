@@ -45,7 +45,7 @@ function Invoke-SmokeRequest {
 
     $StatusCode = 0
     if (-not [int]::TryParse(($StatusText | Out-String).Trim(), [ref]$StatusCode)) {
-        throw "curl.exe returned an invalid HTTP status for $Uri: $StatusText"
+        throw "curl.exe returned an invalid HTTP status for ${Uri}: $StatusText"
     }
 
     if ($ExpectedStatusCodes -notcontains $StatusCode) {
