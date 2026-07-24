@@ -11,6 +11,8 @@ if (!is_file($localFile)) {
 $local = require $localFile;
 $config = array_replace_recursive($app, $local);
 
+require_once __DIR__ . '/BootstrapOwnerService.php';
+
 date_default_timezone_set((string) $config['timezone']);
 
 session_name((string) $config['session_name']);
@@ -54,6 +56,11 @@ function db(): PDO
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
     return $pdo;
+}
+
+function bootstrap_owner_service(): BootstrapOwnerService
+{
+    return new BootstrapOwnerService(db());
 }
 
 function e(string $value): string
