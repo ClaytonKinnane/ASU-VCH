@@ -5,6 +5,18 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 $user = require_system_owner();
 
+$roleStmt = db()->prepare(
+    'SELECT r.name FROM roles r '
+    . 'JOIN user_roles ur ON ur.role_id = r.id '
+    . 'WHERE ur.user_id = :user_id ORDER BY r.name'
+);
+$roleStmt->execute(['user_id' => (int) $user['id']]);
+$roleNames = array_values(array_filter(
+    array_map(static fn (array $row): string => (string) ($row['name'] ?? ''), $roleStmt->fetchAll()),
+    static fn (string $name): bool => $name !== ''
+));
+$roleSummary = $roleNames !== [] ? implode(', ', $roleNames) : 'Роль не назначена';
+
 $dbStatus = 'Подключено';
 try {
     db()->query('SELECT 1');
@@ -24,7 +36,7 @@ try {
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Панель администратора</h1><p class="site-description">АСУ-ВЧ · <?= e((string) app_config('version')) ?></p></div><form class="admin-logout" method="post" action="/logout.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><button class="secondary-button" type="submit">Выйти</button></form></div></div></header>
 <main class="admin-main"><div class="container">
 <section class="admin-summary glass-tile">
-    <div><strong><?= e($user['display_name']) ?></strong><span>@<?= e($user['username']) ?> · <?= e($user['role_name']) ?></span></div>
+    <div><strong><?= e((string) $user['display_name']) ?></strong><span>@<?= e((string) $user['username']) ?> · <?= e($roleSummary) ?></span></div>
     <div><strong>Приложение</strong><span>PHP <?= e(PHP_VERSION) ?> · MySQL: <?= e($dbStatus) ?></span></div>
     <?php if ((int) $user['is_temporary'] === 1): ?><div class="warning-badge">Временная тестовая учетная запись</div><?php endif; ?>
 </section>
