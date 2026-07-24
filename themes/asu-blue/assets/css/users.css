@@ -1,3 +1,13 @@
+.security-section-grid { margin-top: 22px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.security-section-card { position: relative; min-height: 132px; padding: 18px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; }
+.security-section-card strong { padding-right: 105px; font-size: 17px; }
+.security-section-card small { color: var(--text-secondary); line-height: 1.45; }
+.security-section-card .status-badge { position: absolute; top: 14px; right: 14px; }
+.security-section-card.is-active { border-color: var(--button-border); background: rgba(23,165,139,.18); }
+.security-section-card.is-active:hover { background: rgba(23,165,139,.25); }
+.security-section-card.is-disabled { opacity: .76; }
+.security-section-state { width: fit-content; color: #7df0bd; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+
 .users-panel { margin-top: 22px; padding: 22px; }
 .users-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
 .users-panel-heading h2 { margin: 0; font-size: 22px; }
@@ -21,11 +31,14 @@
 .pagination-summary { margin-left: auto; color: var(--text-secondary); font-size: 13px; }
 
 @media (max-width: 900px) {
+    .security-section-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .users-filters { grid-template-columns: 1fr 1fr; }
     .users-filter-submit { width: 100%; }
 }
 
 @media (max-width: 760px) {
+    .security-section-grid { grid-template-columns: 1fr; }
+    .security-section-card { min-height: 112px; }
     .users-panel { padding: 17px; }
     .users-filters { grid-template-columns: 1fr; }
     .users-filters .secondary-button { width: 100%; }
@@ -40,6 +53,8 @@
 }
 
 @media (max-width: 480px) {
+    .security-section-card strong { padding-right: 0; }
+    .security-section-card .status-badge { position: static; order: -1; }
     .users-table td { grid-template-columns: 1fr; gap: 6px; }
     .pagination .secondary-button { flex: 1; }
 }
