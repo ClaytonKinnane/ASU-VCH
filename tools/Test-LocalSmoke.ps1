@@ -9,29 +9,43 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$Curl = Get-Command curl.exe -ErrorAction SilentlyContinue
+if ($null -eq $Curl) {
+    throw 'curl.exe was not found in PATH.'
+}
+
 function Invoke-SmokeRequest {
     param(
         [Parameter(Mandatory = $true)][string]$Uri,
-        [Parameter(Mandatory = $true)][int[]]$ExpectedStatusCodes
+        [Parameter(Mandatory = $true)][int[]]$ExpectedStatusCodes,
+        [string]$OutputFile
     )
 
-    try {
-        $Parameters = @{
-            Uri = $Uri
-            Method = 'GET'
-            MaximumRedirection = 0
-            UseBasicParsing = $true
-            ErrorAction = 'Stop'
-        }
+    $Arguments = @('--silent', '--show-error', '--output')
 
-        $Response = Invoke-WebRequest @Parameters
-        $StatusCode = [int]$Response.StatusCode
+    if ([string]::IsNullOrWhiteSpace($OutputFile)) {
+        $Arguments += 'NUL'
     }
-    catch [System.Net.WebException] {
-        if ($null -eq $_.Exception.Response) {
-            throw
-        }
-        $StatusCode = [int]$_.Exception.Response.StatusCode
+    else {
+        $Arguments += $OutputFile
+    }
+
+    $Arguments += @('--write-out', '%{http_code}')
+
+    if ($AllowInvalidCertificate) {
+        $Arguments += '--insecure'
+    }
+
+    $Arguments += $Uri
+
+    $StatusText = & $Curl.Source @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "curl.exe failed for $Uri with exit code $LASTEXITCODE."
+    }
+
+    $StatusCode = 0
+    if (-not [int]::TryParse(($StatusText | Out-String).Trim(), [ref]$StatusCode)) {
+        throw "curl.exe returned an invalid HTTP status for $Uri: $StatusText"
     }
 
     if ($ExpectedStatusCodes -notcontains $StatusCode) {
@@ -41,21 +55,14 @@ function Invoke-SmokeRequest {
     Write-Host "OK $StatusCode $Uri" -ForegroundColor Green
 }
 
-$PreviousCertificateCallback = [System.Net.ServicePointManager]::ServerCertificateValidationCallback
-$PreviousSecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol
+$HealthFile = Join-Path ([System.IO.Path]::GetTempPath()) ("asu-vch-health-{0}.json" -f [guid]::NewGuid().ToString('N'))
 
 try {
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-
-    if ($AllowInvalidCertificate) {
-        [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
-    }
-
     Invoke-SmokeRequest -Uri "$BaseUrl/" -ExpectedStatusCodes @(200)
-    Invoke-SmokeRequest -Uri "$BaseUrl/health.php" -ExpectedStatusCodes @(200)
+    Invoke-SmokeRequest -Uri "$BaseUrl/health.php" -ExpectedStatusCodes @(200) -OutputFile $HealthFile
     Invoke-SmokeRequest -Uri "$BaseUrl/admin/" -ExpectedStatusCodes @(302)
 
-    $Health = Invoke-RestMethod -Uri "$BaseUrl/health.php" -Method Get
+    $Health = Get-Content -LiteralPath $HealthFile -Raw | ConvertFrom-Json
     if ($Health.status -ne 'ok') {
         throw 'health.php did not return status=ok.'
     }
@@ -72,9 +79,7 @@ catch {
     exit 1
 }
 finally {
-    [System.Net.ServicePointManager]::SecurityProtocol = $PreviousSecurityProtocol
-
-    if ($AllowInvalidCertificate) {
-        [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $PreviousCertificateCallback
+    if (Test-Path -LiteralPath $HealthFile) {
+        Remove-Item -LiteralPath $HealthFile -Force
     }
 }
