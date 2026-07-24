@@ -38,16 +38,26 @@ try {
     }
     sort($migrationFiles, SORT_NATURAL | SORT_FLAG_CASE);
 
+    $migrationTableCheck = $pdo->prepare(
+        'SELECT COUNT(*) FROM information_schema.tables '
+        . 'WHERE table_schema = :schema_name AND table_name = :table_name'
+    );
+    $migrationTableCheck->execute([
+        'schema_name' => $db['name'],
+        'table_name' => 'migrations',
+    ]);
+    $hasMigrationTable = (int) $migrationTableCheck->fetchColumn() === 1;
+
+    $applied = [];
+    if ($hasMigrationTable) {
+        $applied = $pdo->query('SELECT migration FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
+    }
+
     $appliedNow = [];
     foreach ($migrationFiles as $migrationFile) {
         $migrationName = basename($migrationFile);
-
-        if ($migrationName !== '001_starter_security.sql') {
-            $check = $pdo->prepare('SELECT COUNT(*) FROM migrations WHERE migration = :migration');
-            $check->execute(['migration' => $migrationName]);
-            if ((int) $check->fetchColumn() > 0) {
-                continue;
-            }
+        if (in_array($migrationName, $applied, true)) {
+            continue;
         }
 
         $sql = file_get_contents($migrationFile);
@@ -57,8 +67,9 @@ try {
 
         $pdo->exec($sql);
         $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
-        $record = $pdo->prepare('INSERT IGNORE INTO migrations (migration, applied_at) VALUES (:migration, :applied_at)');
+        $record = $pdo->prepare('INSERT INTO migrations (migration, applied_at) VALUES (:migration, :applied_at)');
         $record->execute(['migration' => $migrationName, 'applied_at' => $now]);
+        $applied[] = $migrationName;
         $appliedNow[] = $migrationName;
     }
 
