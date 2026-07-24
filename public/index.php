@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
+require dirname(__DIR__) . '/app/bootstrap.php';
+
+if (current_user() !== null) {
+    redirect('/admin/');
+}
+
+$isInstalled = installation_completed();
+$error = flash('error');
 $currentYear = (new DateTimeImmutable())->format('Y');
 ?>
 <!DOCTYPE html>
@@ -13,91 +21,32 @@ $currentYear = (new DateTimeImmutable())->format('Y');
     <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
 </head>
 <body>
-<header class="site-header">
-    <div class="container">
-        <div class="header-content glass-tile">
-            <div class="site-logo" aria-label="Логотип АСУ-ВЧ">АСУ</div>
-            <div class="site-heading">
-                <h1 class="site-title">Автоматизированная система учета военнослужащих</h1>
-                <p class="site-description">Информационная система «Войсковая часть»</p>
-            </div>
-        </div>
-    </div>
-</header>
-
+<header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Автоматизированная система учета военнослужащих</h1><p class="site-description">Информационная система «Войсковая часть»</p></div></div></div></header>
 <main class="site-main">
-    <section class="auth-card glass-tile" aria-labelledby="auth-title">
-        <h2 class="auth-heading" id="auth-title">Добро пожаловать</h2>
-        <p class="auth-description">Войдите в учетную запись или зарегистрируйтесь в системе.</p>
-
-        <div class="auth-tabs" role="tablist" aria-label="Авторизация пользователя">
-            <button class="tab-button is-active" id="login-tab" type="button" role="tab" aria-selected="true" aria-controls="login-panel" tabindex="0" data-tab-target="login-panel">Вход</button>
-            <button class="tab-button" id="register-tab" type="button" role="tab" aria-selected="false" aria-controls="register-panel" tabindex="-1" data-tab-target="register-panel">Регистрация</button>
-        </div>
-
-        <section class="auth-panel is-active" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
-            <form id="login-form" method="post" action="#">
-                <div class="form-message" id="login-message" role="status" aria-live="polite"></div>
-                <div class="form-group">
-                    <label class="form-label" for="login-identifier">Имя пользователя или электронная почта</label>
-                    <input class="form-input" id="login-identifier" name="identifier" type="text" placeholder="Введите имя пользователя" autocomplete="username" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="login-password">Пароль</label>
-                    <div class="password-wrapper">
-                        <input class="form-input" id="login-password" name="password" type="password" placeholder="Введите пароль" autocomplete="current-password" required>
-                        <button class="password-toggle" type="button" data-password-target="login-password" aria-label="Показать пароль">Показать</button>
-                    </div>
-                </div>
-                <div class="form-options">
-                    <label class="checkbox-label"><input name="remember" type="checkbox" value="1"><span>Запомнить меня</span></label>
-                    <a class="text-link" href="#">Забыли пароль?</a>
-                </div>
-                <button class="primary-button" type="submit">Войти</button>
-            </form>
-        </section>
-
-        <section class="auth-panel" id="register-panel" role="tabpanel" aria-labelledby="register-tab" hidden>
-            <form id="register-form" method="post" action="#">
-                <div class="form-message" id="register-message" role="status" aria-live="polite"></div>
-                <div class="form-group">
-                    <label class="form-label" for="register-username">Имя пользователя</label>
-                    <input class="form-input" id="register-username" name="username" type="text" placeholder="Придумайте имя пользователя" autocomplete="username" minlength="3" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="register-email">Электронная почта</label>
-                    <input class="form-input" id="register-email" name="email" type="email" placeholder="example@example.ru" autocomplete="email" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="register-password">Пароль</label>
-                    <div class="password-wrapper">
-                        <input class="form-input" id="register-password" name="password" type="password" placeholder="Введите пароль" autocomplete="new-password" minlength="8" required>
-                        <button class="password-toggle" type="button" data-password-target="register-password" aria-label="Показать пароль">Показать</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="register-password-confirmation">Повторите пароль</label>
-                    <div class="password-wrapper">
-                        <input class="form-input" id="register-password-confirmation" name="password_confirmation" type="password" placeholder="Повторите пароль" autocomplete="new-password" minlength="8" required>
-                        <button class="password-toggle" type="button" data-password-target="register-password-confirmation" aria-label="Показать пароль">Показать</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="checkbox-label"><input name="agreement" type="checkbox" value="1" required><span>Я подтверждаю согласие с правилами системы</span></label>
-                </div>
-                <button class="primary-button" type="submit">Зарегистрироваться</button>
-                <p class="form-note">После регистрации учетной записи может потребоваться подтверждение администратором.</p>
-            </form>
-        </section>
-    </section>
+<section class="auth-card glass-tile">
+    <h2 class="auth-heading"><?= $isInstalled ? 'Вход в систему' : 'Первичная настройка' ?></h2>
+    <p class="auth-description"><?= $isInstalled ? 'Введите учетные данные пользователя.' : 'Создайте первого владельца системы. После регистрации публичная регистрация будет отключена.' ?></p>
+    <?php if ($error !== null): ?><div class="form-message is-visible"><?= e($error) ?></div><?php endif; ?>
+    <?php if ($isInstalled): ?>
+        <form method="post" action="/login.php">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+            <div class="form-group"><label class="form-label" for="identifier">Имя пользователя или электронная почта</label><input class="form-input" id="identifier" name="identifier" type="text" autocomplete="username" required></div>
+            <div class="form-group"><label class="form-label" for="password">Пароль</label><input class="form-input" id="password" name="password" type="password" autocomplete="current-password" required></div>
+            <button class="primary-button" type="submit">Войти</button>
+        </form>
+    <?php else: ?>
+        <form method="post" action="/register.php">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+            <div class="form-group"><label class="form-label" for="username">Имя пользователя</label><input class="form-input" id="username" name="username" type="text" minlength="3" maxlength="100" autocomplete="username" required></div>
+            <div class="form-group"><label class="form-label" for="display_name">Отображаемое имя</label><input class="form-input" id="display_name" name="display_name" type="text" maxlength="150" required></div>
+            <div class="form-group"><label class="form-label" for="email">Электронная почта</label><input class="form-input" id="email" name="email" type="email" maxlength="255" autocomplete="email"></div>
+            <div class="form-group"><label class="form-label" for="password">Пароль</label><input class="form-input" id="password" name="password" type="password" minlength="5" autocomplete="new-password" required></div>
+            <div class="form-group"><label class="form-label" for="password_confirmation">Повторите пароль</label><input class="form-input" id="password_confirmation" name="password_confirmation" type="password" minlength="5" autocomplete="new-password" required></div>
+            <button class="primary-button" type="submit">Создать владельца системы</button>
+        </form>
+    <?php endif; ?>
+</section>
 </main>
-
-<footer class="site-footer">
-    <div class="container">
-        <div class="footer-content glass-tile">© <?= htmlspecialchars($currentYear, ENT_QUOTES, 'UTF-8') ?> АСУ-ВЧ. Все права защищены.</div>
-    </div>
-</footer>
-
-<script src="/themes/asu-blue/assets/js/auth.js" defer></script>
+<footer class="site-footer"><div class="container"><div class="footer-content glass-tile">© <?= e($currentYear) ?> АСУ-ВЧ. Все права защищены.</div></div></footer>
 </body>
 </html>
