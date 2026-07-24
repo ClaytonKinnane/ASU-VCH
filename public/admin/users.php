@@ -61,6 +61,7 @@ function user_status_class(array $row): string
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пользователи — АСУ-ВЧ</title>
     <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
+    <link rel="stylesheet" href="/themes/asu-blue/assets/css/users.css">
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Пользователи</h1><p class="site-description">Учетные записи, роли и разрешения</p></div><a class="secondary-button" href="/admin/">К панели</a></div></div></header>
