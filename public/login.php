@@ -12,7 +12,7 @@ require_csrf();
 $identifier = mb_strtolower(trim((string) ($_POST['identifier'] ?? '')), 'UTF-8');
 $password = (string) ($_POST['password'] ?? '');
 
-$stmt = db()->prepare('SELECT id, password_hash FROM users WHERE (username_canonical = :username_identifier OR email_canonical = :email_identifier) AND is_active = 1 AND deleted_at IS NULL LIMIT 1');
+$stmt = db()->prepare("SELECT id, password_hash FROM users WHERE (username_canonical = :username_identifier OR email_canonical = :email_identifier) AND is_active = 1 AND approval_status = 'approved' AND deleted_at IS NULL LIMIT 1");
 $stmt->execute([
     'username_identifier' => $identifier,
     'email_identifier' => $identifier,
