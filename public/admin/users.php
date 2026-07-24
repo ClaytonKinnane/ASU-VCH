@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 $user = require_permission('security.users.view');
 
@@ -69,7 +68,7 @@ function user_status_class(array $row): string
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Пользователи</h1><p class="site-description">Учетные записи, роли и разрешения</p></div><a class="secondary-button" href="/admin/">К панели</a></div></div></header>
 <main class="admin-main"><div class="container">
-<section class="stats-grid" aria-label="Сводка пользователей">
+<section class="stats-grid users-stats-grid" aria-label="Сводка пользователей">
     <article class="stat-tile glass-tile"><span>Всего</span><strong><?= $summary['total'] ?></strong></article>
     <article class="stat-tile glass-tile"><span>Активные</span><strong><?= $summary['active'] ?></strong></article>
     <article class="stat-tile glass-tile"><span>Ожидают</span><strong><?= $summary['pending'] ?></strong></article>
