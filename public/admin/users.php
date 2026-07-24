@@ -26,6 +26,15 @@ $repository = user_list_repository();
 $summary = $repository->summary();
 $result = $repository->search($query, $status, $page, $includeSensitive);
 
+$securitySections = [
+    ['Пользователи', 'Учетные записи и состояния доступа.', true],
+    ['Роли', 'Управление ролями системы.', false],
+    ['Разрешения', 'Каталог разрешений и политик доступа.', false],
+    ['Назначение ролей', 'Связь пользователей и ролей.', false],
+    ['Матрица доступа', 'Сводное представление ролей и разрешений.', false],
+    ['Сеансы и безопасность', 'Контроль активных сеансов и параметров учетных записей.', false],
+];
+
 function users_list_url(int $page, string $query, string $status): string
 {
     $params = ['page' => $page];
@@ -72,6 +81,24 @@ function user_status_class(array $row): string
     <article class="stat-tile glass-tile"><span>Заблокированные</span><strong><?= $summary['blocked'] ?></strong></article>
     <article class="stat-tile glass-tile"><span>Архивированные</span><strong><?= $summary['archived'] ?></strong></article>
 </section>
+
+<nav class="security-section-grid" aria-label="Разделы управления доступом">
+<?php foreach ($securitySections as [$title, $description, $isActive]): ?>
+    <?php if ($isActive): ?>
+        <a class="security-section-card glass-tile is-active" href="/admin/users.php" aria-current="page">
+            <span class="security-section-state">Текущий раздел</span>
+            <strong><?= e($title) ?></strong>
+            <small><?= e($description) ?></small>
+        </a>
+    <?php else: ?>
+        <div class="security-section-card glass-tile is-disabled" aria-disabled="true">
+            <span class="status-badge">В разработке</span>
+            <strong><?= e($title) ?></strong>
+            <small><?= e($description) ?></small>
+        </div>
+    <?php endif; ?>
+<?php endforeach; ?>
+</nav>
 
 <section class="users-panel glass-tile" aria-labelledby="users-list-title">
     <div class="users-panel-heading">
