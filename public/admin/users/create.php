@@ -41,7 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 function field_error(array $errors, string $key): string
 {
-    return isset($errors[$key]) ? '<span class="field-error">' . e($errors[$key]) . '</span>' : '';
+    $message = $errors[$key] ?? '';
+    $class = $message === '' ? 'field-error field-error--empty' : 'field-error';
+    return '<span class="' . $class . '" aria-live="polite">' . ($message === '' ? '&nbsp;' : e($message)) . '</span>';
 }
 ?>
 <!DOCTYPE html>
@@ -71,9 +73,9 @@ function field_error(array $errors, string $key): string
         </fieldset>
 
         <fieldset class="form-section"><legend>Начальный пароль</legend>
-            <div class="form-grid">
-                <label><span>Временный пароль *</span><input class="form-input" type="password" name="password" minlength="10" maxlength="128" required autocomplete="new-password"><?= field_error($errors, 'password') ?></label>
-                <label><span>Подтверждение *</span><input class="form-input" type="password" name="password_confirmation" minlength="10" maxlength="128" required autocomplete="new-password"><?= field_error($errors, 'password_confirmation') ?></label>
+            <div class="form-grid password-grid">
+                <label><span>Временный пароль *</span><span class="password-control"><input id="new-password" class="form-input" type="password" name="password" minlength="10" maxlength="128" required autocomplete="new-password"><button class="password-toggle" type="button" data-password-toggle="new-password" aria-label="Показать пароль" aria-pressed="false">Показать</button></span><?= field_error($errors, 'password') ?></label>
+                <label><span>Подтверждение *</span><span class="password-control"><input id="new-password-confirmation" class="form-input" type="password" name="password_confirmation" minlength="10" maxlength="128" required autocomplete="new-password"><button class="password-toggle" type="button" data-password-toggle="new-password-confirmation" aria-label="Показать подтверждение пароля" aria-pressed="false">Показать</button></span><?= field_error($errors, 'password_confirmation') ?></label>
             </div>
             <p class="form-help">Минимум 10 символов, одна буква и одна цифра.</p>
             <div class="checkbox-row">
@@ -102,5 +104,18 @@ function field_error(array $errors, string $key): string
     </form>
 </section>
 </div></main>
+<script>
+document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+    button.addEventListener('click', function () {
+        var input = document.getElementById(button.getAttribute('data-password-toggle'));
+        if (!input) return;
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        button.textContent = show ? 'Скрыть' : 'Показать';
+        button.setAttribute('aria-pressed', show ? 'true' : 'false');
+        button.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
+    });
+});
+</script>
 </body>
 </html>
