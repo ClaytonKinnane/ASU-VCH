@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'database' => [
-        'host' => '127.0.0.1',
+        'host' => 'MySQL-8.4',
         'port' => 3306,
         'name' => 'asu_vch',
         'username' => 'root',
