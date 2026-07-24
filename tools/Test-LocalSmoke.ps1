@@ -35,7 +35,7 @@ function Invoke-SmokeRequest {
     }
 
     if ($ExpectedStatusCodes -notcontains $StatusCode) {
-        throw "Неожиданный HTTP-статус $StatusCode для $Uri. Ожидалось: $($ExpectedStatusCodes -join ', ')."
+        throw "Unexpected HTTP status $StatusCode for $Uri. Expected: $($ExpectedStatusCodes -join ', ')."
     }
 
     Write-Host "OK $StatusCode $Uri" -ForegroundColor Green
@@ -54,17 +54,17 @@ try {
 
     $Health = Invoke-RestMethod -Uri "$BaseUrl/health.php" -Method Get
     if ($Health.status -ne 'ok') {
-        throw 'health.php не вернул status=ok.'
+        throw 'health.php did not return status=ok.'
     }
     if ($Health.database.status -ne 'connected') {
-        throw 'health.php не подтвердил подключение к базе данных.'
+        throw 'health.php did not confirm a database connection.'
     }
 
-    Write-Host "`nSmoke-тест завершен успешно." -ForegroundColor Green
+    Write-Host "`nSmoke test completed successfully." -ForegroundColor Green
     exit 0
 }
 catch {
-    Write-Host "`nSMOKE-ТЕСТ НЕ ПРОЙДЕН." -ForegroundColor Red
+    Write-Host "`nSMOKE TEST FAILED." -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
     exit 1
 }
