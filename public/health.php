@@ -30,9 +30,10 @@ try {
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
 } catch (Throwable $exception) {
     http_response_code(503);
+    $debug = function_exists('app_config') && app_config('debug', false) === true;
     echo json_encode([
         'status' => 'error',
-        'message' => app_config('debug', false) ? $exception->getMessage() : 'Приложение или база данных недоступны.',
+        'message' => $debug ? $exception->getMessage() : 'Приложение или база данных недоступны.',
         'checked_at' => date(DATE_ATOM),
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 }
