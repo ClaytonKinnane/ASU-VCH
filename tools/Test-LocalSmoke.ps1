@@ -42,8 +42,11 @@ function Invoke-SmokeRequest {
 }
 
 $PreviousCertificateCallback = [System.Net.ServicePointManager]::ServerCertificateValidationCallback
+$PreviousSecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol
 
 try {
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+
     if ($AllowInvalidCertificate) {
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
     }
@@ -69,6 +72,8 @@ catch {
     exit 1
 }
 finally {
+    [System.Net.ServicePointManager]::SecurityProtocol = $PreviousSecurityProtocol
+
     if ($AllowInvalidCertificate) {
         [System.Net.ServicePointManager]::ServerCertificateValidationCallback = $PreviousCertificateCallback
     }
