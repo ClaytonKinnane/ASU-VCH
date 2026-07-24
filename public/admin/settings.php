@@ -16,18 +16,24 @@ try {
 $migrationCount = (int) db()->query('SELECT COUNT(*) FROM migrations')->fetchColumn();
 $lastMigration = db()->query('SELECT MAX(applied_at) FROM migrations')->fetchColumn();
 $database = app_config('database');
-$diagnostics = [
-    ['Версия приложения', (string) app_config('version')],
-    ['Окружение', (string) app_config('environment')],
-    ['PHP', PHP_VERSION],
-    ['MySQL', $dbStatus . ($dbVersion !== '—' ? ' · ' . $dbVersion : '')],
-    ['База данных', (string) $database['name']],
-    ['Серверное время', date('Y-m-d H:i:s')],
-    ['Часовой пояс', date_default_timezone_get()],
-    ['Активная тема', (string) app_config('theme', 'asu-blue')],
-    ['Debug', app_config('debug', false) ? 'Включен' : 'Отключен'],
-    ['Применено миграций', (string) $migrationCount],
-    ['Последняя миграция', is_string($lastMigration) && $lastMigration !== '' ? $lastMigration : 'Нет данных'],
+$debugEnabled = (bool) app_config('debug', false);
+
+$diagnosticColumns = [
+    [
+        ['Версия приложения', (string) app_config('version')],
+        ['PHP', PHP_VERSION],
+        ['MySQL', $dbVersion, $dbStatus === 'Подключено' ? 'success' : 'error', $dbStatus],
+        ['База данных', (string) $database['name']],
+        ['Окружение', (string) app_config('environment')],
+        ['Часовой пояс', date_default_timezone_get()],
+    ],
+    [
+        ['Активная тема', (string) app_config('theme', 'asu-blue')],
+        ['Debug', '', $debugEnabled ? 'success' : 'muted', $debugEnabled ? 'Включен' : 'Отключен'],
+        ['Применено миграций', (string) $migrationCount],
+        ['Последняя миграция', is_string($lastMigration) && $lastMigration !== '' ? $lastMigration : 'Нет данных'],
+        ['Серверное время', date('Y-m-d H:i:s')],
+    ],
 ];
 
 $modules = [
@@ -53,10 +59,24 @@ $modules = [
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Настройки системы</h1><p class="site-description">Параметры приложения и инфраструктуры</p></div><a class="secondary-button" href="/admin/">К панели</a></div></div></header>
 <main class="admin-main"><div class="container">
-<section class="diagnostic-grid" aria-label="Диагностика системы">
-<?php foreach ($diagnostics as [$label, $value]): ?>
-<article class="diagnostic-row glass-tile"><span><?= e($label) ?></span><strong><?= e($value) ?></strong></article>
-<?php endforeach; ?>
+<section class="technical-panel glass-tile" aria-labelledby="technical-information-title">
+    <h2 id="technical-information-title" class="technical-panel-title">Техническая информация</h2>
+    <div class="technical-columns">
+        <?php foreach ($diagnosticColumns as $column): ?>
+        <dl class="technical-list">
+            <?php foreach ($column as $item): ?>
+                <?php [$label, $value] = $item; $badgeType = $item[2] ?? null; $badgeText = $item[3] ?? null; ?>
+                <div class="technical-row">
+                    <dt><?= e($label) ?></dt>
+                    <dd>
+                        <?php if ($value !== ''): ?><strong><?= e($value) ?></strong><?php endif; ?>
+                        <?php if (is_string($badgeText)): ?><span class="state-badge state-badge--<?= e((string) $badgeType) ?>"><?= e($badgeText) ?></span><?php endif; ?>
+                    </dd>
+                </div>
+            <?php endforeach; ?>
+        </dl>
+        <?php endforeach; ?>
+    </div>
 </section>
 <section class="module-grid" aria-label="Системные настройки">
 <?php foreach ($modules as [$title, $description]): ?>
