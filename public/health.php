@@ -3,9 +3,14 @@
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, max-age=0');
+
+$debug = false;
 
 try {
     require dirname(__DIR__) . '/app/bootstrap.php';
+    $debug = (bool) app_config('debug', false);
+
     $pdo = db();
     $databaseVersion = (string) $pdo->query('SELECT VERSION()')->fetchColumn();
     $databaseName = (string) $pdo->query('SELECT DATABASE()')->fetchColumn();
@@ -30,10 +35,12 @@ try {
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
 } catch (Throwable $exception) {
     http_response_code(503);
-    $debug = function_exists('app_config') && app_config('debug', false) === true;
-    echo json_encode([
+
+    $payload = [
         'status' => 'error',
         'message' => $debug ? $exception->getMessage() : 'Приложение или база данных недоступны.',
         'checked_at' => date(DATE_ATOM),
-    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    ];
+
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?: '{"status":"error"}';
 }
