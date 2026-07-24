@@ -39,11 +39,11 @@ git pull
 C:\OSPanel\home\asu-vch.local\config\local.php
 ```
 
-Проверьте в нем:
+Для Open Server Panel 6.5.1 хостом служит имя модуля, а не `127.0.0.1`:
 
 ```php
 'database' => [
-    'host' => '127.0.0.1',
+    'host' => 'MySQL-8.4',
     'port' => 3306,
     'name' => 'asu_vch',
     'username' => 'root',
@@ -52,7 +52,7 @@ C:\OSPanel\home\asu-vch.local\config\local.php
 ],
 ```
 
-Файл `config/local.php` не должен попадать в Git.
+Допустимый вариант хоста: `mysql-8.4.local`. Модуль MySQL-8.4 должен быть включен в Open Server Panel. Файл `config/local.php` не должен попадать в Git.
 
 ## 4. Основной сценарий: пустая production-подобная установка
 
