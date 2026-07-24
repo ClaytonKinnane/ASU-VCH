@@ -74,8 +74,22 @@ function field_error(array $errors, string $key): string
 
         <fieldset class="form-section"><legend>Начальный пароль</legend>
             <div class="form-grid password-grid">
-                <label><span>Временный пароль *</span><span class="password-control"><input id="new-password" class="form-input" type="password" name="password" minlength="10" maxlength="128" required autocomplete="new-password"><button class="password-toggle" type="button" data-password-toggle="new-password" aria-label="Показать пароль" aria-pressed="false">Показать</button></span><?= field_error($errors, 'password') ?></label>
-                <label><span>Подтверждение *</span><span class="password-control"><input id="new-password-confirmation" class="form-input" type="password" name="password_confirmation" minlength="10" maxlength="128" required autocomplete="new-password"><button class="password-toggle" type="button" data-password-toggle="new-password-confirmation" aria-label="Показать подтверждение пароля" aria-pressed="false">Показать</button></span><?= field_error($errors, 'password_confirmation') ?></label>
+                <div class="form-field">
+                    <label for="new-password">Временный пароль *</label>
+                    <div class="password-field">
+                        <input id="new-password" class="form-input" type="password" name="password" minlength="10" maxlength="128" required autocomplete="new-password">
+                        <button class="password-toggle-button" type="button" data-password-toggle="new-password" aria-label="Показать временный пароль" aria-pressed="false">Показать</button>
+                    </div>
+                    <?= field_error($errors, 'password') ?>
+                </div>
+                <div class="form-field">
+                    <label for="new-password-confirmation">Подтверждение *</label>
+                    <div class="password-field">
+                        <input id="new-password-confirmation" class="form-input" type="password" name="password_confirmation" minlength="10" maxlength="128" required autocomplete="new-password">
+                        <button class="password-toggle-button" type="button" data-password-toggle="new-password-confirmation" aria-label="Показать подтверждение пароля" aria-pressed="false">Показать</button>
+                    </div>
+                    <?= field_error($errors, 'password_confirmation') ?>
+                </div>
             </div>
             <p class="form-help">Минимум 10 символов, одна буква и одна цифра.</p>
             <div class="checkbox-row">
