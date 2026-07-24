@@ -10,7 +10,7 @@ $currentYear = (new DateTimeImmutable())->format('Y');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>АСУ-ВЧ</title>
-    <link rel="stylesheet" href="../themes/asu-blue/assets/css/theme.css">
+    <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
 </head>
 <body>
 <header class="site-header">
@@ -98,6 +98,6 @@ $currentYear = (new DateTimeImmutable())->format('Y');
     </div>
 </footer>
 
-<script src="../themes/asu-blue/assets/js/auth.js" defer></script>
+<script src="/themes/asu-blue/assets/js/auth.js" defer></script>
 </body>
 </html>
