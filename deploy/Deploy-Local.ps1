@@ -33,6 +33,17 @@ function Assert-File {
     }
 }
 
+function Copy-DirectoryContents {
+    param(
+        [Parameter(Mandatory = $true)][string]$Source,
+        [Parameter(Mandatory = $true)][string]$Destination
+    )
+
+    Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
+        Copy-Item -LiteralPath $_.FullName -Destination $Destination -Recurse -Force
+    }
+}
+
 $RepositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $OspRoot = 'C:\OSPanel'
 $OspExecutable = Join-Path $OspRoot 'bin\ospanel.exe'
@@ -95,7 +106,7 @@ try {
     }
 
     if (-not $NormalizedTargetRoot.StartsWith($NormalizedOspHome + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Отказ от очистки: путь назначения находится вне каталога Open Server Panel home."
+        throw 'Отказ от очистки: путь назначения находится вне каталога Open Server Panel home.'
     }
 
     Write-Host "Путь назначения подтвержден: $NormalizedTargetRoot"
@@ -117,11 +128,11 @@ try {
 
     Write-Step 'Копирование файлов приложения'
 
-    Copy-Item -LiteralPath (Join-Path $PublicSource '*') -Destination $TargetPublic -Recurse -Force
+    Copy-DirectoryContents -Source $PublicSource -Destination $TargetPublic
     Write-Host "Публичные файлы: $PublicSource -> $TargetPublic"
 
     New-Item -ItemType Directory -Path $TargetThemes -Force | Out-Null
-    Copy-Item -LiteralPath (Join-Path $ThemesSource '*') -Destination $TargetThemes -Recurse -Force
+    Copy-DirectoryContents -Source $ThemesSource -Destination $TargetThemes
     Write-Host "Темы: $ThemesSource -> $TargetThemes"
 
     Copy-Item -LiteralPath $ProjectConfigSource -Destination $TargetProjectConfig -Force
