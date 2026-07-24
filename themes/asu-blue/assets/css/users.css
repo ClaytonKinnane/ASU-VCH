@@ -34,6 +34,15 @@
     .security-section-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .users-filters { grid-template-columns: 1fr 1fr; }
     .users-filter-submit { width: 100%; }
+
+    .users-table-wrap { overflow: visible; border: 0; background: transparent; }
+    .users-table { display: block; width: 100%; table-layout: auto; border-collapse: separate; }
+    .users-table thead { display: none; }
+    .users-table tbody { display: grid; width: 100%; gap: 12px; }
+    .users-table tr { display: grid; width: 100%; min-width: 0; overflow: hidden; border: 1px solid rgba(24,172,234,.36); border-radius: 12px; background: rgba(7,36,61,.38); }
+    .users-table td { display: grid; width: 100%; min-width: 0; grid-template-columns: minmax(120px, .42fr) minmax(0, 1fr); gap: 12px; border-top: 1px solid rgba(184,202,216,.14); overflow-wrap: anywhere; word-break: break-word; }
+    .users-table td:first-child { border-top: 0; }
+    .users-table td::before { content: attr(data-label); color: #8cddff; font-size: 12px; font-weight: 750; }
 }
 
 @media (max-width: 760px) {
@@ -42,13 +51,6 @@
     .users-panel { padding: 17px; }
     .users-filters { grid-template-columns: 1fr; }
     .users-filters .secondary-button { width: 100%; }
-    .users-table-wrap { overflow: visible; border: 0; background: transparent; }
-    .users-table, .users-table tbody { display: grid; gap: 12px; }
-    .users-table thead { display: none; }
-    .users-table tr { display: grid; gap: 0; overflow: hidden; border: 1px solid rgba(24,172,234,.36); border-radius: 12px; background: rgba(7,36,61,.38); }
-    .users-table td { display: grid; grid-template-columns: minmax(110px, .42fr) 1fr; gap: 12px; border-top: 1px solid rgba(184,202,216,.14); }
-    .users-table td:first-child { border-top: 0; }
-    .users-table td::before { content: attr(data-label); color: #8cddff; font-size: 12px; font-weight: 750; }
     .pagination-summary { width: 100%; margin-left: 0; }
 }
 
