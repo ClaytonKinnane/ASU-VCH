@@ -1,5 +1,5 @@
 .users-stats-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     scrollbar-width: thin;
     scrollbar-color: rgba(53,212,146,.88) rgba(7,36,61,.72);
 }
@@ -101,10 +101,15 @@
 .user-action-row form { margin: 0; }
 .danger-button { width: auto; min-height: 42px; padding: 10px 18px; border: 1px solid rgba(255,112,128,.72); border-radius: 9px; background: rgba(151,39,58,.72); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 .danger-button:hover { background: rgba(185,45,68,.88); }
+.user-rejection-zone { margin-top: 18px; padding: 18px; border: 1px solid rgba(255,112,128,.46); border-radius: 12px; background: rgba(92,24,42,.28); }
+.user-rejection-heading { margin-bottom: 14px; }
+.user-rejection-heading h3 { margin: 0; color: #ffd2d8; font-size: 18px; }
+.user-rejection-heading p { margin: 6px 0 0; color: var(--text-secondary); font-size: 13px; }
+.user-rejection-zone .form-textarea { min-height: 120px; }
 
 @media (max-width: 1100px) {
     .users-stats-grid {
-        grid-template-columns: repeat(5, minmax(150px, 1fr));
+        grid-template-columns: repeat(6, minmax(150px, 1fr));
         overflow-x: auto;
         padding-bottom: 10px;
         overscroll-behavior-inline: contain;
@@ -133,7 +138,7 @@
 }
 
 @media (max-width: 760px) {
-    .users-stats-grid { grid-template-columns: repeat(5, minmax(138px, 1fr)); }
+    .users-stats-grid { grid-template-columns: repeat(6, minmax(138px, 1fr)); }
     .security-section-grid { grid-template-columns: 1fr; }
     .security-section-card { min-height: 112px; }
     .users-panel, .user-form-panel, .user-detail-section, .user-detail-hero { padding: 17px; }
@@ -144,7 +149,7 @@
     .users-filters .secondary-button { width: 100%; }
     .pagination-summary { width: 100%; margin-left: 0; }
     .user-detail-hero { align-items: flex-start; flex-direction: column; }
-    .user-action-row, .user-action-row form, .user-action-row button, .form-actions .primary-button { width: 100%; }
+    .user-action-row, .user-action-row form, .user-action-row button, .form-actions .primary-button, .form-actions .danger-button { width: 100%; }
 }
 
 @media (max-width: 480px) {
@@ -154,4 +159,5 @@
     .pagination .secondary-button { flex: 1; }
     .password-field .form-input { padding-right: 12px; }
     .password-toggle-button { position: static; transform: none; width: 100% !important; margin-top: 8px; min-height: 40px; }
+    .user-rejection-zone { padding: 14px; }
 }
