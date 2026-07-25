@@ -1,13 +1,13 @@
 <?php
 
 declare(strict_types=1);
+
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
-$user = require_permission('security.users.view');
+require_permission('security.users.view');
 
 $roleCodes = current_user_role_codes();
-$includeSensitive = !($roleCodes === ['viewer']);
+$includeSensitive = in_array('system_owner', $roleCodes, true) || in_array('administrator', $roleCodes, true);
 $canCreate = has_permission('security.users.create');
-$canApprove = has_permission('security.users.update');
 $success = flash('success');
 $error = flash('error');
 
@@ -39,31 +39,51 @@ $securitySections = [
 function users_list_url(int $page, string $query, string $status): string
 {
     $params = ['page' => $page];
-    if ($query !== '') { $params['q'] = $query; }
-    if ($status !== 'all') { $params['status'] = $status; }
+    if ($query !== '') {
+        $params['q'] = $query;
+    }
+    if ($status !== 'all') {
+        $params['status'] = $status;
+    }
     return '/admin/users.php?' . http_build_query($params);
 }
+
 function user_primary_status(array $row): string
 {
-    if ($row['deleted_at'] !== null) { return 'Архивирован'; }
-    if ($row['approval_status'] === 'pending') { return 'Ожидает подтверждения'; }
-    if ($row['approval_status'] === 'rejected') { return 'Отклонен'; }
+    if ($row['deleted_at'] !== null) {
+        return 'Архивирован';
+    }
+    if ($row['approval_status'] === 'pending') {
+        return 'Ожидает подтверждения';
+    }
+    if ($row['approval_status'] === 'rejected') {
+        return 'Отклонен';
+    }
     return (int) $row['is_active'] === 1 ? 'Активен' : 'Заблокирован';
 }
+
 function user_status_class(array $row): string
 {
-    if ($row['deleted_at'] !== null) { return 'state-badge--muted'; }
-    if ($row['approval_status'] === 'pending') { return 'state-badge--warning'; }
-    if ($row['approval_status'] === 'rejected') { return 'state-badge--error'; }
+    if ($row['deleted_at'] !== null) {
+        return 'state-badge--muted';
+    }
+    if ($row['approval_status'] === 'pending') {
+        return 'state-badge--warning';
+    }
+    if ($row['approval_status'] === 'rejected') {
+        return 'state-badge--error';
+    }
     return (int) $row['is_active'] === 1 ? 'state-badge--success' : 'state-badge--error';
 }
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пользователи — АСУ-ВЧ</title>
-    <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css"><link rel="stylesheet" href="/themes/asu-blue/assets/css/users.css">
+    <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
+    <link rel="stylesheet" href="/themes/asu-blue/assets/css/users.css">
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Пользователи</h1><p class="site-description">Учетные записи, роли и разрешения</p></div><a class="secondary-button" href="/admin/">К панели</a></div></div></header>
@@ -91,16 +111,12 @@ function user_status_class(array $row): string
         <button class="primary-button users-filter-submit" type="submit">Найти</button><?php if ($query !== '' || $status !== 'all'): ?><a class="secondary-button" href="/admin/users.php">Сбросить</a><?php endif; ?>
     </form>
     <?php if ($result['items'] === []): ?><div class="users-empty"><strong><?= $summary['total'] === 0 ? 'Пользователи пока не созданы.' : 'По заданным условиям пользователи не найдены.' ?></strong></div>
-    <?php else: ?><div class="users-table-wrap"><table class="users-table"><thead><tr><th>Пользователь</th><th>Логин</th><?php if ($includeSensitive): ?><th>Email</th><?php endif; ?><th>Статус</th><th>Роли</th><th>Создание</th><?php if ($includeSensitive): ?><th>Последний вход</th><?php endif; ?><th>Действия</th></tr></thead><tbody>
+    <?php else: ?><div class="users-table-wrap"><table class="users-table users-table--compact"><thead><tr><th>Пользователь</th><th>Логин</th><th>Статус</th><th>Последний вход</th></tr></thead><tbody>
     <?php foreach ($result['items'] as $row): ?><tr>
-        <td data-label="Пользователь"><strong><?= e((string) $row['display_name']) ?></strong><div class="user-badges"><?php if ((int) $row['is_owner'] === 1): ?><span class="status-badge">Владелец</span><?php endif; ?><?php if ((int) $row['is_temporary'] === 1): ?><span class="status-badge">Временная</span><?php endif; ?><?php if ((int) $row['must_change_password'] === 1): ?><span class="status-badge">Смена пароля</span><?php endif; ?></div></td>
+        <td data-label="Пользователь"><a class="user-name-link" href="/admin/users/view.php?id=<?= (int) $row['id'] ?>"><?= e((string) $row['display_name']) ?></a></td>
         <td data-label="Логин"><?= e((string) $row['username']) ?></td>
-        <?php if ($includeSensitive): ?><td data-label="Email"><?= $row['email'] ? e((string) $row['email']) : '—' ?></td><?php endif; ?>
         <td data-label="Статус"><span class="state-badge <?= user_status_class($row) ?>"><?= e(user_primary_status($row)) ?></span></td>
-        <td data-label="Роли"><?= $row['role_names'] ? e((string) $row['role_names']) : 'Нет ролей' ?></td>
-        <td data-label="Создание"><strong><?= $row['creator_name'] ? e((string) $row['creator_name']) : 'Системная операция' ?></strong><small><?= e((string) $row['created_at']) ?></small></td>
-        <?php if ($includeSensitive): ?><td data-label="Последний вход"><?= $row['last_login_at'] ? e((string) $row['last_login_at']) : 'Нет данных' ?></td><?php endif; ?>
-        <td data-label="Действия"><?php if ($canApprove && $row['approval_status'] === 'pending' && $row['deleted_at'] === null): ?><form method="post" action="/admin/users/approve.php" class="inline-action-form"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" value="<?= (int) $row['id'] ?>"><button class="primary-button compact-button" type="submit">Подтвердить</button></form><?php else: ?>—<?php endif; ?></td>
+        <td data-label="Последний вход"><?php if (!$includeSensitive): ?>Недоступно<?php elseif ($row['last_login_at']): ?><?= e((string) $row['last_login_at']) ?><?php else: ?>Нет данных<?php endif; ?></td>
     </tr><?php endforeach; ?>
     </tbody></table></div><?php endif; ?>
     <?php if ($result['total_pages'] > 1): ?><nav class="pagination" aria-label="Пагинация пользователей"><?php if ($result['page'] > 1): ?><a class="secondary-button" href="<?= e(users_list_url($result['page'] - 1, $query, $status)) ?>">Назад</a><?php endif; ?><?php for ($number = max(1, $result['page'] - 2); $number <= min($result['total_pages'], $result['page'] + 2); $number++): ?><a class="page-link<?= $number === $result['page'] ? ' is-active' : '' ?>" href="<?= e(users_list_url($number, $query, $status)) ?>"><?= $number ?></a><?php endfor; ?><span class="pagination-summary">Страница <?= $result['page'] ?> из <?= $result['total_pages'] ?></span></nav><?php endif; ?>
