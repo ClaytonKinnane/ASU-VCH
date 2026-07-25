@@ -18,11 +18,13 @@ final class UserDetailRepository
         $joins = '';
 
         if ($includeSensitive) {
-            $select .= ', u.email, u.last_login_at, u.creation_reason, u.approved_at, '
+            $select .= ', u.email, u.last_login_at, u.creation_reason, u.approved_at, u.rejected_at, u.rejection_reason, '
                 . 'creator.id AS creator_id, creator.username AS creator_username, creator.display_name AS creator_name, '
-                . 'approver.id AS approver_id, approver.username AS approver_username, approver.display_name AS approver_name';
+                . 'approver.id AS approver_id, approver.username AS approver_username, approver.display_name AS approver_name, '
+                . 'rejector.id AS rejector_id, rejector.username AS rejector_username, rejector.display_name AS rejector_name';
             $joins = ' LEFT JOIN users creator ON creator.id = u.created_by '
-                . 'LEFT JOIN users approver ON approver.id = u.approved_by';
+                . 'LEFT JOIN users approver ON approver.id = u.approved_by '
+                . 'LEFT JOIN users rejector ON rejector.id = u.rejected_by';
         }
 
         $stmt = $this->pdo->prepare($select . ' FROM users u' . $joins . ' WHERE u.id = :id LIMIT 1');
