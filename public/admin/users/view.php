@@ -95,6 +95,27 @@ function approval_status_label(string $status): string
         default => 'Неизвестно',
     };
 }
+
+/**
+ * @return array{name: string, username: ?string}
+ */
+function approval_actor(array $row): array
+{
+    if (($row['approver_id'] ?? null) !== null) {
+        return [
+            'name' => (string) (($row['approver_name'] ?? '') ?: ($row['approver_username'] ?? '')),
+            'username' => (string) ($row['approver_username'] ?? ''),
+        ];
+    }
+
+    if (($row['approval_status'] ?? '') === 'approved') {
+        return ['name' => 'Системная операция', 'username' => null];
+    }
+
+    return ['name' => 'Не подтвержден', 'username' => null];
+}
+
+$approvalActor = approval_actor($target);
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -139,6 +160,7 @@ function approval_status_label(string $status): string
                 <div><dt>Подтверждение</dt><dd><?= e(approval_status_label((string) $target['approval_status'])) ?></dd></div>
                 <div><dt>Временная учетная запись</dt><dd><?= yes_no((int) $target['is_temporary'] === 1) ?></dd></div>
                 <div><dt>Требуется смена пароля</dt><dd><?= yes_no((int) $target['must_change_password'] === 1) ?></dd></div>
+                <div class="user-detail-list-wide"><dt>Кем подтвержден</dt><dd><?= e($approvalActor['name']) ?><?php if ($approvalActor['username'] !== null && $approvalActor['username'] !== ''): ?><small>@<?= e($approvalActor['username']) ?></small><?php endif; ?></dd></div>
             </dl>
             <?php endif; ?>
         </section>
@@ -150,7 +172,7 @@ function approval_status_label(string $status): string
                 <div><dt>Создал</dt><dd><?php if ($target['creator_id'] ?? null): ?><?= e((string) ($target['creator_name'] ?: $target['creator_username'])) ?><small>@<?= e((string) $target['creator_username']) ?></small><?php else: ?>Системная операция<?php endif; ?></dd></div>
                 <div><dt>Дата создания</dt><dd><?= e((string) $target['created_at']) ?></dd></div>
                 <div class="user-detail-list-wide"><dt>Основание добавления</dt><dd><?= ($target['creation_reason'] ?? null) ? nl2br(e((string) $target['creation_reason'])) : 'Не указано' ?></dd></div>
-                <div><dt>Подтвердил</dt><dd><?php if ($target['approver_id'] ?? null): ?><?= e((string) ($target['approver_name'] ?: $target['approver_username'])) ?><small>@<?= e((string) $target['approver_username']) ?></small><?php elseif ($target['approval_status'] === 'approved'): ?>Системная операция<?php else: ?>Не подтвержден<?php endif; ?></dd></div>
+                <div><dt>Подтвердил</dt><dd><?= e($approvalActor['name']) ?><?php if ($approvalActor['username'] !== null && $approvalActor['username'] !== ''): ?><small>@<?= e($approvalActor['username']) ?></small><?php endif; ?></dd></div>
                 <div><dt>Дата подтверждения</dt><dd><?= ($target['approved_at'] ?? null) ? e((string) $target['approved_at']) : 'Нет данных' ?></dd></div>
             </dl>
         </section>
