@@ -85,6 +85,16 @@ function yes_no(bool $value): string
 {
     return $value ? 'Да' : 'Нет';
 }
+
+function approval_status_label(string $status): string
+{
+    return match ($status) {
+        'pending' => 'Ожидает подтверждения',
+        'approved' => 'Подтвержден',
+        'rejected' => 'Отклонен',
+        default => 'Неизвестно',
+    };
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -126,7 +136,7 @@ function yes_no(bool $value): string
             </div>
             <?php if ($includeSensitive): ?>
             <dl class="user-detail-list user-detail-list--compact">
-                <div><dt>Подтверждение</dt><dd><?= e((string) $target['approval_status']) ?></dd></div>
+                <div><dt>Подтверждение</dt><dd><?= e(approval_status_label((string) $target['approval_status'])) ?></dd></div>
                 <div><dt>Временная учетная запись</dt><dd><?= yes_no((int) $target['is_temporary'] === 1) ?></dd></div>
                 <div><dt>Требуется смена пароля</dt><dd><?= yes_no((int) $target['must_change_password'] === 1) ?></dd></div>
             </dl>
