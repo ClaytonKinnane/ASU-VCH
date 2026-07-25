@@ -1,0 +1,73 @@
+@startuml ERD-030-reference
+
+hide methods
+hide stereotypes
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+title ERD-030 — Reference
+
+package "Reference" {
+  entity reference_groups {
+    * id : BIGINT UNSIGNED <<PK>>
+    --
+    * code : VARCHAR <<UQ>>
+    * name : VARCHAR
+    description : TEXT
+    * is_system : BOOLEAN
+    * created_at : DATETIME
+    * updated_at : DATETIME
+    deleted_at : DATETIME
+  }
+
+  entity reference_values {
+    * id : BIGINT UNSIGNED <<PK>>
+    --
+    * group_id : BIGINT UNSIGNED <<FK>>
+    * code : VARCHAR <<UQ(group_id, code)>>
+    * name : VARCHAR
+    description : TEXT
+    * sort_order : INT
+    * is_default : BOOLEAN
+    * is_system : BOOLEAN
+    active_default_group_id : BIGINT UNSIGNED <<GENERATED, UQ>>
+    * created_at : DATETIME
+    * updated_at : DATETIME
+    deleted_at : DATETIME
+  }
+}
+
+reference_groups ||--o{ reference_values : "group_id"
+
+note right of reference_groups
+  code уникален глобально,
+  неизменяем и не переиспользуется
+  после soft delete.
+end note
+
+note right of reference_values
+  code уникален внутри group_id,
+  неизменяем и не переиспользуется
+  после soft delete.
+end note
+
+note bottom of reference_values
+  active_default_group_id =
+  IF(is_default = true AND deleted_at IS NULL,
+     group_id,
+     NULL)
+
+  UNIQUE(active_default_group_id):
+  не более одного активного default
+  в каждой группе.
+end note
+
+note bottom of reference_groups
+  FK из других доменов направляются
+  на reference_values.id.
+  Принадлежность требуемой группе
+  проверяется доменной политикой.
+end note
+
+@enduml

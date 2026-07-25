@@ -1,0 +1,23 @@
+# Локальная среда
+/.idea/
+/.vscode/
+/.env
+/.env.*
+!/.env.example
+
+# Временные и служебные файлы
+*.log
+*.tmp
+*.cache
+Thumbs.db
+.DS_Store
+
+# Зависимости (если будут согласованы)
+/vendor/
+/node_modules/
+
+# Локальные данные
+/storage/cache/*
+/storage/logs/*
+!/storage/cache/.gitkeep
+!/storage/logs/.gitkeep

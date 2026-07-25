@@ -1,0 +1,110 @@
+@startuml ERD-010-security
+
+hide methods
+hide stereotypes
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+title ERD-010 — Security
+
+package "Reference (external)" {
+  entity reference_values {
+    * id : BIGINT UNSIGNED <<PK>>
+    --
+    * group_id : BIGINT UNSIGNED <<FK>>
+    * code : VARCHAR
+    * name : VARCHAR
+  }
+}
+
+package "Organization (external)" {
+  entity soldiers {
+    * id : BIGINT UNSIGNED <<PK>>
+  }
+}
+
+package "Security" {
+  entity users {
+    * id : BIGINT UNSIGNED <<PK>>
+    --
+    soldier_id : BIGINT UNSIGNED <<FK, UQ>>
+    * status_id : BIGINT UNSIGNED <<FK>>
+    * username : VARCHAR <<UQ>>
+    email : VARCHAR <<UQ>>
+    * password_hash : VARCHAR
+    * must_change_password : BOOLEAN
+    last_login_at : DATETIME
+    password_changed_at : DATETIME
+    * created_at : DATETIME
+    * updated_at : DATETIME
+    deleted_at : DATETIME
+  }
+
+  entity roles {
+    * id : BIGINT UNSIGNED <<PK>>
+    --
+    * code : VARCHAR <<UQ>>
+    * name : VARCHAR
+    description : TEXT
+    * is_system : BOOLEAN
+    * created_at : DATETIME
+    * updated_at : DATETIME
+    deleted_at : DATETIME
+  }
+
+  entity permissions {
+    * id : BIGINT UNSIGNED <<PK>>
+    --
+    * code : VARCHAR <<UQ>>
+    * name : VARCHAR
+    description : TEXT
+    * module : VARCHAR
+    * is_system : BOOLEAN
+    * created_at : DATETIME
+    * updated_at : DATETIME
+  }
+
+  entity user_roles {
+    * id : BIGINT UNSIGNED <<PK>>
+    --
+    * user_id : BIGINT UNSIGNED <<FK>>
+    * role_id : BIGINT UNSIGNED <<FK>>
+    assigned_by : BIGINT UNSIGNED <<FK>>
+    * assigned_at : DATETIME
+    revoked_at : DATETIME
+  }
+
+  entity role_permissions {
+    * role_id : BIGINT UNSIGNED <<PK, FK>>
+    * permission_id : BIGINT UNSIGNED <<PK, FK>>
+  }
+}
+
+reference_values ||--o{ users : "status_id"
+soldiers o|--o| users : "soldier_id"
+users ||--o{ user_roles : "user_id"
+roles ||--o{ user_roles : "role_id"
+users o|--o{ user_roles : "assigned_by"
+roles ||--o{ role_permissions : "role_id"
+permissions ||--o{ role_permissions : "permission_id"
+
+note right of user_roles
+  Не более одного действующего
+  назначения user_id + role_id,
+  где revoked_at IS NULL.
+end note
+
+note right of roles
+  system_owner:
+  is_system = true
+  ровно один активный владелец
+  после инициализации системы.
+end note
+
+note bottom of users
+  status_id принадлежит группе
+  reference_values: user_status.
+end note
+
+@enduml
