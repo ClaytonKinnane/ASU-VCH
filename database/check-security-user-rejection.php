@@ -17,6 +17,7 @@ if (!is_file($localFile)) {
 
 require_once $root . '/app/Security/UserApprovalService.php';
 require_once $root . '/app/Security/UserRejectionService.php';
+require_once $root . '/app/Security/UserStatusService.php';
 
 $local = require $localFile;
 $config = array_replace_recursive($app, $local);
@@ -108,6 +109,7 @@ try {
 
     $rejectionService = new UserRejectionService($pdo);
     $approvalService = new UserApprovalService($pdo);
+    $statusService = new UserStatusService($pdo);
 
     $shortReason = $rejectionService->reject($userId, $actorId, 'Коротко');
     rejection_check_condition(
@@ -145,6 +147,13 @@ try {
         'Подтверждение отклоненной учетной записи не было запрещено.'
     );
 
+    $activateRejected = $statusService->setActive($userId, true);
+    rejection_check_condition(
+        !$activateRejected['ok']
+            && ($activateRejected['error'] ?? null) === 'Изменять активность можно только у подтвержденной учетной записи.',
+        'Активация отклоненной учетной записи не была запрещена.'
+    );
+
     echo "OK migration 004\n";
     echo "OK rejection columns: 3\n";
     echo "OK rejection foreign key\n";
@@ -155,6 +164,7 @@ try {
     echo "OK rejection audit recorded\n";
     echo "OK repeated rejection rejected\n";
     echo "OK approval after rejection rejected\n";
+    echo "OK activation after rejection rejected\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'Ошибка проверки отклонения пользователей: ' . $exception->getMessage() . PHP_EOL);
     $exitCode = 1;
