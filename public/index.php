@@ -19,6 +19,7 @@ $currentYear = (new DateTimeImmutable())->format('Y');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>АСУ-ВЧ</title>
     <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
+    <link rel="stylesheet" href="/themes/asu-blue/assets/css/auth.css">
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Автоматизированная система учета военнослужащих</h1><p class="site-description">Информационная система «Войсковая часть»</p></div></div></div></header>
