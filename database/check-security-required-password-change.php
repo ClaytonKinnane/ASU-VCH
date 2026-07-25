@@ -24,6 +24,7 @@ $userId = null;
 $usernameCanonical = 'password_check_' . bin2hex(random_bytes(6));
 $oldPassword = 'TempPass1234';
 $newPassword = 'ChangedPass5678';
+$exitCode = 0;
 
 function check_condition(bool $condition, string $message): void
 {
@@ -108,21 +109,27 @@ try {
     echo "OK current password reuse rejected\n";
     echo "OK password hash changed\n";
     echo "OK temporary flags cleared\n";
-    exit(0);
 } catch (Throwable $exception) {
     fwrite(STDERR, 'Ошибка проверки обязательной смены пароля: ' . $exception->getMessage() . PHP_EOL);
-    exit(1);
+    $exitCode = 1;
 } finally {
     if (isset($pdo) && $pdo instanceof PDO) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
-        if ($userId !== null) {
-            $delete = $pdo->prepare('DELETE FROM users WHERE id = :id');
-            $delete->execute(['id' => $userId]);
-        } else {
-            $delete = $pdo->prepare('DELETE FROM users WHERE username_canonical = :username');
-            $delete->execute(['username' => $usernameCanonical]);
+        try {
+            if ($userId !== null) {
+                $delete = $pdo->prepare('DELETE FROM users WHERE id = :id');
+                $delete->execute(['id' => $userId]);
+            } else {
+                $delete = $pdo->prepare('DELETE FROM users WHERE username_canonical = :username');
+                $delete->execute(['username' => $usernameCanonical]);
+            }
+        } catch (Throwable $cleanupException) {
+            fwrite(STDERR, 'Ошибка очистки тестовой учетной записи: ' . $cleanupException->getMessage() . PHP_EOL);
+            $exitCode = 1;
         }
     }
 }
+
+exit($exitCode);
