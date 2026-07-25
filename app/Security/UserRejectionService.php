@@ -14,10 +14,12 @@ final class UserRejectionService
     public function reject(int $userId, int $actorId, string $reason): array
     {
         $reason = trim($reason);
-        $length = mb_strlen($reason, 'UTF-8');
-        $hasInvalidControlCharacters = preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', $reason) === 1;
+        $hasValidEncoding = mb_check_encoding($reason, 'UTF-8');
+        $length = $hasValidEncoding ? mb_strlen($reason, 'UTF-8') : 0;
+        $hasInvalidControlCharacters = $hasValidEncoding
+            && preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', $reason) === 1;
 
-        if (!mb_check_encoding($reason, 'UTF-8') || $length < 10 || $length > 500 || $hasInvalidControlCharacters) {
+        if (!$hasValidEncoding || $length < 10 || $length > 500 || $hasInvalidControlCharacters) {
             return [
                 'ok' => false,
                 'errors' => [
