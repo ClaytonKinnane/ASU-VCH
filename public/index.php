@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/app/bootstrap.php';
 
-if (current_user() !== null) {
-    redirect('/admin/');
+$user = current_user();
+if ($user !== null) {
+    redirect((int) $user['must_change_password'] === 1 ? '/account/change-password.php' : '/admin/');
 }
 
 $isInstalled = installation_completed();
