@@ -29,7 +29,7 @@ $isArchived = $target['deleted_at'] !== null;
 
 $canUpdate = $includeSensitive && has_permission('security.users.update') && !$isArchived;
 $canAssignRoles = $includeSensitive && has_permission('security.users.assign_roles') && !$isArchived;
-$canBlock = $includeSensitive && has_permission('security.users.block') && !$isArchived;
+$canBlock = $includeSensitive && has_permission('security.users.block') && !$isArchived && $target['approval_status'] === 'approved';
 $canApprove = $includeSensitive && has_permission('security.users.update') && !$isArchived && $target['approval_status'] === 'pending';
 $canReject = $includeSensitive && has_permission('security.users.reject') && !$isArchived && $target['approval_status'] === 'pending';
 $availableRoles = $canAssignRoles ? user_role_update_service()->availableRoles($actorIsOwner) : [];
@@ -227,7 +227,7 @@ $decisionActor = $target['approval_status'] === 'approved' ? $approvalActor : $r
         <div class="user-detail-section-heading"><div><span class="tile-kicker">Управление доступом</span><h2>Состояние учетной записи</h2></div></div>
         <div class="user-action-row">
             <?php if ($canApprove): ?><form method="post" action="/admin/users/approve.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" value="<?= $userId ?>"><button class="primary-button" type="submit">Подтвердить и активировать</button></form><?php endif; ?>
-            <?php if ($canBlock && $target['approval_status'] === 'approved'): ?><form method="post" action="/admin/users/set-status.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" value="<?= $userId ?>"><input type="hidden" name="is_active" value="<?= (int) $target['is_active'] === 1 ? '0' : '1' ?>"><button class="<?= (int) $target['is_active'] === 1 ? 'danger-button' : 'primary-button' ?>" type="submit"><?= (int) $target['is_active'] === 1 ? 'Заблокировать' : 'Разблокировать' ?></button></form><?php endif; ?>
+            <?php if ($canBlock): ?><form method="post" action="/admin/users/set-status.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" value="<?= $userId ?>"><input type="hidden" name="is_active" value="<?= (int) $target['is_active'] === 1 ? '0' : '1' ?>"><button class="<?= (int) $target['is_active'] === 1 ? 'danger-button' : 'primary-button' ?>" type="submit"><?= (int) $target['is_active'] === 1 ? 'Заблокировать' : 'Разблокировать' ?></button></form><?php endif; ?>
         </div>
         <?php if ($canReject): ?>
         <div class="user-rejection-zone">
