@@ -35,10 +35,12 @@ if ($result['ok']) {
 }
 
 if (isset($result['errors']) && is_array($result['errors'])) {
-    $preservedReason = mb_check_encoding($reason, 'UTF-8') && mb_strlen($reason, 'UTF-8') <= 500 ? $reason : '';
+    $reasonCanBePreserved = mb_check_encoding($reason, 'UTF-8')
+        && mb_strlen($reason, 'UTF-8') <= 500
+        && preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', $reason) !== 1;
     $_SESSION['_user_rejection'][$userId] = [
         'errors' => $result['errors'],
-        'values' => ['reason' => $preservedReason],
+        'values' => ['reason' => $reasonCanBePreserved ? $reason : ''],
     ];
 } else {
     flash('error', (string) ($result['error'] ?? 'Не удалось отклонить учетную запись.'));
