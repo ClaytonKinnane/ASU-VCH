@@ -23,7 +23,7 @@ $reason = is_string($reasonValue) ? $reasonValue : '';
 try {
     $result = user_rejection_service()->reject($userId, (int) $actor['id'], $reason);
 } catch (Throwable $exception) {
-    error_log('User rejection failed: ' . $exception::class);
+    error_log('User rejection failed: ' . get_class($exception));
     flash('error', 'Учетная запись не отклонена из-за серверной ошибки.');
     redirect('/admin/users/view.php?id=' . $userId);
 }
