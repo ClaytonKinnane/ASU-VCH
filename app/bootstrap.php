@@ -16,6 +16,10 @@ require_once __DIR__ . '/Security/AuthorizationService.php';
 require_once __DIR__ . '/Security/UserListRepository.php';
 require_once __DIR__ . '/Security/UserCreateService.php';
 require_once __DIR__ . '/Security/UserApprovalService.php';
+require_once __DIR__ . '/Security/UserDetailRepository.php';
+require_once __DIR__ . '/Security/UserUpdateService.php';
+require_once __DIR__ . '/Security/UserRoleUpdateService.php';
+require_once __DIR__ . '/Security/UserStatusService.php';
 
 date_default_timezone_set((string) $config['timezone']);
 
@@ -89,6 +93,26 @@ function user_create_service(): UserCreateService
 function user_approval_service(): UserApprovalService
 {
     return new UserApprovalService(db());
+}
+
+function user_detail_repository(): UserDetailRepository
+{
+    return new UserDetailRepository(db());
+}
+
+function user_update_service(): UserUpdateService
+{
+    return new UserUpdateService(db());
+}
+
+function user_role_update_service(): UserRoleUpdateService
+{
+    return new UserRoleUpdateService(db());
+}
+
+function user_status_service(): UserStatusService
+{
+    return new UserStatusService(db());
 }
 
 function e(string $value): string
