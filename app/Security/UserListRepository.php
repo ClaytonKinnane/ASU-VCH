@@ -27,6 +27,7 @@ final class UserListRepository
         $statusCondition = match ($status) {
             'active' => "u.is_active = 1 AND u.approval_status = 'approved' AND u.deleted_at IS NULL",
             'pending' => "u.approval_status = 'pending' AND u.deleted_at IS NULL",
+            'rejected' => "u.approval_status = 'rejected' AND u.deleted_at IS NULL",
             'blocked' => "u.is_active = 0 AND u.approval_status = 'approved' AND u.deleted_at IS NULL",
             'archived' => 'u.deleted_at IS NOT NULL',
             'temporary' => 'u.is_temporary = 1 AND u.deleted_at IS NULL',
@@ -65,13 +66,14 @@ final class UserListRepository
         ];
     }
 
-    /** @return array{total:int,active:int,pending:int,blocked:int,archived:int} */
+    /** @return array{total:int,active:int,pending:int,rejected:int,blocked:int,archived:int} */
     public function summary(): array
     {
         $row = $this->pdo->query(
             "SELECT COUNT(*) AS total, "
             . "SUM(CASE WHEN is_active = 1 AND approval_status = 'approved' AND deleted_at IS NULL THEN 1 ELSE 0 END) AS active, "
             . "SUM(CASE WHEN approval_status = 'pending' AND deleted_at IS NULL THEN 1 ELSE 0 END) AS pending, "
+            . "SUM(CASE WHEN approval_status = 'rejected' AND deleted_at IS NULL THEN 1 ELSE 0 END) AS rejected, "
             . "SUM(CASE WHEN is_active = 0 AND approval_status = 'approved' AND deleted_at IS NULL THEN 1 ELSE 0 END) AS blocked, "
             . 'SUM(CASE WHEN deleted_at IS NOT NULL THEN 1 ELSE 0 END) AS archived FROM users'
         )->fetch();
@@ -80,6 +82,7 @@ final class UserListRepository
             'total' => (int) ($row['total'] ?? 0),
             'active' => (int) ($row['active'] ?? 0),
             'pending' => (int) ($row['pending'] ?? 0),
+            'rejected' => (int) ($row['rejected'] ?? 0),
             'blocked' => (int) ($row['blocked'] ?? 0),
             'archived' => (int) ($row['archived'] ?? 0),
         ];

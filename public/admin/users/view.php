@@ -29,8 +29,9 @@ $isArchived = $target['deleted_at'] !== null;
 
 $canUpdate = $includeSensitive && has_permission('security.users.update') && !$isArchived;
 $canAssignRoles = $includeSensitive && has_permission('security.users.assign_roles') && !$isArchived;
-$canBlock = $includeSensitive && has_permission('security.users.block') && !$isArchived;
+$canBlock = $includeSensitive && has_permission('security.users.block') && !$isArchived && $target['approval_status'] === 'approved';
 $canApprove = $includeSensitive && has_permission('security.users.update') && !$isArchived && $target['approval_status'] === 'pending';
+$canReject = $includeSensitive && has_permission('security.users.reject') && !$isArchived && $target['approval_status'] === 'pending';
 $availableRoles = $canAssignRoles ? user_role_update_service()->availableRoles($actorIsOwner) : [];
 
 $success = flash('success');
@@ -45,6 +46,10 @@ $editValues = is_array($editState['values'] ?? null) ? $editState['values'] : [
     'is_temporary' => (int) $target['is_temporary'] === 1,
     'must_change_password' => (int) $target['must_change_password'] === 1,
 ];
+$rejectionState = $_SESSION['_user_rejection'][$userId] ?? null;
+unset($_SESSION['_user_rejection'][$userId]);
+$rejectionErrors = is_array($rejectionState['errors'] ?? null) ? $rejectionState['errors'] : [];
+$rejectionValues = is_array($rejectionState['values'] ?? null) ? $rejectionState['values'] : ['reason' => ''];
 
 function detail_primary_status(array $row): string
 {
@@ -116,7 +121,29 @@ function approval_actor(array $row): array
     return ['user_id' => null, 'name' => null, 'username' => null];
 }
 
+/**
+ * @return array{user_id: ?int, name: ?string, username: ?string}
+ */
+function rejection_actor(array $row): array
+{
+    if (($row['rejector_id'] ?? null) !== null) {
+        return [
+            'user_id' => (int) $row['rejector_id'],
+            'name' => (string) (($row['rejector_name'] ?? '') ?: ($row['rejector_username'] ?? '')),
+            'username' => (string) ($row['rejector_username'] ?? ''),
+        ];
+    }
+
+    if (($row['approval_status'] ?? '') === 'rejected') {
+        return ['user_id' => null, 'name' => 'Субъект недоступен', 'username' => null];
+    }
+
+    return ['user_id' => null, 'name' => null, 'username' => null];
+}
+
 $approvalActor = approval_actor($target);
+$rejectionActor = rejection_actor($target);
+$decisionActor = $target['approval_status'] === 'approved' ? $approvalActor : $rejectionActor;
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -158,7 +185,7 @@ $approvalActor = approval_actor($target);
             </div>
             <?php if ($includeSensitive): ?>
             <dl class="user-detail-list user-detail-list--compact">
-                <div><dt>Подтверждение</dt><dd><?= e(approval_status_label((string) $target['approval_status'])) ?><?php if ($target['approval_status'] === 'approved' && $approvalActor['name'] !== null): ?><small><?php if ($approvalActor['user_id'] !== null): ?><a class="user-name-link" href="/admin/users/view.php?id=<?= (int) $approvalActor['user_id'] ?>"><?= e($approvalActor['name']) ?></a><?php else: ?><?= e($approvalActor['name']) ?><?php endif; ?></small><?php endif; ?></dd></div>
+                <div><dt>Подтверждение</dt><dd><?= e(approval_status_label((string) $target['approval_status'])) ?><?php if (in_array($target['approval_status'], ['approved', 'rejected'], true) && $decisionActor['name'] !== null): ?><small><?php if ($decisionActor['user_id'] !== null): ?><a class="user-name-link" href="/admin/users/view.php?id=<?= (int) $decisionActor['user_id'] ?>"><?= e($decisionActor['name']) ?></a><?php else: ?><?= e($decisionActor['name']) ?><?php endif; ?></small><?php endif; ?></dd></div>
                 <div><dt>Временная учетная запись</dt><dd><?= yes_no((int) $target['is_temporary'] === 1) ?></dd></div>
                 <div><dt>Требуется смена пароля</dt><dd><?= yes_no((int) $target['must_change_password'] === 1) ?></dd></div>
             </dl>
@@ -167,13 +194,21 @@ $approvalActor = approval_actor($target);
 
         <?php if ($includeSensitive): ?>
         <section class="user-detail-section glass-tile">
-            <div class="user-detail-section-heading"><div><span class="tile-kicker">Аудит</span><h2>Создание и подтверждение</h2></div></div>
+            <div class="user-detail-section-heading"><div><span class="tile-kicker">Аудит</span><h2>Создание и обработка</h2></div></div>
             <dl class="user-detail-list">
                 <div><dt>Создал</dt><dd><?php if ($target['creator_id'] ?? null): ?><?= e((string) ($target['creator_name'] ?: $target['creator_username'])) ?><small>@<?= e((string) $target['creator_username']) ?></small><?php else: ?>Системная операция<?php endif; ?></dd></div>
                 <div><dt>Дата создания</dt><dd><?= e((string) $target['created_at']) ?></dd></div>
                 <div class="user-detail-list-wide"><dt>Основание добавления</dt><dd><?= ($target['creation_reason'] ?? null) ? nl2br(e((string) $target['creation_reason'])) : 'Не указано' ?></dd></div>
-                <div><dt>Подтвердил</dt><dd><?php if ($approvalActor['name'] !== null): ?><?= e($approvalActor['name']) ?><?php if ($approvalActor['username'] !== null && $approvalActor['username'] !== ''): ?><small>@<?= e($approvalActor['username']) ?></small><?php endif; ?><?php else: ?>Не подтвержден<?php endif; ?></dd></div>
-                <div><dt>Дата подтверждения</dt><dd><?= ($target['approved_at'] ?? null) ? e((string) $target['approved_at']) : 'Нет данных' ?></dd></div>
+                <?php if ($target['approval_status'] === 'approved'): ?>
+                    <div><dt>Подтвердил</dt><dd><?= e((string) $approvalActor['name']) ?><?php if ($approvalActor['username'] !== null && $approvalActor['username'] !== ''): ?><small>@<?= e($approvalActor['username']) ?></small><?php endif; ?></dd></div>
+                    <div><dt>Дата подтверждения</dt><dd><?= ($target['approved_at'] ?? null) ? e((string) $target['approved_at']) : 'Нет данных' ?></dd></div>
+                <?php elseif ($target['approval_status'] === 'rejected'): ?>
+                    <div><dt>Отклонил</dt><dd><?= e((string) $rejectionActor['name']) ?><?php if ($rejectionActor['username'] !== null && $rejectionActor['username'] !== ''): ?><small>@<?= e($rejectionActor['username']) ?></small><?php endif; ?></dd></div>
+                    <div><dt>Дата отклонения</dt><dd><?= ($target['rejected_at'] ?? null) ? e((string) $target['rejected_at']) : 'Нет данных' ?></dd></div>
+                    <div class="user-detail-list-wide"><dt>Основание отклонения</dt><dd><?= ($target['rejection_reason'] ?? null) ? nl2br(e((string) $target['rejection_reason'])) : 'Нет данных' ?></dd></div>
+                <?php else: ?>
+                    <div class="user-detail-list-wide"><dt>Решение</dt><dd>Не обработан</dd></div>
+                <?php endif; ?>
             </dl>
         </section>
 
@@ -187,13 +222,24 @@ $approvalActor = approval_actor($target);
         <?php endif; ?>
     </div>
 
-    <?php if ($canApprove || $canBlock): ?>
+    <?php if ($canApprove || $canReject || $canBlock): ?>
     <section class="user-detail-section glass-tile user-actions-section">
         <div class="user-detail-section-heading"><div><span class="tile-kicker">Управление доступом</span><h2>Состояние учетной записи</h2></div></div>
         <div class="user-action-row">
             <?php if ($canApprove): ?><form method="post" action="/admin/users/approve.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" value="<?= $userId ?>"><button class="primary-button" type="submit">Подтвердить и активировать</button></form><?php endif; ?>
-            <?php if ($canBlock && $target['approval_status'] === 'approved'): ?><form method="post" action="/admin/users/set-status.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" value="<?= $userId ?>"><input type="hidden" name="is_active" value="<?= (int) $target['is_active'] === 1 ? '0' : '1' ?>"><button class="<?= (int) $target['is_active'] === 1 ? 'danger-button' : 'primary-button' ?>" type="submit"><?= (int) $target['is_active'] === 1 ? 'Заблокировать' : 'Разблокировать' ?></button></form><?php endif; ?>
+            <?php if ($canBlock): ?><form method="post" action="/admin/users/set-status.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" value="<?= $userId ?>"><input type="hidden" name="is_active" value="<?= (int) $target['is_active'] === 1 ? '0' : '1' ?>"><button class="<?= (int) $target['is_active'] === 1 ? 'danger-button' : 'primary-button' ?>" type="submit"><?= (int) $target['is_active'] === 1 ? 'Заблокировать' : 'Разблокировать' ?></button></form><?php endif; ?>
         </div>
+        <?php if ($canReject): ?>
+        <div class="user-rejection-zone">
+            <div class="user-rejection-heading"><h3>Отклонение учетной записи</h3><p>Решение является окончательным в текущей версии.</p></div>
+            <form class="user-create-form" method="post" action="/admin/users/reject.php" novalidate onsubmit="return window.confirm('Отклонить учетную запись? В текущей версии вернуть ее в ожидание подтверждения нельзя.');">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                <input type="hidden" name="user_id" value="<?= $userId ?>">
+                <label class="form-field"><span>Основание отклонения *</span><textarea class="form-input form-textarea" name="reason" minlength="10" maxlength="500" required><?= e((string) ($rejectionValues['reason'] ?? '')) ?></textarea><?= user_edit_field_error($rejectionErrors, 'reason') ?></label>
+                <div class="form-actions"><button class="danger-button" type="submit">Отклонить пользователя</button></div>
+            </form>
+        </div>
+        <?php endif; ?>
     </section>
     <?php endif; ?>
 
