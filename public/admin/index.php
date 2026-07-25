@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
-$user = current_user();
-if ($user === null) {
-    redirect('/');
-}
+$user = require_authenticated_user();
+$success = flash('success');
 
 $roleStmt = db()->prepare(
     'SELECT r.name FROM roles r '
@@ -42,6 +40,7 @@ try {
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Панель управления</h1><p class="site-description">АСУ-ВЧ · <?= e((string) app_config('version')) ?></p></div><form class="admin-logout" method="post" action="/logout.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><button class="secondary-button" type="submit">Выйти</button></form></div></div></header>
 <main class="admin-main"><div class="container">
+<?php if ($success !== null): ?><div class="form-message is-visible"><?= e($success) ?></div><?php endif; ?>
 <section class="admin-summary glass-tile">
     <div><strong><?= e((string) $user['display_name']) ?></strong><span>@<?= e((string) $user['username']) ?> · <?= e($roleSummary) ?></span></div>
     <div><strong>Приложение</strong><span>PHP <?= e(PHP_VERSION) ?> · MySQL: <?= e($dbStatus) ?></span></div>

@@ -20,6 +20,7 @@ require_once __DIR__ . '/Security/UserDetailRepository.php';
 require_once __DIR__ . '/Security/UserUpdateService.php';
 require_once __DIR__ . '/Security/UserRoleUpdateService.php';
 require_once __DIR__ . '/Security/UserStatusService.php';
+require_once __DIR__ . '/Security/RequiredPasswordChangeService.php';
 
 date_default_timezone_set((string) $config['timezone']);
 
@@ -115,6 +116,11 @@ function user_status_service(): UserStatusService
     return new UserStatusService(db());
 }
 
+function required_password_change_service(): RequiredPasswordChangeService
+{
+    return new RequiredPasswordChangeService(db());
+}
+
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -172,6 +178,18 @@ function current_user(): ?array
     return $user;
 }
 
+function require_authenticated_user(bool $allowRequiredPasswordChange = false): array
+{
+    $user = current_user();
+    if ($user === null) {
+        redirect('/');
+    }
+    if (!$allowRequiredPasswordChange && (int) $user['must_change_password'] === 1) {
+        redirect('/account/change-password.php');
+    }
+    return $user;
+}
+
 /** @return list<string> */
 function current_user_role_codes(): array
 {
@@ -194,10 +212,7 @@ function has_permission(string $permission): bool
 
 function require_permission(string $permission): array
 {
-    $user = current_user();
-    if ($user === null) {
-        redirect('/');
-    }
+    $user = require_authenticated_user();
     if (!has_permission($permission)) {
         http_response_code(403);
         exit('<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Доступ запрещен — АСУ-ВЧ</title><link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css"></head><body><main class="site-main"><section class="auth-card glass-tile"><h1 class="auth-heading">Доступ запрещен</h1><p class="auth-description">У вашей учетной записи нет разрешения на открытие этого раздела.</p><a class="secondary-button" href="/admin/">К панели</a></section></main></body></html>');
@@ -207,8 +222,8 @@ function require_permission(string $permission): array
 
 function require_system_owner(): array
 {
-    $user = current_user();
-    if ($user === null || !in_array('system_owner', current_user_role_codes(), true)) {
+    $user = require_authenticated_user();
+    if (!in_array('system_owner', current_user_role_codes(), true)) {
         redirect('/');
     }
     return $user;

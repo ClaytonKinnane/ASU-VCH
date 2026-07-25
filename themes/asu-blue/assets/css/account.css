@@ -1,0 +1,64 @@
+.password-change-main {
+    align-items: flex-start;
+    padding-top: 34px;
+}
+
+.password-change-card {
+    width: min(560px, calc(100vw - 32px));
+}
+
+.password-change-card .tile-kicker {
+    display: block;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.security-notice {
+    margin: 0 0 20px;
+    padding: 13px 15px;
+    display: grid;
+    gap: 4px;
+    border: 1px solid rgba(24, 172, 234, .42);
+    border-radius: 11px;
+    background: rgba(7, 36, 61, .46);
+}
+
+.security-notice span,
+.password-policy {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.password-policy {
+    margin: -1px 0 18px;
+    line-height: 1.5;
+}
+
+.field-error {
+    display: block;
+    min-height: 19px;
+    padding-top: 4px;
+    color: #ffb0b0;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.field-error--empty {
+    visibility: hidden;
+}
+
+.form-message--error {
+    border-color: rgba(255, 112, 112, .75);
+    color: #ffd0d0;
+    background: rgba(158, 33, 33, .20);
+}
+
+@media (max-width: 600px) {
+    .password-change-main {
+        padding-top: 22px;
+    }
+
+    .password-change-card {
+        width: min(100% - 20px, 560px);
+    }
+}
