@@ -60,7 +60,7 @@ try {
     }
 
     $permissionCount = (int) $pdo->query("SELECT COUNT(*) FROM permissions WHERE is_system = 1")->fetchColumn();
-    if ($permissionCount < 18) {
+    if ($permissionCount < 19) {
         $errors[] = "Недостаточно системных разрешений: {$permissionCount}.";
     }
 
