@@ -17,6 +17,7 @@ require_once __DIR__ . '/Security/UserListRepository.php';
 require_once __DIR__ . '/Security/UserCreateService.php';
 require_once __DIR__ . '/Security/UserApprovalService.php';
 require_once __DIR__ . '/Security/UserRejectionService.php';
+require_once __DIR__ . '/Security/UserArchiveRestoreService.php';
 require_once __DIR__ . '/Security/UserDetailRepository.php';
 require_once __DIR__ . '/Security/UserUpdateService.php';
 require_once __DIR__ . '/Security/UserRoleUpdateService.php';
@@ -100,6 +101,11 @@ function user_approval_service(): UserApprovalService
 function user_rejection_service(): UserRejectionService
 {
     return new UserRejectionService(db());
+}
+
+function user_archive_restore_service(): UserArchiveRestoreService
+{
+    return new UserArchiveRestoreService(db());
 }
 
 function user_detail_repository(): UserDetailRepository
@@ -235,13 +241,113 @@ function require_system_owner(): array
     return $user;
 }
 
+/** @return array<string,array{type:string,message:string}> */
+function operation_result_catalog(): array
+{
+    static $catalog = null;
+    if (is_array($catalog)) {
+        return $catalog;
+    }
+
+    $definitions = [
+        'archive_success' => ['type' => 'success', 'message' => 'Учетная запись архивирована.'],
+        'restore_success' => ['type' => 'success', 'message' => 'Учетная запись восстановлена и оставлена заблокированной.'],
+        'archive_server_error' => ['type' => 'error', 'message' => 'Учетная запись не архивирована из-за серверной ошибки.'],
+        'restore_server_error' => ['type' => 'error', 'message' => 'Учетная запись не восстановлена из-за серверной ошибки.'],
+        'archive_not_found' => ['type' => 'error', 'message' => 'Учетная запись не найдена.'],
+        'archive_already_archived' => ['type' => 'error', 'message' => 'Учетная запись уже архивирована.'],
+        'archive_self' => ['type' => 'error', 'message' => 'Нельзя архивировать собственную учетную запись.'],
+        'archive_last_owner' => ['type' => 'error', 'message' => 'Нельзя архивировать последнего активного владельца системы.'],
+        'restore_not_found' => ['type' => 'error', 'message' => 'Учетная запись не найдена.'],
+        'restore_not_archived' => ['type' => 'error', 'message' => 'Учетная запись не находится в архиве.'],
+        'operation_success' => ['type' => 'success', 'message' => 'Операция выполнена.'],
+        'operation_error' => ['type' => 'error', 'message' => 'Не удалось выполнить операцию.'],
+    ];
+
+    $catalog = [];
+    foreach ($definitions as $code => $state) {
+        $token = substr(hash('sha256', 'asu-vch-operation-result:' . $code), 0, 32);
+        $catalog[$token] = $state;
+    }
+
+    return $catalog;
+}
+
+function create_operation_result(string $type, string $message): string
+{
+    if (!in_array($type, ['success', 'error'], true) || $message === '') {
+        throw new InvalidArgumentException('Некорректный результат операции.');
+    }
+
+    $code = match (true) {
+        $type === 'success' && preg_match('/\AУчетная запись «.*» архивирована\.\z/u', $message) === 1 => 'archive_success',
+        $type === 'success' && preg_match('/\AУчетная запись «.*» восстановлена и оставлена заблокированной\.\z/u', $message) === 1 => 'restore_success',
+        $message === 'Учетная запись не архивирована из-за серверной ошибки.' => 'archive_server_error',
+        $message === 'Учетная запись не восстановлена из-за серверной ошибки.' => 'restore_server_error',
+        $message === 'Учетная запись уже архивирована.' => 'archive_already_archived',
+        $message === 'Нельзя архивировать собственную учетную запись.' => 'archive_self',
+        $message === 'Нельзя архивировать последнего активного владельца системы.' => 'archive_last_owner',
+        $message === 'Учетная запись не находится в архиве.' => 'restore_not_archived',
+        $message === 'Учетная запись не найдена.' => $type === 'error' ? 'archive_not_found' : 'operation_error',
+        default => $type === 'success' ? 'operation_success' : 'operation_error',
+    };
+
+    return substr(hash('sha256', 'asu-vch-operation-result:' . $code), 0, 32);
+}
+
+function operation_result_message(string $type): ?string
+{
+    $tokenValue = $_GET['result'] ?? null;
+    if (!is_string($tokenValue) || preg_match('/\A[a-f0-9]{32}\z/D', $tokenValue) !== 1) {
+        return null;
+    }
+
+    $state = operation_result_catalog()[$tokenValue] ?? null;
+    if (!is_array($state) || ($state['type'] ?? null) !== $type) {
+        return null;
+    }
+
+    $message = (string) $state['message'];
+    $encodedType = json_encode(
+        $type,
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR
+    );
+    $encodedMessage = json_encode(
+        $message,
+        JSON_UNESCAPED_UNICODE
+        | JSON_UNESCAPED_SLASHES
+        | JSON_HEX_TAG
+        | JSON_HEX_AMP
+        | JSON_HEX_APOS
+        | JSON_HEX_QUOT
+        | JSON_THROW_ON_ERROR
+    );
+
+    static $notificationRegistered = false;
+    if (!$notificationRegistered) {
+        $notificationRegistered = true;
+        register_shutdown_function(static function () use ($encodedType, $encodedMessage): void {
+            echo '<link rel="stylesheet" href="/themes/asu-blue/assets/css/operation-result-modal.css">';
+            echo '<script src="/themes/asu-blue/assets/js/operation-result-modal.js"></script>';
+            echo '<script>(function(){if(window.AsuOperationResultModal&&typeof window.AsuOperationResultModal.show==="function"){window.AsuOperationResultModal.show(' . $encodedType . ',' . $encodedMessage . ');}var url=new URL(window.location.href);url.searchParams.delete("result");history.replaceState(null,"",url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash);})();</script>';
+        });
+    }
+
+    return $message;
+}
+
 function flash(string $key, ?string $value = null): ?string
 {
     if ($value !== null) {
         $_SESSION['_flash'][$key] = $value;
         return null;
     }
+
     $message = $_SESSION['_flash'][$key] ?? null;
     unset($_SESSION['_flash'][$key]);
-    return is_string($message) ? $message : null;
+    if (is_string($message)) {
+        return $message;
+    }
+
+    return operation_result_message($key);
 }

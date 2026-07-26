@@ -101,11 +101,23 @@
 .user-action-row form { margin: 0; }
 .danger-button { width: auto; min-height: 42px; padding: 10px 18px; border: 1px solid rgba(255,112,128,.72); border-radius: 9px; background: rgba(151,39,58,.72); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
 .danger-button:hover { background: rgba(185,45,68,.88); }
-.user-rejection-zone { margin-top: 18px; padding: 18px; border: 1px solid rgba(255,112,128,.46); border-radius: 12px; background: rgba(92,24,42,.28); }
-.user-rejection-heading { margin-bottom: 14px; }
-.user-rejection-heading h3 { margin: 0; color: #ffd2d8; font-size: 18px; }
-.user-rejection-heading p { margin: 6px 0 0; color: var(--text-secondary); font-size: 13px; }
-.user-rejection-zone .form-textarea { min-height: 120px; }
+.user-rejection-zone,
+.user-archive-zone,
+.user-restore-zone { margin-top: 18px; padding: 18px; border-radius: 12px; }
+.user-rejection-zone,
+.user-archive-zone { border: 1px solid rgba(255,112,128,.46); background: rgba(92,24,42,.28); }
+.user-restore-zone { border: 1px solid rgba(53,212,146,.46); background: rgba(17,91,75,.25); }
+.user-rejection-heading,
+.user-lifecycle-heading { margin-bottom: 14px; }
+.user-rejection-heading h3,
+.user-archive-zone .user-lifecycle-heading h3 { margin: 0; color: #ffd2d8; font-size: 18px; }
+.user-restore-zone .user-lifecycle-heading h3 { margin: 0; color: #a8f4cf; font-size: 18px; }
+.user-rejection-heading p,
+.user-lifecycle-heading p { margin: 6px 0 0; color: var(--text-secondary); font-size: 13px; }
+.user-rejection-zone .form-textarea,
+.user-archive-zone .form-textarea,
+.user-restore-zone .form-textarea { min-height: 120px; }
+.user-archive-audit-section { border-color: rgba(53,212,146,.34); }
 
 @media (max-width: 1100px) {
     .users-stats-grid {
@@ -159,5 +171,5 @@
     .pagination .secondary-button { flex: 1; }
     .password-field .form-input { padding-right: 12px; }
     .password-toggle-button { position: static; transform: none; width: 100% !important; margin-top: 8px; min-height: 40px; }
-    .user-rejection-zone { padding: 14px; }
+    .user-rejection-zone, .user-archive-zone, .user-restore-zone { padding: 14px; }
 }

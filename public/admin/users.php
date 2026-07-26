@@ -26,6 +26,7 @@ $page = is_scalar($pageValue) && ctype_digit((string) $pageValue) ? max(1, (int)
 $repository = user_list_repository();
 $summary = $repository->summary();
 $result = $repository->search($query, $status, $page, $includeSensitive);
+$totalIncludingArchive = $summary['total'] + $summary['archived'];
 
 $securitySections = [
     ['Пользователи', 'Учетные записи и состояния доступа.', true],
@@ -89,7 +90,7 @@ function user_status_class(array $row): string
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Пользователи</h1><p class="site-description">Учетные записи, роли и разрешения</p></div><a class="secondary-button" href="/admin/">К панели</a></div></div></header>
 <main class="admin-main"><div class="container">
 <section class="stats-grid users-stats-grid" aria-label="Сводка пользователей">
-    <article class="stat-tile glass-tile"><span>Всего</span><strong><?= $summary['total'] ?></strong></article>
+    <article class="stat-tile glass-tile"><span>Не в архиве</span><strong><?= $summary['total'] ?></strong></article>
     <article class="stat-tile glass-tile"><span>Активные</span><strong><?= $summary['active'] ?></strong></article>
     <article class="stat-tile glass-tile"><span>Ожидают</span><strong><?= $summary['pending'] ?></strong></article>
     <article class="stat-tile glass-tile"><span>Отклоненные</span><strong><?= $summary['rejected'] ?></strong></article>
@@ -108,10 +109,10 @@ function user_status_class(array $row): string
     <div class="users-panel-heading"><div><h2 id="users-list-title">Пользователи системы</h2><p>Найдено записей: <?= $result['total'] ?></p></div><?php if ($canCreate): ?><a class="primary-button" href="/admin/users/create.php">Создать пользователя</a><?php endif; ?></div>
     <form class="users-filters" method="get" action="/admin/users.php">
         <label><span>Поиск</span><input class="form-input" type="search" name="q" maxlength="150" value="<?= e($query) ?>" placeholder="Логин, имя или email"></label>
-        <label><span>Состояние</span><select class="form-input" name="status"><option value="all"<?= $status === 'all' ? ' selected' : '' ?>>Все</option><option value="active"<?= $status === 'active' ? ' selected' : '' ?>>Активные</option><option value="pending"<?= $status === 'pending' ? ' selected' : '' ?>>Ожидают подтверждения</option><option value="rejected"<?= $status === 'rejected' ? ' selected' : '' ?>>Отклоненные</option><option value="blocked"<?= $status === 'blocked' ? ' selected' : '' ?>>Заблокированные</option><option value="archived"<?= $status === 'archived' ? ' selected' : '' ?>>Архивированные</option><option value="temporary"<?= $status === 'temporary' ? ' selected' : '' ?>>Временные</option><option value="password_change"<?= $status === 'password_change' ? ' selected' : '' ?>>Требуют смены пароля</option></select></label>
+        <label><span>Состояние</span><select class="form-input" name="status"><option value="all"<?= $status === 'all' ? ' selected' : '' ?>>Не в архиве</option><option value="active"<?= $status === 'active' ? ' selected' : '' ?>>Активные</option><option value="pending"<?= $status === 'pending' ? ' selected' : '' ?>>Ожидают подтверждения</option><option value="rejected"<?= $status === 'rejected' ? ' selected' : '' ?>>Отклоненные</option><option value="blocked"<?= $status === 'blocked' ? ' selected' : '' ?>>Заблокированные</option><option value="archived"<?= $status === 'archived' ? ' selected' : '' ?>>Архивированные</option><option value="temporary"<?= $status === 'temporary' ? ' selected' : '' ?>>Временные</option><option value="password_change"<?= $status === 'password_change' ? ' selected' : '' ?>>Требуют смены пароля</option></select></label>
         <button class="primary-button users-filter-submit" type="submit">Найти</button><?php if ($query !== '' || $status !== 'all'): ?><a class="secondary-button" href="/admin/users.php">Сбросить</a><?php endif; ?>
     </form>
-    <?php if ($result['items'] === []): ?><div class="users-empty"><strong><?= $summary['total'] === 0 ? 'Пользователи пока не созданы.' : 'По заданным условиям пользователи не найдены.' ?></strong></div>
+    <?php if ($result['items'] === []): ?><div class="users-empty"><strong><?= $totalIncludingArchive === 0 ? 'Пользователи пока не созданы.' : 'По заданным условиям пользователи не найдены.' ?></strong></div>
     <?php else: ?><div class="users-table-wrap"><table class="users-table users-table--compact"><thead><tr><th>Пользователь</th><th>Логин</th><th>Статус</th><th>Последний вход</th></tr></thead><tbody>
     <?php foreach ($result['items'] as $row): ?><tr>
         <td data-label="Пользователь"><a class="user-name-link" href="/admin/users/view.php?id=<?= (int) $row['id'] ?>"><?= e((string) $row['display_name']) ?></a></td>
