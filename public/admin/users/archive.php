@@ -25,13 +25,13 @@ try {
 } catch (Throwable $exception) {
     error_log('User archive failed: ' . get_class($exception));
     flash('error', 'Учетная запись не архивирована из-за серверной ошибки.');
-    redirect('/admin/users/view.php?id=' . $userId);
+    redirect('/admin/users/view.php?id=' . $userId . '&archive_result=server_error');
 }
 
 if ($result['ok']) {
     unset($_SESSION['_user_archive'][$userId]);
     flash('success', 'Учетная запись «' . $result['username'] . '» архивирована.');
-    redirect('/admin/users/view.php?id=' . $userId);
+    redirect('/admin/users/view.php?id=' . $userId . '&archive_result=success');
 }
 
 if (isset($result['errors']) && is_array($result['errors'])) {
@@ -42,8 +42,8 @@ if (isset($result['errors']) && is_array($result['errors'])) {
         'errors' => $result['errors'],
         'values' => ['reason' => $reasonCanBePreserved ? $reason : ''],
     ];
-} else {
-    flash('error', (string) ($result['error'] ?? 'Не удалось архивировать учетную запись.'));
+    redirect('/admin/users/view.php?id=' . $userId);
 }
 
-redirect('/admin/users/view.php?id=' . $userId);
+flash('error', (string) ($result['error'] ?? 'Не удалось архивировать учетную запись.'));
+redirect('/admin/users/view.php?id=' . $userId . '&archive_result=error');
