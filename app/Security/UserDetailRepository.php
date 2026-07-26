@@ -19,12 +19,17 @@ final class UserDetailRepository
 
         if ($includeSensitive) {
             $select .= ', u.email, u.last_login_at, u.creation_reason, u.approved_at, u.rejected_at, u.rejection_reason, '
+                . 'u.last_archived_at, u.archive_reason, u.restored_at, u.restore_reason, '
                 . 'creator.id AS creator_id, creator.username AS creator_username, creator.display_name AS creator_name, '
                 . 'approver.id AS approver_id, approver.username AS approver_username, approver.display_name AS approver_name, '
-                . 'rejector.id AS rejector_id, rejector.username AS rejector_username, rejector.display_name AS rejector_name';
+                . 'rejector.id AS rejector_id, rejector.username AS rejector_username, rejector.display_name AS rejector_name, '
+                . 'archiver.id AS archiver_id, archiver.username AS archiver_username, archiver.display_name AS archiver_name, '
+                . 'restorer.id AS restorer_id, restorer.username AS restorer_username, restorer.display_name AS restorer_name';
             $joins = ' LEFT JOIN users creator ON creator.id = u.created_by '
                 . 'LEFT JOIN users approver ON approver.id = u.approved_by '
-                . 'LEFT JOIN users rejector ON rejector.id = u.rejected_by';
+                . 'LEFT JOIN users rejector ON rejector.id = u.rejected_by '
+                . 'LEFT JOIN users archiver ON archiver.id = u.archived_by '
+                . 'LEFT JOIN users restorer ON restorer.id = u.restored_by';
         }
 
         $stmt = $this->pdo->prepare($select . ' FROM users u' . $joins . ' WHERE u.id = :id LIMIT 1');
