@@ -1,95 +1,145 @@
-# ASU Light Blue Theme v1 — Architecture / Specification
+# Theme Management System & ASU Light Blue Theme v1 — Architecture / Specification
 
 ## 1. Статус документа
 
-- Инкремент: `ASU Light Blue Theme v1`
+- Инкремент: `Theme Management System & ASU Light Blue Theme v1`
 - Проект: `АСУ-ВЧ`
 - Ветка проектирования: `feature/theme-asu-light-blue`
 - Базовая ветка: `main`
 - Базовый commit: `4e1d692807fbac83d86ec1be431df4563bcfacd5`
-- Статус: подготовлено к formal review и утверждению
+- Статус: переработано после разрешения заказчика на расширение scope
 - Реализация: не начата
+- Предыдущий scope config-only activation: заменён настоящей системой управления темами
 
 ## 2. Источник визуального направления
 
-Заказчик предоставил самостоятельный HTML-файл `index0004.html` как визуальный референс.
+Заказчик предоставил HTML-файл `index0004.html` как визуальный референс для второй темы.
 
-Из источника принимаются следующие признаки:
+Из источника принимаются:
 
-- белый фон страницы;
-- основной синий цвет `#086ad5`;
-- более темный hover-цвет `#054f9e`;
-- тонкие одноцветные рамки;
+- белый фон;
+- основной синий `#086ad5`;
+- hover-оттенок `#054f9e`;
+- тонкие синие границы;
 - белые карточки;
-- компактные радиусы около `8px`;
+- радиусы около `8px`;
 - минимальные мягкие тени;
-- легкий подъем карточек при hover;
+- лёгкий подъём карточек при hover;
 - плоские синие кнопки;
 - светлые поля ввода;
-- спокойная минималистичная композиция;
-- тонкие линии header/footer.
+- лаконичные header/footer;
+- спокойная минималистичная композиция.
 
 Не переносятся буквально:
 
-- название `MySite`;
-- год `2024`;
+- `MySite`;
+- статический год `2024`;
 - одновременные вкладки входа и публичной регистрации;
-- формы и поля, не соответствующие текущим PHP-маршрутам;
 - inline CSS и inline JavaScript;
 - обработчики `onclick`;
-- исходные тексты placeholder;
-- поведение форм без CSRF и серверной логики.
+- формы без CSRF;
+- поля и маршруты, отсутствующие в АСУ-ВЧ;
+- исходная логика, противоречащая server-side install/login flow.
 
-Причина: после установки АСУ-ВЧ публичная регистрация отключается, а первая регистрация владельца и обычный вход являются взаимоисключающими серверными состояниями.
+После установки АСУ-ВЧ публичная регистрация отключается. До установки показывается создание первого владельца, после установки — вход. Эти состояния взаимоисключающие.
 
 ## 3. Цель
 
-Добавить вторую полноценную тему оформления, совместимую со всеми текущими страницами АСУ-ВЧ, без копирования PHP-шаблонов и без изменения бизнес-логики.
+Реализовать единый инкремент, который:
 
-Тема должна:
+1. добавляет вторую полноценную тему `asu-light-blue`;
+2. превращает существующий конфигурационный параметр темы в рабочий runtime-механизм;
+3. добавляет безопасный реестр установленных тем;
+4. хранит глобальную активную тему в `system_settings`;
+5. предоставляет административный интерфейс просмотра и активации тем;
+6. сохраняет `asu-blue` безопасной темой по умолчанию;
+7. не копирует PHP-шаблоны между темами;
+8. сохраняет существующие RBAC, CSRF, session guards и бизнес-логику;
+9. стилизует весь текущий desktop-интерфейс, а не только страницу входа;
+10. проходит автоматическую регрессию и ручную desktop-приёмку обеих тем.
 
-1. сосуществовать с `asu-blue`;
-2. использовать тот же HTML/class contract;
-3. применяться ко всему интерфейсу, а не только к форме входа;
-4. активироваться безопасно через конфигурацию;
-5. не допускать path traversal через имя темы или asset path;
-6. сохранять RBAC, CSRF, статусы, формы, таблицы и themed operation modal;
-7. проходить desktop-приемку;
-8. не требовать migration БД.
+## 4. Наименование и каталог
 
-## 4. Наименование
+### 4.1 Текущая тема
 
-- Отображаемое имя: `АСУ Светлая синяя`
+- Slug: `asu-blue`
+- Отображаемое имя: `АСУ Синяя`
+- Тип: тёмная
+- Статус: встроенная, fallback, активна до явного переключения
+
+### 4.2 Новая тема
+
 - Slug: `asu-light-blue`
+- Отображаемое имя: `АСУ Светлая синяя`
+- Тип: светлая
 - Каталог: `themes/asu-light-blue`
-- Текущая тема: `asu-blue`
-- Тема по умолчанию после merge: `asu-blue`
+- Визуальный источник: предоставленный HTML-файл
 
-Новая тема не должна автоматически менять внешний вид существующей установки после deploy.
+### 4.3 Имя инкремента
 
-## 5. Текущее состояние и проблема
+```text
+Theme Management System & ASU Light Blue Theme v1
+```
 
-`config/app.php` уже содержит параметр:
+## 5. Текущее состояние
+
+`config/app.php` содержит:
 
 ```php
 'theme' => 'asu-blue',
 ```
 
-Однако PHP-шаблоны подключают CSS через жесткие URL вида:
+Но исполняемые PHP-страницы подключают URL вида:
 
 ```text
 /themes/asu-blue/assets/css/theme.css
 ```
 
-Поэтому параметр конфигурации сейчас является только диагностическим и фактически не управляет assets.
+Следовательно:
 
-Также themed operation modal подключает CSS/JS через путь конкретной темы.
+- параметр `theme` сейчас диагностический;
+- переключение темы не работает;
+- operation-result modal также привязан к `asu-blue`;
+- модуль «Темы оформления» на странице настроек отмечен `В разработке`;
+- `system_settings` уже существует и подходит для хранения значения;
+- `system_settings` пока не хранит субъекта изменения.
 
-Без общего безопасного asset resolver новая тема либо потребует дублирования PHP-страниц, либо не сможет быть активирована глобально.
+## 6. Архитектурные принципы
 
-## 6. Архитектура выбора темы
+### 6.1 Тема — только представление
 
-### 6.1 Реестр тем
+Тема может содержать:
+
+- CSS;
+- статические изображения и иконки, если они добавлены разработчиком;
+- metadata в доверенном PHP-реестре.
+
+Тема не содержит:
+
+- PHP;
+- SQL;
+- исполняемый пользовательский JavaScript;
+- серверные маршруты;
+- собственные копии бизнес-логики;
+- произвольные внешние URL.
+
+### 6.2 Один HTML/class contract
+
+Обе темы используют одинаковую PHP-разметку и существующие class names. Тема меняет визуальное представление, но не DOM-семантику операций.
+
+### 6.3 Глобальная настройка
+
+Активная тема едина для всей установки. Per-user theme в v1 отсутствует.
+
+### 6.4 Безопасный fallback
+
+При любой ошибке чтения БД, неизвестном slug или недоступности обязательных assets применяется `asu-blue`.
+
+### 6.5 Запрет HTTP override
+
+Нельзя переключить или предварительно просмотреть тему через `GET`, cookie или произвольный query-параметр.
+
+## 7. Реестр доверенных тем
 
 Добавляется:
 
@@ -97,147 +147,399 @@
 config/themes.php
 ```
 
-Он возвращает статический allow-list:
+Пример контракта:
 
 ```php
+<?php
+
+declare(strict_types=1);
+
 return [
-    'asu-blue' => [
-        'name' => 'АСУ Синяя',
-        'required_assets' => [
-            'css/theme.css',
-            'css/auth.css',
-            'css/users.css',
-            'css/operation-result-modal.css',
+    'default' => 'asu-blue',
+    'themes' => [
+        'asu-blue' => [
+            'name' => 'АСУ Синяя',
+            'description' => 'Тёмная сине-бирюзовая тема АСУ-ВЧ.',
+            'appearance' => 'dark',
+            'preview_colors' => ['#131e30', '#18acea', '#17a58b'],
+            'required_assets' => [
+                'css/theme.css',
+                'css/auth.css',
+                'css/users.css',
+                'css/operation-result-modal.css',
+            ],
         ],
-    ],
-    'asu-light-blue' => [
-        'name' => 'АСУ Светлая синяя',
-        'required_assets' => [
-            'css/theme.css',
-            'css/auth.css',
-            'css/users.css',
-            'css/operation-result-modal.css',
+        'asu-light-blue' => [
+            'name' => 'АСУ Светлая синяя',
+            'description' => 'Светлая минималистичная тема с синими контурами.',
+            'appearance' => 'light',
+            'preview_colors' => ['#ffffff', '#086ad5', '#054f9e'],
+            'required_assets' => [
+                'css/theme.css',
+                'css/auth.css',
+                'css/users.css',
+                'css/operation-result-modal.css',
+            ],
         ],
     ],
 ];
 ```
 
-Реестр не читается из GET/POST и не формируется из пользовательских данных.
+Требования:
 
-### 6.2 Helper-функции
+- slug соответствует `\A[a-z0-9][a-z0-9-]{1,63}\z`;
+- `default` обязательно присутствует в `themes`;
+- имя и описание непустые;
+- `appearance` только `dark` или `light`;
+- `preview_colors` содержит три валидных hex-цвета;
+- required assets — статические относительные пути;
+- реестр не формируется из БД, directory scan или HTTP input;
+- изменение списка тем выполняется разработчиком через репозиторий.
 
-В bootstrap добавляются функции:
+## 8. Серверные компоненты
+
+Добавляются:
+
+```text
+app/Theme/ThemeRegistry.php
+app/Theme/ThemeSettingsRepository.php
+app/Theme/ThemeActivationService.php
+```
+
+### 8.1 `ThemeRegistry`
+
+Ответственность:
+
+- загрузить и валидировать `config/themes.php`;
+- вернуть default slug;
+- вернуть метаданные зарегистрированной темы;
+- определить, зарегистрирован ли slug;
+- проверить наличие обязательных assets;
+- вернуть список тем с runtime availability;
+- сформировать безопасный asset URL.
+
+Не выполняет:
+
+- запросы к БД;
+- HTTP redirects;
+- mutation;
+- чтение GET/POST.
+
+### 8.2 `ThemeSettingsRepository`
+
+Ответственность:
+
+- читать `ui.active_theme` из `system_settings`;
+- записывать значение, `updated_at`, `updated_by`;
+- работать через prepared statements;
+- не принимать решение о допустимости slug.
+
+### 8.3 `ThemeActivationService`
+
+Ответственность:
+
+1. проверить actor id;
+2. проверить slug через `ThemeRegistry`;
+3. проверить доступность обязательных assets;
+4. начать транзакцию;
+5. заблокировать строку setting через `SELECT ... FOR UPDATE` при её наличии;
+6. выполнить `INSERT ... ON DUPLICATE KEY UPDATE`;
+7. записать `updated_by` и `updated_at`;
+8. commit;
+9. rollback при исключении.
+
+Сервис не проверяет permission: permission проверяется HTTP boundary до вызова сервиса. Сервис всё равно не доверяет slug.
+
+## 9. Migration 006
+
+Добавляется:
+
+```text
+database/migrations/006_theme_management.sql
+```
+
+### 9.1 Изменение `system_settings`
+
+Добавляется:
+
+```sql
+updated_by BIGINT UNSIGNED NULL
+```
+
+с FK:
+
+```text
+updated_by → users.id
+ON UPDATE RESTRICT
+ON DELETE SET NULL
+```
+
+Существующие строки получают `NULL`.
+
+### 9.2 Начальная настройка
+
+Migration вставляет:
+
+```text
+setting_key = ui.active_theme
+setting_value = asu-blue
+updated_by = NULL
+```
+
+через idempotent `INSERT ... ON DUPLICATE KEY UPDATE`, который не должен перезаписать уже существующее допустимое пользовательское значение при повторном install.
+
+### 9.3 Почему используется существующая таблица
+
+`system_settings` уже предназначена для глобальных настроек. Отдельная таблица только для одной темы создала бы лишнюю сущность.
+
+### 9.4 Аудит v1
+
+Хранится последний субъект и время изменения глобальной настройки. Полная история всех переключений — отдельный будущий инкремент.
+
+## 10. Приоритет источников активной темы
+
+Функция runtime resolution использует следующий порядок:
+
+1. default из `config/themes.php`;
+2. bootstrap fallback из `app_config('theme', default)` только до доступности БД или при аварии БД;
+3. значение `system_settings.ui.active_theme`, когда БД доступна;
+4. проверка регистрации slug;
+5. проверка обязательных assets;
+6. fallback на registry default при любой невалидности.
+
+После migration 006 нормальный runtime source-of-truth:
+
+```text
+system_settings.ui.active_theme
+```
+
+`config/app.php['theme']` сохраняется для pre-install/bootstrap fallback и обратной совместимости.
+
+Ни POST, ни GET не имеют приоритета над БД.
+
+## 11. Runtime helpers
+
+В `app/bootstrap.php` регистрируются фабрики и helpers:
 
 ```php
-theme_registry(): array
+theme_registry_service(): ThemeRegistry
+theme_settings_repository(): ThemeSettingsRepository
+theme_activation_service(): ThemeActivationService
 active_theme(): string
 active_theme_name(): string
 theme_asset(string $asset): string
+installed_themes(): array
 ```
 
-#### `active_theme()`
+### 11.1 `active_theme()`
 
-- читает `app_config('theme', 'asu-blue')`;
-- принимает только точный ключ из `config/themes.php`;
-- при неизвестном значении:
-  - пишет нейтральное сообщение в `error_log` без PII;
-  - возвращает безопасный fallback `asu-blue`;
-- не принимает имя темы из URL или формы.
+- кэширует результат в рамках запроса;
+- безопасно работает до установки БД;
+- не вызывает recursive installation checks;
+- ловит DB/runtime exceptions и использует fallback;
+- не выводит exception пользователю;
+- пишет нейтральный diagnostic log без паролей, DSN и PII;
+- возвращает только зарегистрированный slug.
 
-#### `theme_asset()`
+### 11.2 `theme_asset()`
 
-- принимает относительный путь внутри `assets`;
+- принимает только относительный path внутри `assets`;
 - запрещает пустую строку;
-- запрещает `..`, обратный слеш, NUL и URL-схемы;
-- допускает только сегменты `[a-zA-Z0-9._-]` и `/`;
-- возвращает URL:
+- запрещает `..`, `\`, NUL, `://`, leading `/` и `//`;
+- допускает ASCII segments `[A-Za-z0-9._-]+`;
+- проверяет наличие выбранного asset в active theme;
+- если optional asset отсутствует в active theme, может использовать такой же asset default theme только при явном разрешённом contract;
+- обязательные assets проверяются до признания темы доступной;
+- возвращает `/themes/{slug}/assets/{path}`.
 
-```text
-/themes/{active_theme}/assets/{asset}
-```
+В v1 все вызовы `theme_asset()` задаются статическими литералами из кода.
 
-- выполняет URL-encoding по сегментам либо использует только заранее допустимые ASCII-пути;
-- не проверяет путь, полученный от пользователя, потому что все вызовы задаются кодом.
+## 12. Shared operation modal JavaScript
 
-### 6.3 Подключение assets
+Поведение modal не является частью темы.
 
-Все HTML-emitter'ы заменяют жесткие ссылки на:
-
-```php
-<link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
-```
-
-Для специализированных страниц:
-
-```php
-<?= e(theme_asset('css/auth.css')) ?>
-<?= e(theme_asset('css/users.css')) ?>
-```
-
-403-страница в `require_permission()` также использует `theme_asset()`.
-
-### 6.4 Общий JavaScript modal
-
-Поведение operation modal не является визуальной темой. Поэтому JavaScript переносится в общий public asset:
+Файл переносится в:
 
 ```text
 public/assets/js/operation-result-modal.js
 ```
 
-Bootstrap подключает:
+Каждая тема предоставляет только:
+
+```text
+css/operation-result-modal.css
+```
+
+Bootstrap operation result emitter подключает:
+
+```php
+theme_asset('css/operation-result-modal.css')
+```
+
+и общий:
 
 ```text
 /assets/js/operation-result-modal.js
 ```
 
-Тема определяет только:
-
-```text
-theme_asset('css/operation-result-modal.css')
-```
-
-После проверки всех ссылок старый файл:
+Удаление старого:
 
 ```text
 themes/asu-blue/assets/js/operation-result-modal.js
 ```
 
-может быть удален как дубликат. Удаление допустимо только если grep/checker подтверждает отсутствие ссылок.
+допускается только после repo-wide проверки отсутствия ссылок.
 
-## 7. Способ активации v1
+## 13. RBAC
 
-В v1 тема выбирается через конфигурацию:
+Новые permission codes не добавляются.
 
-```php
-'theme' => 'asu-light-blue',
+Используются существующие:
+
+```text
+system.settings.view
+system.settings.update
 ```
 
-Рекомендуемый локальный способ — переопределение ключа в `config/local.php`, чтобы не менять tracked `config/app.php`:
+### 13.1 Просмотр
 
-```php
-return [
-    // database и другие локальные параметры
-    'theme' => 'asu-light-blue',
-];
+Страницы:
+
+```text
+/admin/settings.php
+/admin/settings/themes.php
 ```
 
-`array_replace_recursive` уже объединяет локальную конфигурацию с базовой.
+требуют:
 
-### 7.1 Почему без UI-переключателя
+```text
+system.settings.view
+```
 
-Полноценный выбор темы в административной панели потребует:
+### 13.2 Изменение
 
-- хранения системной настройки;
-- POST-маршрута;
-- CSRF;
-- permission;
-- валидации и audit;
-- определения приоритета config/DB;
-- отдельного жизненного цикла настройки.
+Маршрут:
 
-Это отдельная функциональность и не входит в v1. Карточка `Темы оформления` в настройках остается `В разработке`.
+```text
+POST /admin/settings/themes/activate.php
+```
 
-## 8. Структура новой темы
+требует:
+
+```text
+system.settings.update
+```
+
+### 13.3 Роли
+
+- `system_owner` получает доступ через `system.*.*`;
+- `administrator` уже имеет `system.settings.view` и `system.settings.update`;
+- `operator` и `viewer` не имеют доступа;
+- системное количество permissions не изменяется.
+
+### 13.4 Изменение текущей settings boundary
+
+Текущий `public/admin/settings.php` использует owner-only guard. Он будет заменён на `require_permission('system.settings.view')`, чтобы фактический HTTP boundary соответствовал существующей RBAC-матрице.
+
+Это не расширяет права ролей: administrator уже получил permission в migration 002.
+
+## 14. HTTP/UI
+
+### 14.1 Страница списка тем
+
+Добавляется:
+
+```text
+GET /admin/settings/themes.php
+```
+
+Показывает:
+
+- заголовок «Темы оформления»;
+- текущую активную тему;
+- карточки зарегистрированных тем;
+- отображаемое имя;
+- описание;
+- признак `Светлая` / `Тёмная`;
+- три palette swatch;
+- статус `Активна`;
+- статус `Недоступна`, если отсутствуют обязательные assets;
+- кнопку `Активировать`, если пользователь имеет update permission;
+- отсутствие формы изменения для view-only пользователя.
+
+### 14.2 Страница настроек
+
+Карточка «Темы оформления» перестаёт быть `В разработке` и становится ссылкой:
+
+```text
+/admin/settings/themes.php
+```
+
+Остальные карточки остаются disabled.
+
+Техническая информация показывает runtime active theme, а не только `app_config('theme')`.
+
+### 14.3 Маршрут активации
+
+```text
+POST /admin/settings/themes/activate.php
+```
+
+Порядок:
+
+1. `require_permission('system.settings.update')`;
+2. GET и другие методы не выполняют mutation и перенаправляют к списку тем либо возвращают безопасный response;
+3. `require_csrf()`;
+4. получить scalar `theme`;
+5. передать в `ThemeActivationService`;
+6. PRG redirect;
+7. показать themed operation result.
+
+### 14.4 Результаты операций
+
+В безопасный operation result catalog добавляются фиксированные состояния:
+
+```text
+theme_activation_success → Тема оформления активирована.
+theme_activation_unavailable → Выбранная тема недоступна.
+theme_activation_error → Не удалось активировать тему оформления.
+```
+
+Произвольное название темы из POST не вставляется в JavaScript или result message.
+
+После успешного POST redirect-страница уже загружается с новой темой.
+
+## 15. Замена hardcoded asset URLs
+
+Все исполняемые PHP emitter'ы заменяют:
+
+```text
+/themes/asu-blue/assets/...
+```
+
+на:
+
+```php
+<?= e(theme_asset('css/theme.css')) ?>
+<?= e(theme_asset('css/auth.css')) ?>
+<?= e(theme_asset('css/users.css')) ?>
+```
+
+Включая:
+
+- публичный вход/первичную настройку;
+- admin dashboard;
+- settings;
+- users list/create/view;
+- account password change;
+- тематические 403 страницы;
+- operation result modal.
+
+Checker падает, если hardcoded `/themes/asu-blue/` остаётся в executable PHP.
+
+Документация и сами CSS-файлы могут содержать slug как текст.
+
+## 16. Структура новой темы
 
 ```text
 themes/asu-light-blue/
@@ -249,66 +551,9 @@ themes/asu-light-blue/
         └── operation-result-modal.css
 ```
 
-PHP, SQL и JS внутри каталога темы не размещаются.
+Новая тема использует текущий class contract и не требует копирования PHP.
 
-## 9. Class contract
-
-Новая тема использует существующие классы, включая:
-
-```text
-body
-.container
-.glass-tile
-.site-header
-.header-content
-.site-logo
-.site-heading
-.site-title
-.site-description
-.site-main
-.site-footer
-.footer-content
-.auth-card
-.auth-heading
-.auth-description
-.form-group
-.form-label
-.form-input
-.primary-button
-.secondary-button
-.form-message
-.admin-main
-.admin-summary
-.dashboard-grid
-.dashboard-tile
-.module-grid
-.module-tile
-.stats-grid
-.stat-tile
-.state-badge*
-```
-
-И классы users-модуля:
-
-```text
-.users-stats-grid
-.security-section-grid
-.security-section-card
-.users-panel
-.users-filters
-.users-table
-.user-detail-hero
-.user-detail-grid
-.user-detail-section
-.role-badge
-.archive-lifecycle-panel
-```
-
-Разметка PHP меняется только там, где требуется заменить asset URL. Структурные изменения страниц не планируются.
-
-## 10. Design tokens новой темы
-
-В `theme.css` задаются переменные:
+## 17. Design tokens ASU Light Blue
 
 ```css
 :root {
@@ -324,7 +569,7 @@ body
     --text-heading: #086ad5;
     --text-secondary: #5f6f7f;
     --input-background: #ffffff;
-    --input-border: #a9c8e8;
+    --input-border: #9dbfe3;
     --focus-color: #086ad5;
     --tile-radius: 8px;
     --control-radius: 6px;
@@ -333,322 +578,328 @@ body
 }
 ```
 
-Допускается корректировка оттенков после desktop-приемки, но основной синий `#086ad5` и hover `#054f9e` сохраняются как источник идентичности темы.
+Основной синий `#086ad5` и hover `#054f9e` сохраняются как идентичность референса. Для длинного текста используется тёмный `#18324d`, чтобы не снижать читаемость.
 
-## 11. Общая визуальная спецификация
+## 18. Визуальная спецификация
 
-### 11.1 Body
+### 18.1 Общие поверхности
 
-- фон `#ffffff`;
-- основной текст темно-сине-серый, а не полностью синий, для читаемости длинных текстов;
-- заголовки и action accents — `#086ad5`;
-- без темных radial gradients.
+- body белый;
+- карточки белые;
+- рамки 1px;
+- тени синие, мягкие и малой интенсивности;
+- `glass-tile` сохраняется как class contract, но визуально становится светлой bordered card;
+- backdrop-filter не обязателен.
 
-### 11.2 Header/Footer
+### 18.2 Header/footer
 
-- белый фон;
-- тонкая синяя нижняя/верхняя линия;
-- без темной glass-заливки;
-- логотип остается `АСУ`;
-- заголовок продукта не заменяется на `MySite`;
-- footer использует текущий динамический год.
+- header и footer сохраняют текущую структуру АСУ-ВЧ;
+- белые поверхности;
+- синие тонкие контуры;
+- логотип остаётся `АСУ`;
+- footer использует динамический текущий год.
 
-Существующий `.glass-tile` в header/footer визуально становится светлой поверхностью.
+### 18.3 Кнопки
 
-### 11.3 Карточки
+- primary: синий фон, белый текст;
+- hover: `#054f9e`;
+- secondary: белый фон, синяя рамка и текст;
+- danger: красный фон/рамка;
+- disabled визуально и семантически отличается;
+- focus-visible заметный.
 
-- белый фон;
-- рамка `1px solid #086ad5`;
-- радиус `8px`;
-- мягкая синяя тень;
-- hover: подъем на `2px` и усиление тени;
-- не использовать стеклянную прозрачность как основной эффект.
+### 18.4 Формы
 
-Имя класса `.glass-tile` сохраняется для совместимости, хотя визуально это light outlined tile.
+- белый background;
+- усиленная синяя граница по сравнению с исходным HTML;
+- label тёмно-серый;
+- focus border `#086ad5`;
+- autofill остаётся читаемым на светлом фоне;
+- validation state не зависит только от цвета.
 
-### 11.4 Кнопки
+### 18.5 Таблицы и статистика
 
-Primary:
+- белый table surface;
+- синяя рамка/разделители;
+- header row с очень светлой синей заливкой;
+- hover row умеренный;
+- ссылки заметны;
+- статусы success/warning/error/muted различимы.
 
-- синий фон;
-- белый текст;
-- hover — `#054f9e`;
-- небольшой transform без чрезмерного scale.
+### 18.6 Operation modal
 
-Secondary:
+- error: светлая/бордовая поверхность, красная рамка, затемнённый backdrop;
+- success: светлая/зелёно-бирюзовая поверхность;
+- сохраняются `<dialog>`, focus, Escape, close button и fixed safe message;
+- native alert не возвращается.
 
-- белый фон;
-- синяя рамка и текст;
-- hover — очень светлый синий фон.
+### 18.7 Theme management cards
 
-Danger:
+- карточки используют palette swatches;
+- active theme получает явный badge и `aria-current`-подобную семантику;
+- unavailable theme не имеет активной submit-кнопки;
+- цветовые swatches дополняются текстовым именем и не являются единственным индикатором.
 
-- красный текст/рамка;
-- светло-красный фон;
-- высокий контраст.
+## 19. Security requirements
 
-### 11.5 Формы
+### 19.1 CSRF
 
-- белый фон;
-- рамка светло-синяя, но контрастнее исходного `rgba(..., .15)`;
-- focus — `#086ad5` и мягкий halo;
-- placeholder серо-синий;
-- autofill адаптируется к белой теме;
-- labels — темно-серые.
+Mutation только POST и только после `require_csrf()`.
 
-### 11.6 Таблицы
+### 19.2 Authorization
 
-- белая поверхность;
-- синие линии/акценты;
-- header — очень светлый синий;
-- row hover — `rgba(8, 106, 213, 0.04)`;
-- ссылки пользователя — синие;
-- состояния остаются семантически цветными.
+Просмотр и update проверяются на сервере. Скрытие кнопки не заменяет permission check.
 
-### 11.7 Статусы
+### 19.3 Allow-list
 
-- success: зеленый текст/рамка на светло-зеленом фоне;
-- error: красный на светло-красном;
-- warning: янтарный на светло-желтом;
-- muted: серо-синий;
-- archived: muted;
-- статус не кодируется только цветом: сохраняется текст и маркер.
+Slug принимается только при точном совпадении с registry key.
 
-### 11.8 Themed operation modal
+### 19.4 Path traversal
 
-Error modal:
+Никакой HTTP input не конкатенируется в filesystem path или asset URL без registry validation.
 
-- красная/бордовая поверхность;
-- красная рамка;
-- белый текст;
-- затемненный backdrop;
-- соответствует уже принятому UX.
+### 19.5 SQL
 
-Success modal:
+Только prepared statements. Setting key фиксированный сервером:
 
-- белая или очень светлая зелено-бирюзовая поверхность;
-- зеленая рамка;
-- темный текст;
-- сохраняет классы и JS behavior.
+```text
+ui.active_theme
+```
 
-### 11.9 Auth
+### 19.6 Error handling
 
-Визуально следует предоставленному HTML:
+Пользователь получает нейтральную themed-ошибку. Exception details не выводятся.
 
-- центрированная белая карточка;
-- максимальная ширина около `400–460px`;
-- синие контуры;
-- плоская primary-кнопка;
-- минимум декоративных эффектов.
+### 19.7 External resources
 
-Табы `Вход / Регистрация` не добавляются. Сервер продолжает показывать либо вход, либо первичную настройку.
+Новая тема не требует CDN, внешних шрифтов, remote CSS или remote JavaScript.
 
-## 12. Accessibility
+### 19.8 Stored value compromise
 
-Тема должна обеспечивать:
+Даже если `setting_value` изменено напрямую на вредоносную строку, runtime не использует её как path, пока значение не совпало с registry slug.
 
-- читаемый контраст основного текста на белом фоне;
-- видимый `:focus-visible`;
-- отсутствие color-only состояния;
-- сохранение aria-атрибутов существующего modal;
-- отсутствие отключения outline без замены;
-- поддержку `prefers-reduced-motion` для hover/modal анимаций;
-- минимальную высоту интерактивных controls около `44px`.
+## 20. Failure modes
 
-Контраст проверяется визуально и, при возможности, автоматическим инструментом браузера.
+### 20.1 БД недоступна
 
-## 13. Безопасность
+Используется config/default fallback. Страница не должна падать только из-за чтения темы, если остальная страница способна отобразиться.
 
-- имя темы не принимается из HTTP-запроса;
-- реестр — статический allow-list;
-- `theme_asset()` запрещает traversal;
-- assets не содержат PHP;
-- внешний CDN не используется;
-- внешние шрифты не используются;
-- inline script из исходного HTML не переносится;
-- текущие CSRF/RBAC/session guards не меняются;
-- error text продолжает проходить через серверный белый список и `textContent` modal-компонента.
+### 20.2 Setting отсутствует
 
-## 14. Изменяемые категории файлов
+Используется fallback; service при первой активации создаёт строку.
 
-### Конфигурация/bootstrap
+### 20.3 Setting содержит неизвестный slug
+
+Используется `asu-blue`, пишется нейтральный diagnostic log.
+
+### 20.4 Registered theme не имеет asset
+
+Тема отмечается unavailable; активировать её нельзя. Если она уже записана активной, runtime переключается на fallback без автоматической скрытой записи в БД.
+
+### 20.5 Default theme повреждена
+
+Checker должен блокировать deploy/acceptance. Runtime всё равно возвращает default slug, но не пытается использовать произвольную тему.
+
+### 20.6 Одновременная активация
+
+Транзакция и row lock обеспечивают last committed write. В интерфейсе показывается фактическое значение после redirect.
+
+## 21. Scope v1
+
+### 21.1 В scope
+
+- registry двух доверенных тем;
+- migration 006;
+- `updated_by` для `system_settings`;
+- DB-backed active theme;
+- runtime resolver и asset helper;
+- settings permissions вместо owner-only boundary;
+- UI списка тем;
+- POST activation route;
+- themed operation results;
+- shared modal JS;
+- светлая тема;
+- checker;
+- regression обеих тем;
+- desktop acceptance.
+
+### 21.2 Вне scope
+
+- browser ZIP upload;
+- установка произвольной темы;
+- удаление тем;
+- CSS editor;
+- custom CSS;
+- внешние URL;
+- marketplace;
+- per-user theme;
+- preview через query-параметр;
+- automatic OS dark/light;
+- scheduled switching;
+- полная история переключений;
+- mobile acceptance.
+
+## 22. План файлов реализации
+
+### 22.1 Новые
 
 ```text
 config/themes.php
-app/bootstrap.php
-```
-
-### Общий modal behavior
-
-```text
+app/Theme/ThemeRegistry.php
+app/Theme/ThemeSettingsRepository.php
+app/Theme/ThemeActivationService.php
+database/migrations/006_theme_management.sql
+database/check-theme-management.php
+public/admin/settings/themes.php
+public/admin/settings/themes/activate.php
 public/assets/js/operation-result-modal.js
-```
-
-### Новая тема
-
-```text
 themes/asu-light-blue/assets/css/theme.css
 themes/asu-light-blue/assets/css/auth.css
 themes/asu-light-blue/assets/css/users.css
 themes/asu-light-blue/assets/css/operation-result-modal.css
 ```
 
-### Существующие HTML-emitter'ы
-
-Все PHP-файлы, которые сейчас содержат `/themes/asu-blue/`, включая как минимум:
+### 22.2 Изменяемые
 
 ```text
+app/bootstrap.php
 public/index.php
-public/account/change-password.php
 public/admin/index.php
-public/admin/content.php
 public/admin/settings.php
 public/admin/users.php
 public/admin/users/create.php
 public/admin/users/view.php
-app/bootstrap.php (themed 403 и operation modal assets)
+public/account/change-password.php
+и другие PHP-emitter'ы с hardcoded theme path
+themes/asu-blue/assets/css/theme.css — только при необходимости class contract
+themes/asu-blue/assets/css/users.css — только при необходимости management UI
+deploy/Deploy-Local.ps1 — только если текущий deploy не копирует новые пути
 ```
 
-Точный список перед реализацией фиксируется grep-проверкой.
-
-### Документация/checker
+### 22.3 Возможное удаление
 
 ```text
-docs/design/THEME-ASU-LIGHT-BLUE-V1-DESIGN.md
-docs/design/THEME-ASU-LIGHT-BLUE-V1-REVIEW.md
-docs/decisions/THEME-ASU-LIGHT-BLUE-V1-APPROVAL.md
-tools/check-theme-assets.php
+themes/asu-blue/assets/js/operation-result-modal.js
 ```
 
-## 15. Checker
+только после подтверждённого переноса.
 
-Добавляется CLI-checker без БД:
+## 23. Автоматические проверки
+
+Обязательны:
+
+1. PHP syntax всех PHP-файлов;
+2. migration 006 применена;
+3. повторный install не создаёт новых миграций;
+4. `system_settings.updated_by` и FK существуют;
+5. `ui.active_theme` существует;
+6. default theme `asu-blue` доступна;
+7. `asu-light-blue` доступна;
+8. unknown slug отклоняется;
+9. missing asset theme отклоняется;
+10. traversal paths отклоняются;
+11. пустой asset path отклоняется;
+12. DB setting меняется при успешной активации;
+13. `updated_by` записан;
+14. повторная активация безопасна;
+15. system permissions count не меняется;
+16. administrator settings permissions сохраняются;
+17. viewer/operator denied;
+18. CSRF 419 без mutation;
+19. GET без mutation;
+20. hardcoded `/themes/asu-blue/` отсутствует в executable PHP;
+21. shared modal JS существует и используется;
+22. old modal JS не используется;
+23. deploy сохраняет `config/local.php`;
+24. smoke с `asu-blue`;
+25. smoke с `asu-light-blue`;
+26. archive/restore checker;
+27. чистый Git status.
+
+## 24. Ручная desktop-приёмка
+
+### 24.1 Управление темами
+
+Проверяются:
+
+- settings доступна владельцу и administrator;
+- viewer/operator получают themed 403;
+- обе темы показаны;
+- active badge верен;
+- palette swatches видны;
+- activate button отсутствует у view-only роли;
+- переключение применяется после redirect;
+- возврат на `asu-blue` работает;
+- unknown/modified request не меняет setting;
+- modal success/error стилизован текущей темой.
+
+### 24.2 Светлая тема
+
+Контрольные страницы:
+
+1. login;
+2. initial setup — при наличии отдельной тестовой БД либо статической проверки;
+3. dashboard;
+4. settings;
+5. themes management;
+6. users list;
+7. create user;
+8. active user detail;
+9. pending/rejected/archived states;
+10. red modal;
+11. green modal;
+12. themed 403;
+13. required password change.
+
+### 24.3 Тёмная регрессия
+
+После возврата на `asu-blue` проверяются:
+
+- login;
+- dashboard;
+- settings/themes;
+- users list/detail;
+- operation modal;
+- smoke.
+
+Мобильные screenshots не требуются.
+
+## 25. Критерии завершения
 
 ```text
-php tools/check-theme-assets.php
-```
-
-Он проверяет:
-
-1. оба slug присутствуют в registry;
-2. default/fallback `asu-blue` существует;
-3. каталоги тем существуют;
-4. обязательные CSS-файлы существуют;
-5. shared modal JS существует;
-6. `theme_asset()` возвращает ожидаемый URL для разрешенных путей;
-7. traversal `../` отклоняется;
-8. неизвестная тема приводит к fallback;
-9. в исполняемых PHP-файлах не остается жестких `/themes/asu-blue/`;
-10. старый theme-specific modal JS не используется.
-
-Checker не изменяет файлы и БД.
-
-## 16. Автоматическое тестирование
-
-Обязательные проверки:
-
-```text
-PHP syntax
-Theme assets checker
-Deploy
-Local smoke с asu-blue
-Local smoke с asu-light-blue
-Archive/restore regression checker
-```
-
-### 16.1 Две темы
-
-Для локального теста `config/local.php` временно переключается:
-
-```php
-'theme' => 'asu-blue'
-```
-
-затем:
-
-```php
-'theme' => 'asu-light-blue'
-```
-
-После тестирования локальная конфигурация остается на значении, выбранном заказчиком. Файл не коммитится.
-
-## 17. Ручная desktop-приемка
-
-Мобильная версия не входит в обязательный scope по ранее принятому решению заказчика.
-
-Проверяются обе темы, с основным вниманием к новой:
-
-1. страница входа;
-2. первичная настройка логически не ломается;
-3. панель управления;
-4. настройки;
-5. список пользователей;
-6. карточка активного пользователя;
-7. карточка архивированного пользователя;
-8. формы create/update/roles/status/archive/restore;
-9. таблица и фильтры;
-10. status badges;
-11. red error modal;
-12. green success modal;
-13. themed 403;
-14. CSRF 419 сохраняет корректное поведение;
-15. отсутствуют темные остатки `asu-blue`, делающие текст нечитаемым;
-16. отсутствует горизонтальный overflow на desktop target;
-17. после возврата на `asu-blue` текущий интерфейс не имеет регрессий.
-
-## 18. Acceptance criteria
-
-```text
-Theme registry works: PASS
-Invalid theme falls back safely: PASS
-No hardcoded asu-blue asset links in executable PHP: PASS
+Architecture/Specification approved: PASS
+Formal Review approved: PASS
+Migration 006: PASS
+Theme registry: PASS
+DB-backed activation: PASS
+RBAC: PASS
+CSRF: PASS
+Safe fallback: PASS
+No hardcoded theme URLs: PASS
+ASU Light Blue desktop UI: PASS
 ASU Blue regression: PASS
-ASU Light Blue login: PASS
-ASU Light Blue admin dashboard: PASS
-ASU Light Blue users list: PASS
-ASU Light Blue user detail: PASS
-ASU Light Blue forms/tables/statuses: PASS
-ASU Light Blue error modal: PASS
-ASU Light Blue success modal: PASS
-Themed 403: PASS
-CSRF/RBAC behavior unchanged: PASS
-PHP syntax: PASS
-Theme checker: PASS
-Smoke both themes: PASS
-Desktop UI review: PASS
+Operation modal both themes: PASS
+Automated regression: PASS
+Blocking findings: 0
 Mobile acceptance: OUT OF SCOPE
 ```
 
-## 19. Вне объема v1
-
-- выбор темы через административный UI;
-- хранение темы в БД;
-- тема на пользователя;
-- автоматическое следование системному light/dark mode;
-- theme preview через query string;
-- загрузка пользовательских CSS;
-- конструктор цветов;
-- импорт произвольного HTML в runtime;
-- отдельная мобильная приемка;
-- изменение прикладной бизнес-логики;
-- изменение RBAC;
-- migration БД.
-
-## 20. Последовательность работ
+## 26. Порядок работ
 
 ```text
 Architecture
 → Specification
-→ Review
+→ Formal Review
 → Approval
 → Implementation
-→ Automated testing
-→ Desktop acceptance
-→ Commit
-→ Push
-→ PR
-→ Final review
-→ отдельное разрешение Merge
+→ Automated Testing
+→ Desktop Acceptance
+→ Test Report
+→ Commit/Push
+→ PR Final Review
+→ Pull Request
+→ Merge authorization
+→ Merge
 ```
 
-До явного утверждения Architecture/Specification/Review реализация не начинается.
+Реализация не начинается без отдельного явного утверждения этого переработанного документа и Formal Review.
