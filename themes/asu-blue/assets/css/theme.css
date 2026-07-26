@@ -98,8 +98,8 @@ a { color: inherit; }
 .admin-summary span, .section-intro span { color: var(--text-secondary); font-size: 14px; }
 .warning-badge, .status-badge { display: inline-flex; width: fit-content; padding: 5px 9px; border: 1px solid #e6b85c; border-radius: 999px; color: #ffe5a8; background: rgba(153,102,0,.24); font-size: 12px; font-weight: 700; }
 .dashboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.dashboard-tile { min-height: 260px; padding: 26px; display: flex; flex-direction: column; text-decoration: none; transition: transform .18s ease, border-color .18s ease, background-color .18s ease; }
-.dashboard-tile:hover { transform: translateY(-4px); border-color: var(--button-border); background: rgba(3,112,169,.38); }
+.dashboard-tile { min-height: 260px; padding: 26px; display: flex; flex-direction: column; text-decoration: none; transition: transform .18s ease, border-color .18s ease, background-color .18s ease, box-shadow .18s ease; }
+.dashboard-tile:hover { position: relative; z-index: 1; transform: translateY(-4px); border-color: var(--button-border); background: rgba(3,112,169,.38); box-shadow: 0 24px 60px rgba(0,0,0,.30), 0 18px 42px rgba(23,165,139,.38), 0 0 30px rgba(53,212,146,.28), inset 0 1px 0 rgba(255,255,255,.09); }
 .dashboard-tile h2, .module-tile h2 { margin: 12px 0 10px; font-size: 23px; }
 .dashboard-tile p, .module-tile p { margin: 0; color: var(--text-secondary); line-height: 1.55; }
 .tile-kicker { color: #73d8ff; text-transform: uppercase; letter-spacing: .08em; font-size: 12px; font-weight: 800; }
