@@ -241,17 +241,45 @@ function require_system_owner(): array
     return $user;
 }
 
+function operation_result_cookie_name(string $token): string
+{
+    return 'asu_vch_operation_result_' . $token;
+}
+
+function clear_operation_result_cookie(string $cookieName): void
+{
+    setcookie($cookieName, '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    unset($_COOKIE[$cookieName]);
+}
+
 function create_operation_result(string $type, string $message): string
 {
     if (!in_array($type, ['success', 'error'], true) || $message === '') {
         throw new InvalidArgumentException('Некорректный результат операции.');
     }
 
+    $json = json_encode(
+        ['type' => $type, 'message' => $message],
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
+    );
+    $payload = rtrim(strtr(base64_encode($json), '+/', '-_'), '=');
     $token = bin2hex(random_bytes(16));
-    $_SESSION['_operation_results'][$token] = [
-        'type' => $type,
-        'message' => $message,
-    ];
+    $signature = hash_hmac('sha256', $token . '.' . $payload, session_id());
+    $cookieName = operation_result_cookie_name($token);
+
+    setcookie($cookieName, $payload . '.' . $signature, [
+        'expires' => 0,
+        'path' => '/',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
 
     return $token;
 }
@@ -263,12 +291,66 @@ function operation_result_message(string $type): ?string
         return null;
     }
 
-    $state = $_SESSION['_operation_results'][$tokenValue] ?? null;
-    if (!is_array($state) || ($state['type'] ?? null) !== $type || !is_string($state['message'] ?? null)) {
+    $cookieName = operation_result_cookie_name($tokenValue);
+    $cookieValue = $_COOKIE[$cookieName] ?? null;
+    if (!is_string($cookieValue) || strlen($cookieValue) > 4096) {
         return null;
     }
 
-    unset($_SESSION['_operation_results'][$tokenValue]);
+    $parts = explode('.', $cookieValue, 2);
+    if (count($parts) !== 2) {
+        clear_operation_result_cookie($cookieName);
+        return null;
+    }
+    [$payload, $signature] = $parts;
+
+    if (
+        preg_match('/\A[A-Za-z0-9_-]{1,3072}\z/D', $payload) !== 1
+        || preg_match('/\A[a-f0-9]{64}\z/D', $signature) !== 1
+    ) {
+        clear_operation_result_cookie($cookieName);
+        return null;
+    }
+
+    $expectedSignature = hash_hmac('sha256', $tokenValue . '.' . $payload, session_id());
+    if (!hash_equals($expectedSignature, $signature)) {
+        clear_operation_result_cookie($cookieName);
+        return null;
+    }
+
+    $padding = strlen($payload) % 4;
+    $encoded = strtr($payload, '-_', '+/');
+    if ($padding !== 0) {
+        $encoded .= str_repeat('=', 4 - $padding);
+    }
+    $json = base64_decode($encoded, true);
+    if (!is_string($json)) {
+        clear_operation_result_cookie($cookieName);
+        return null;
+    }
+
+    try {
+        $state = json_decode($json, true, 4, JSON_THROW_ON_ERROR);
+    } catch (JsonException) {
+        clear_operation_result_cookie($cookieName);
+        return null;
+    }
+
+    if (
+        !is_array($state)
+        || !in_array($state['type'] ?? null, ['success', 'error'], true)
+        || !is_string($state['message'] ?? null)
+        || $state['message'] === ''
+    ) {
+        clear_operation_result_cookie($cookieName);
+        return null;
+    }
+
+    if ($state['type'] !== $type) {
+        return null;
+    }
+
+    clear_operation_result_cookie($cookieName);
     return $state['message'];
 }
 
