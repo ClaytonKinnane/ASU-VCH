@@ -17,6 +17,7 @@ require_once __DIR__ . '/Security/UserListRepository.php';
 require_once __DIR__ . '/Security/UserCreateService.php';
 require_once __DIR__ . '/Security/UserApprovalService.php';
 require_once __DIR__ . '/Security/UserRejectionService.php';
+require_once __DIR__ . '/Security/UserArchiveRestoreService.php';
 require_once __DIR__ . '/Security/UserDetailRepository.php';
 require_once __DIR__ . '/Security/UserUpdateService.php';
 require_once __DIR__ . '/Security/UserRoleUpdateService.php';
@@ -100,6 +101,11 @@ function user_approval_service(): UserApprovalService
 function user_rejection_service(): UserRejectionService
 {
     return new UserRejectionService(db());
+}
+
+function user_archive_restore_service(): UserArchiveRestoreService
+{
+    return new UserArchiveRestoreService(db());
 }
 
 function user_detail_repository(): UserDetailRepository
