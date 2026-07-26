@@ -32,13 +32,11 @@ final class UserListRepository
             'archived' => 'u.deleted_at IS NOT NULL',
             'temporary' => 'u.is_temporary = 1 AND u.deleted_at IS NULL',
             'password_change' => 'u.must_change_password = 1 AND u.deleted_at IS NULL',
-            default => null,
+            default => 'u.deleted_at IS NULL',
         };
-        if ($statusCondition !== null) {
-            $conditions[] = $statusCondition;
-        }
+        $conditions[] = $statusCondition;
 
-        $where = $conditions === [] ? '' : ' WHERE ' . implode(' AND ', $conditions);
+        $where = ' WHERE ' . implode(' AND ', $conditions);
         $countStmt = $this->pdo->prepare('SELECT COUNT(*) FROM users u' . $where);
         $countStmt->execute($params);
         $total = (int) $countStmt->fetchColumn();
@@ -70,7 +68,7 @@ final class UserListRepository
     public function summary(): array
     {
         $row = $this->pdo->query(
-            "SELECT COUNT(*) AS total, "
+            "SELECT SUM(CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END) AS total, "
             . "SUM(CASE WHEN is_active = 1 AND approval_status = 'approved' AND deleted_at IS NULL THEN 1 ELSE 0 END) AS active, "
             . "SUM(CASE WHEN approval_status = 'pending' AND deleted_at IS NULL THEN 1 ELSE 0 END) AS pending, "
             . "SUM(CASE WHEN approval_status = 'rejected' AND deleted_at IS NULL THEN 1 ELSE 0 END) AS rejected, "
