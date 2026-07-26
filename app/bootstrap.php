@@ -241,21 +241,36 @@ function require_system_owner(): array
     return $user;
 }
 
-function operation_result_cookie_name(string $token): string
+/** @return array<string,array{type:string,message:string}> */
+function operation_result_catalog(): array
 {
-    return 'asu_vch_operation_result_' . $token;
-}
+    static $catalog = null;
+    if (is_array($catalog)) {
+        return $catalog;
+    }
 
-function clear_operation_result_cookie(string $cookieName): void
-{
-    setcookie($cookieName, '', [
-        'expires' => time() - 3600,
-        'path' => '/',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-    unset($_COOKIE[$cookieName]);
+    $definitions = [
+        'archive_success' => ['type' => 'success', 'message' => 'Учетная запись архивирована.'],
+        'restore_success' => ['type' => 'success', 'message' => 'Учетная запись восстановлена и оставлена заблокированной.'],
+        'archive_server_error' => ['type' => 'error', 'message' => 'Учетная запись не архивирована из-за серверной ошибки.'],
+        'restore_server_error' => ['type' => 'error', 'message' => 'Учетная запись не восстановлена из-за серверной ошибки.'],
+        'archive_not_found' => ['type' => 'error', 'message' => 'Учетная запись не найдена.'],
+        'archive_already_archived' => ['type' => 'error', 'message' => 'Учетная запись уже архивирована.'],
+        'archive_self' => ['type' => 'error', 'message' => 'Нельзя архивировать собственную учетную запись.'],
+        'archive_last_owner' => ['type' => 'error', 'message' => 'Нельзя архивировать последнего активного владельца системы.'],
+        'restore_not_found' => ['type' => 'error', 'message' => 'Учетная запись не найдена.'],
+        'restore_not_archived' => ['type' => 'error', 'message' => 'Учетная запись не находится в архиве.'],
+        'operation_success' => ['type' => 'success', 'message' => 'Операция выполнена.'],
+        'operation_error' => ['type' => 'error', 'message' => 'Не удалось выполнить операцию.'],
+    ];
+
+    $catalog = [];
+    foreach ($definitions as $code => $state) {
+        $token = substr(hash('sha256', 'asu-vch-operation-result:' . $code), 0, 32);
+        $catalog[$token] = $state;
+    }
+
+    return $catalog;
 }
 
 function create_operation_result(string $type, string $message): string
@@ -264,24 +279,20 @@ function create_operation_result(string $type, string $message): string
         throw new InvalidArgumentException('Некорректный результат операции.');
     }
 
-    $json = json_encode(
-        ['type' => $type, 'message' => $message],
-        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
-    );
-    $payload = rtrim(strtr(base64_encode($json), '+/', '-_'), '=');
-    $token = bin2hex(random_bytes(16));
-    $signature = hash_hmac('sha256', $token . '.' . $payload, session_id());
-    $cookieName = operation_result_cookie_name($token);
+    $code = match (true) {
+        $type === 'success' && preg_match('/\AУчетная запись «.*» архивирована\.\z/u', $message) === 1 => 'archive_success',
+        $type === 'success' && preg_match('/\AУчетная запись «.*» восстановлена и оставлена заблокированной\.\z/u', $message) === 1 => 'restore_success',
+        $message === 'Учетная запись не архивирована из-за серверной ошибки.' => 'archive_server_error',
+        $message === 'Учетная запись не восстановлена из-за серверной ошибки.' => 'restore_server_error',
+        $message === 'Учетная запись уже архивирована.' => 'archive_already_archived',
+        $message === 'Нельзя архивировать собственную учетную запись.' => 'archive_self',
+        $message === 'Нельзя архивировать последнего активного владельца системы.' => 'archive_last_owner',
+        $message === 'Учетная запись не находится в архиве.' => 'restore_not_archived',
+        $message === 'Учетная запись не найдена.' => $type === 'error' ? 'archive_not_found' : 'operation_error',
+        default => $type === 'success' ? 'operation_success' : 'operation_error',
+    };
 
-    setcookie($cookieName, $payload . '.' . $signature, [
-        'expires' => 0,
-        'path' => '/',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-
-    return $token;
+    return substr(hash('sha256', 'asu-vch-operation-result:' . $code), 0, 32);
 }
 
 function operation_result_message(string $type): ?string
@@ -291,67 +302,20 @@ function operation_result_message(string $type): ?string
         return null;
     }
 
-    $cookieName = operation_result_cookie_name($tokenValue);
-    $cookieValue = $_COOKIE[$cookieName] ?? null;
-    if (!is_string($cookieValue) || strlen($cookieValue) > 4096) {
+    $state = operation_result_catalog()[$tokenValue] ?? null;
+    if (!is_array($state) || ($state['type'] ?? null) !== $type) {
         return null;
     }
 
-    $parts = explode('.', $cookieValue, 2);
-    if (count($parts) !== 2) {
-        clear_operation_result_cookie($cookieName);
-        return null;
-    }
-    [$payload, $signature] = $parts;
-
-    if (
-        preg_match('/\A[A-Za-z0-9_-]{1,3072}\z/D', $payload) !== 1
-        || preg_match('/\A[a-f0-9]{64}\z/D', $signature) !== 1
-    ) {
-        clear_operation_result_cookie($cookieName);
-        return null;
+    static $cleanupRegistered = false;
+    if (!$cleanupRegistered) {
+        $cleanupRegistered = true;
+        register_shutdown_function(static function (): void {
+            echo '<script>(function(){var url=new URL(window.location.href);url.searchParams.delete("result");history.replaceState(null,"",url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash);})();</script>';
+        });
     }
 
-    $expectedSignature = hash_hmac('sha256', $tokenValue . '.' . $payload, session_id());
-    if (!hash_equals($expectedSignature, $signature)) {
-        clear_operation_result_cookie($cookieName);
-        return null;
-    }
-
-    $padding = strlen($payload) % 4;
-    $encoded = strtr($payload, '-_', '+/');
-    if ($padding !== 0) {
-        $encoded .= str_repeat('=', 4 - $padding);
-    }
-    $json = base64_decode($encoded, true);
-    if (!is_string($json)) {
-        clear_operation_result_cookie($cookieName);
-        return null;
-    }
-
-    try {
-        $state = json_decode($json, true, 4, JSON_THROW_ON_ERROR);
-    } catch (JsonException) {
-        clear_operation_result_cookie($cookieName);
-        return null;
-    }
-
-    if (
-        !is_array($state)
-        || !in_array($state['type'] ?? null, ['success', 'error'], true)
-        || !is_string($state['message'] ?? null)
-        || $state['message'] === ''
-    ) {
-        clear_operation_result_cookie($cookieName);
-        return null;
-    }
-
-    if ($state['type'] !== $type) {
-        return null;
-    }
-
-    clear_operation_result_cookie($cookieName);
-    return $state['message'];
+    return (string) $state['message'];
 }
 
 function flash(string $key, ?string $value = null): ?string
