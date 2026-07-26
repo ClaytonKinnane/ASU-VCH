@@ -54,6 +54,7 @@ $modules = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Настройки системы — АСУ-ВЧ</title>
     <link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
+    <link rel="stylesheet" href="<?= e(theme_asset('css/theme-management.css')) ?>">
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Настройки системы</h1><p class="site-description">Параметры приложения и инфраструктуры</p></div><a class="secondary-button" href="/admin/">К панели</a></div></div></header>
@@ -79,7 +80,7 @@ $modules = [
 </section>
 <section class="module-grid" aria-label="Системные настройки">
 <?php foreach ($modules as [$title, $description, $href]): ?>
-<?php if (is_string($href)): ?><a class="module-tile glass-tile" href="<?= e($href) ?>"><span class="tile-kicker">Доступно</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p><span class="tile-action">Открыть →</span></a>
+<?php if (is_string($href)): ?><a class="module-tile glass-tile settings-link-tile" href="<?= e($href) ?>"><span class="tile-kicker">Доступно</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p><span class="tile-action">Открыть →</span></a>
 <?php else: ?><article class="module-tile glass-tile is-disabled"><span class="status-badge">В разработке</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p></article><?php endif; ?>
 <?php endforeach; ?>
 </section>
