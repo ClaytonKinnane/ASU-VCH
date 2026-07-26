@@ -307,15 +307,27 @@ function operation_result_message(string $type): ?string
         return null;
     }
 
-    static $cleanupRegistered = false;
-    if (!$cleanupRegistered) {
-        $cleanupRegistered = true;
-        register_shutdown_function(static function (): void {
-            echo '<script>(function(){var url=new URL(window.location.href);url.searchParams.delete("result");history.replaceState(null,"",url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash);})();</script>';
+    $message = (string) $state['message'];
+    $encodedMessage = json_encode(
+        $message,
+        JSON_UNESCAPED_UNICODE
+        | JSON_UNESCAPED_SLASHES
+        | JSON_HEX_TAG
+        | JSON_HEX_AMP
+        | JSON_HEX_APOS
+        | JSON_HEX_QUOT
+        | JSON_THROW_ON_ERROR
+    );
+
+    static $notificationRegistered = false;
+    if (!$notificationRegistered) {
+        $notificationRegistered = true;
+        register_shutdown_function(static function () use ($encodedMessage): void {
+            echo '<script>(function(){window.alert(' . $encodedMessage . ');var url=new URL(window.location.href);url.searchParams.delete("result");history.replaceState(null,"",url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash);})();</script>';
         });
     }
 
-    return (string) $state['message'];
+    return $message;
 }
 
 function flash(string $key, ?string $value = null): ?string
