@@ -308,6 +308,10 @@ function operation_result_message(string $type): ?string
     }
 
     $message = (string) $state['message'];
+    $encodedType = json_encode(
+        $type,
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR
+    );
     $encodedMessage = json_encode(
         $message,
         JSON_UNESCAPED_UNICODE
@@ -322,8 +326,10 @@ function operation_result_message(string $type): ?string
     static $notificationRegistered = false;
     if (!$notificationRegistered) {
         $notificationRegistered = true;
-        register_shutdown_function(static function () use ($encodedMessage): void {
-            echo '<script>(function(){window.alert(' . $encodedMessage . ');var url=new URL(window.location.href);url.searchParams.delete("result");history.replaceState(null,"",url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash);})();</script>';
+        register_shutdown_function(static function () use ($encodedType, $encodedMessage): void {
+            echo '<link rel="stylesheet" href="/themes/asu-blue/assets/css/operation-result-modal.css">';
+            echo '<script src="/themes/asu-blue/assets/js/operation-result-modal.js"></script>';
+            echo '<script>(function(){if(window.AsuOperationResultModal&&typeof window.AsuOperationResultModal.show==="function"){window.AsuOperationResultModal.show(' . $encodedType . ',' . $encodedMessage . ');}var url=new URL(window.location.href);url.searchParams.delete("result");history.replaceState(null,"",url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash);})();</script>';
         });
     }
 
