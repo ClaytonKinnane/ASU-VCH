@@ -23,6 +23,9 @@ require_once __DIR__ . '/Security/UserUpdateService.php';
 require_once __DIR__ . '/Security/UserRoleUpdateService.php';
 require_once __DIR__ . '/Security/UserStatusService.php';
 require_once __DIR__ . '/Security/RequiredPasswordChangeService.php';
+require_once __DIR__ . '/Theme/ThemeRegistry.php';
+require_once __DIR__ . '/Theme/ThemeSettingsRepository.php';
+require_once __DIR__ . '/Theme/ThemeActivationService.php';
 
 date_default_timezone_set((string) $config['timezone']);
 
@@ -67,6 +70,86 @@ function db(): PDO
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
     return $pdo;
+}
+
+function theme_registry_service(): ThemeRegistry
+{
+    static $registry = null;
+    if (!$registry instanceof ThemeRegistry) {
+        $projectRoot = dirname(__DIR__);
+        $registry = new ThemeRegistry($projectRoot, $projectRoot . '/config/themes.php');
+    }
+    return $registry;
+}
+
+function theme_settings_repository(): ThemeSettingsRepository
+{
+    static $repository = null;
+    if (!$repository instanceof ThemeSettingsRepository) {
+        $repository = new ThemeSettingsRepository(db());
+    }
+    return $repository;
+}
+
+function theme_activation_service(): ThemeActivationService
+{
+    static $service = null;
+    if (!$service instanceof ThemeActivationService) {
+        $service = new ThemeActivationService(db(), theme_registry_service(), theme_settings_repository());
+    }
+    return $service;
+}
+
+function active_theme(): string
+{
+    static $resolved = null;
+    if (is_string($resolved)) {
+        return $resolved;
+    }
+
+    $registry = theme_registry_service();
+    $fallback = $registry->defaultSlug();
+    $configured = app_config('theme', $fallback);
+    if (is_string($configured) && $registry->isRegistered($configured) && $registry->isAvailable($configured)) {
+        $fallback = $configured;
+    }
+
+    try {
+        $stored = theme_settings_repository()->activeTheme();
+        if (is_string($stored) && $registry->isRegistered($stored) && $registry->isAvailable($stored)) {
+            $resolved = $stored;
+            return $resolved;
+        }
+        if ($stored !== null) {
+            error_log('Configured database theme is unavailable; fallback applied.');
+        }
+    } catch (Throwable) {
+        error_log('Theme setting read failed; fallback applied.');
+    }
+
+    $resolved = $fallback;
+    return $resolved;
+}
+
+function active_theme_name(): string
+{
+    return theme_registry_service()->metadata(active_theme())['name'];
+}
+
+function theme_asset(string $asset): string
+{
+    $registry = theme_registry_service();
+    try {
+        return $registry->assetUrl(active_theme(), $asset);
+    } catch (Throwable) {
+        return $registry->assetUrl($registry->defaultSlug(), $asset);
+    }
+}
+
+/** @return array<string,array{name:string,description:string,appearance:string,preview_colors:list<string>,required_assets:list<string>,available:bool,missing_assets:list<string>}> */
+function installed_themes(): array
+{
+    return theme_registry_service()->themesWithAvailability();
 }
 
 function bootstrap_owner_service(): BootstrapOwnerService
@@ -227,7 +310,8 @@ function require_permission(string $permission): array
     $user = require_authenticated_user();
     if (!has_permission($permission)) {
         http_response_code(403);
-        exit('<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Доступ запрещен — АСУ-ВЧ</title><link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css"></head><body><main class="site-main"><section class="auth-card glass-tile"><h1 class="auth-heading">Доступ запрещен</h1><p class="auth-description">У вашей учетной записи нет разрешения на открытие этого раздела.</p><a class="secondary-button" href="/admin/">К панели</a></section></main></body></html>');
+        $themeCss = e(theme_asset('css/theme.css'));
+        exit('<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Доступ запрещен — АСУ-ВЧ</title><link rel="stylesheet" href="' . $themeCss . '"></head><body><main class="site-main"><section class="auth-card glass-tile"><h1 class="auth-heading">Доступ запрещен</h1><p class="auth-description">У вашей учетной записи нет разрешения на открытие этого раздела.</p><a class="secondary-button" href="/admin/">К панели</a></section></main></body></html>');
     }
     return $user;
 }
@@ -260,6 +344,9 @@ function operation_result_catalog(): array
         'archive_last_owner' => ['type' => 'error', 'message' => 'Нельзя архивировать последнего активного владельца системы.'],
         'restore_not_found' => ['type' => 'error', 'message' => 'Учетная запись не найдена.'],
         'restore_not_archived' => ['type' => 'error', 'message' => 'Учетная запись не находится в архиве.'],
+        'theme_activation_success' => ['type' => 'success', 'message' => 'Тема оформления активирована.'],
+        'theme_activation_unavailable' => ['type' => 'error', 'message' => 'Выбранная тема недоступна.'],
+        'theme_activation_error' => ['type' => 'error', 'message' => 'Не удалось активировать тему оформления.'],
         'operation_success' => ['type' => 'success', 'message' => 'Операция выполнена.'],
         'operation_error' => ['type' => 'error', 'message' => 'Не удалось выполнить операцию.'],
     ];
@@ -288,6 +375,9 @@ function create_operation_result(string $type, string $message): string
         $message === 'Нельзя архивировать собственную учетную запись.' => 'archive_self',
         $message === 'Нельзя архивировать последнего активного владельца системы.' => 'archive_last_owner',
         $message === 'Учетная запись не находится в архиве.' => 'restore_not_archived',
+        $message === 'Тема оформления активирована.' => 'theme_activation_success',
+        $message === 'Выбранная тема недоступна.' => 'theme_activation_unavailable',
+        $message === 'Не удалось активировать тему оформления.' => 'theme_activation_error',
         $message === 'Учетная запись не найдена.' => $type === 'error' ? 'archive_not_found' : 'operation_error',
         default => $type === 'success' ? 'operation_success' : 'operation_error',
     };
@@ -308,27 +398,19 @@ function operation_result_message(string $type): ?string
     }
 
     $message = (string) $state['message'];
-    $encodedType = json_encode(
-        $type,
-        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR
-    );
+    $encodedType = json_encode($type, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
     $encodedMessage = json_encode(
         $message,
-        JSON_UNESCAPED_UNICODE
-        | JSON_UNESCAPED_SLASHES
-        | JSON_HEX_TAG
-        | JSON_HEX_AMP
-        | JSON_HEX_APOS
-        | JSON_HEX_QUOT
-        | JSON_THROW_ON_ERROR
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR
     );
 
     static $notificationRegistered = false;
     if (!$notificationRegistered) {
         $notificationRegistered = true;
-        register_shutdown_function(static function () use ($encodedType, $encodedMessage): void {
-            echo '<link rel="stylesheet" href="/themes/asu-blue/assets/css/operation-result-modal.css">';
-            echo '<script src="/themes/asu-blue/assets/js/operation-result-modal.js"></script>';
+        $modalCss = e(theme_asset('css/operation-result-modal.css'));
+        register_shutdown_function(static function () use ($encodedType, $encodedMessage, $modalCss): void {
+            echo '<link rel="stylesheet" href="' . $modalCss . '">';
+            echo '<script src="/assets/js/operation-result-modal.js"></script>';
             echo '<script>(function(){if(window.AsuOperationResultModal&&typeof window.AsuOperationResultModal.show==="function"){window.AsuOperationResultModal.show(' . $encodedType . ',' . $encodedMessage . ');}var url=new URL(window.location.href);url.searchParams.delete("result");history.replaceState(null,"",url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash);})();</script>';
         });
     }
