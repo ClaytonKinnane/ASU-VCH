@@ -24,14 +24,14 @@ try {
     $result = user_archive_restore_service()->archive($userId, (int) $actor['id'], $reason);
 } catch (Throwable $exception) {
     error_log('User archive failed: ' . get_class($exception));
-    flash('error', 'Учетная запись не архивирована из-за серверной ошибки.');
-    redirect('/admin/users/view.php?id=' . $userId . '&archive_result=server_error');
+    $token = create_operation_result('error', 'Учетная запись не архивирована из-за серверной ошибки.');
+    redirect('/admin/users/view.php?id=' . $userId . '&result=' . $token);
 }
 
 if ($result['ok']) {
     unset($_SESSION['_user_archive'][$userId]);
-    flash('success', 'Учетная запись «' . $result['username'] . '» архивирована.');
-    redirect('/admin/users/view.php?id=' . $userId . '&archive_result=success');
+    $token = create_operation_result('success', 'Учетная запись «' . $result['username'] . '» архивирована.');
+    redirect('/admin/users/view.php?id=' . $userId . '&result=' . $token);
 }
 
 if (isset($result['errors']) && is_array($result['errors'])) {
@@ -45,5 +45,8 @@ if (isset($result['errors']) && is_array($result['errors'])) {
     redirect('/admin/users/view.php?id=' . $userId);
 }
 
-flash('error', (string) ($result['error'] ?? 'Не удалось архивировать учетную запись.'));
-redirect('/admin/users/view.php?id=' . $userId . '&archive_result=error');
+$token = create_operation_result(
+    'error',
+    (string) ($result['error'] ?? 'Не удалось архивировать учетную запись.')
+);
+redirect('/admin/users/view.php?id=' . $userId . '&result=' . $token);
