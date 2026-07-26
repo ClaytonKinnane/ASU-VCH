@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 $user = require_authenticated_user();
 $success = flash('success');
@@ -35,7 +34,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Панель управления — АСУ-ВЧ</title>
-    <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
+    <link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Панель управления</h1><p class="site-description">АСУ-ВЧ · <?= e((string) app_config('version')) ?></p></div><form class="admin-logout" method="post" action="/logout.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><button class="secondary-button" type="submit">Выйти</button></form></div></div></header>

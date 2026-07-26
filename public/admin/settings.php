@@ -1,9 +1,8 @@
 <?php
 
 declare(strict_types=1);
-
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
-require_system_owner();
+require_permission('system.settings.view');
 
 $dbStatus = 'Подключено';
 $dbVersion = '—';
@@ -28,7 +27,7 @@ $diagnosticColumns = [
         ['Часовой пояс', date_default_timezone_get()],
     ],
     [
-        ['Активная тема', (string) app_config('theme', 'asu-blue')],
+        ['Активная тема', active_theme_name() . ' (' . active_theme() . ')'],
         ['Debug', '', $debugEnabled ? 'success' : 'muted', $debugEnabled ? 'Включен' : 'Отключен'],
         ['Применено миграций', (string) $migrationCount],
         ['Последняя миграция', is_string($lastMigration) && $lastMigration !== '' ? $lastMigration : 'Нет данных'],
@@ -37,15 +36,15 @@ $diagnosticColumns = [
 ];
 
 $modules = [
-    ['Общие параметры системы', 'Глобальные настройки экземпляра системы.'],
-    ['Темы оформления', 'Выбор и настройка визуальной темы.'],
-    ['Параметры окружения', 'Режим работы и инфраструктурные параметры.'],
-    ['База данных', 'Подключение, состояние и операции обслуживания.'],
-    ['Миграции', 'История и управление изменениями схемы БД.'],
-    ['Диагностика', 'Проверки состояния приложения.'],
-    ['Обслуживание системы', 'Регламентные операции.'],
-    ['Резервное копирование', 'Создание и восстановление резервных копий.'],
-    ['Журналы приложения', 'Просмотр технических журналов.'],
+    ['Общие параметры системы', 'Глобальные настройки экземпляра системы.', null],
+    ['Темы оформления', 'Выбор глобальной визуальной темы АСУ-ВЧ.', '/admin/settings/themes.php'],
+    ['Параметры окружения', 'Режим работы и инфраструктурные параметры.', null],
+    ['База данных', 'Подключение, состояние и операции обслуживания.', null],
+    ['Миграции', 'История и управление изменениями схемы БД.', null],
+    ['Диагностика', 'Проверки состояния приложения.', null],
+    ['Обслуживание системы', 'Регламентные операции.', null],
+    ['Резервное копирование', 'Создание и восстановление резервных копий.', null],
+    ['Журналы приложения', 'Просмотр технических журналов.', null],
 ];
 ?>
 <!DOCTYPE html>
@@ -54,7 +53,8 @@ $modules = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Настройки системы — АСУ-ВЧ</title>
-    <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
+    <link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
+    <link rel="stylesheet" href="<?= e(theme_asset('css/theme-management.css')) ?>">
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Настройки системы</h1><p class="site-description">Параметры приложения и инфраструктуры</p></div><a class="secondary-button" href="/admin/">К панели</a></div></div></header>
@@ -79,8 +79,9 @@ $modules = [
     </div>
 </section>
 <section class="module-grid" aria-label="Системные настройки">
-<?php foreach ($modules as [$title, $description]): ?>
-<article class="module-tile glass-tile is-disabled"><span class="status-badge">В разработке</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p></article>
+<?php foreach ($modules as [$title, $description, $href]): ?>
+<?php if (is_string($href)): ?><a class="module-tile glass-tile settings-link-tile" href="<?= e($href) ?>"><span class="tile-kicker">Доступно</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p><span class="tile-action">Открыть →</span></a>
+<?php else: ?><article class="module-tile glass-tile is-disabled"><span class="status-badge">В разработке</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p></article><?php endif; ?>
 <?php endforeach; ?>
 </section>
 </div></main>

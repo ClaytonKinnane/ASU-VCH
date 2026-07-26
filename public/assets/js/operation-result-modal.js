@@ -32,16 +32,8 @@
         icon.setAttribute('aria-hidden', 'true');
 
         var body = createElement('div', 'operation-result-modal__body');
-        var eyebrow = createElement(
-            'div',
-            'operation-result-modal__eyebrow',
-            type === 'error' ? 'Ошибка операции' : 'Результат операции'
-        );
-        var title = createElement(
-            'h2',
-            'operation-result-modal__title',
-            type === 'error' ? 'Операция не выполнена' : 'Операция выполнена'
-        );
+        var eyebrow = createElement('div', 'operation-result-modal__eyebrow', type === 'error' ? 'Ошибка операции' : 'Результат операции');
+        var title = createElement('h2', 'operation-result-modal__title', type === 'error' ? 'Операция не выполнена' : 'Операция выполнена');
         title.id = 'operation-result-modal-title';
 
         var messageElement = createElement('p', 'operation-result-modal__message', message);
@@ -95,7 +87,5 @@
         closeButton.focus();
     }
 
-    window.AsuOperationResultModal = Object.freeze({
-        show: show
-    });
+    window.AsuOperationResultModal = Object.freeze({ show: show });
 }());

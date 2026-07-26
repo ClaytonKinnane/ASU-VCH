@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 require dirname(__DIR__, 3) . '/app/bootstrap.php';
 $user = require_permission('security.users.create');
 
@@ -52,8 +51,8 @@ function field_error(array $errors, string $key): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Создание пользователя — АСУ-ВЧ</title>
-    <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
-    <link rel="stylesheet" href="/themes/asu-blue/assets/css/users.css">
+    <link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
+    <link rel="stylesheet" href="<?= e(theme_asset('css/users.css')) ?>">
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Создание пользователя</h1><p class="site-description">Новая учетная запись будет ожидать подтверждения администратора</p></div><a class="secondary-button" href="/admin/users.php">К списку</a></div></div></header>
@@ -62,7 +61,6 @@ function field_error(array $errors, string $key): string
     <?php if ($errors !== []): ?><div class="form-message form-message--error"><strong>Исправьте ошибки формы.</strong><?php if (isset($errors['form'])): ?><span><?= e($errors['form']) ?></span><?php endif; ?></div><?php endif; ?>
     <form method="post" action="/admin/users/create.php" class="user-create-form" novalidate>
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-
         <fieldset class="form-section"><legend>Учетная запись</legend>
             <div class="form-grid">
                 <label><span>Логин *</span><input class="form-input" name="username" maxlength="100" required value="<?= e($values['username']) ?>"><?= field_error($errors, 'username') ?></label>
@@ -71,49 +69,19 @@ function field_error(array $errors, string $key): string
                 <label class="form-grid-wide"><span>Основание добавления *</span><textarea class="form-input form-textarea" name="creation_reason" minlength="10" maxlength="500" required placeholder="Например: приказ, назначение на должность или служебная необходимость"><?= e($values['creation_reason']) ?></textarea><?= field_error($errors, 'creation_reason') ?><small>От 10 до 500 символов. Основание будет отображаться в карточке пользователя.</small></label>
             </div>
         </fieldset>
-
         <fieldset class="form-section"><legend>Начальный пароль</legend>
             <div class="form-grid password-grid">
-                <div class="form-field">
-                    <label for="new-password">Временный пароль *</label>
-                    <div class="password-field">
-                        <input id="new-password" class="form-input" type="password" name="password" minlength="10" maxlength="128" required autocomplete="new-password">
-                        <button class="password-toggle-button" type="button" data-password-toggle="new-password" aria-label="Показать временный пароль" aria-pressed="false">Показать</button>
-                    </div>
-                    <?= field_error($errors, 'password') ?>
-                </div>
-                <div class="form-field">
-                    <label for="new-password-confirmation">Подтверждение *</label>
-                    <div class="password-field">
-                        <input id="new-password-confirmation" class="form-input" type="password" name="password_confirmation" minlength="10" maxlength="128" required autocomplete="new-password">
-                        <button class="password-toggle-button" type="button" data-password-toggle="new-password-confirmation" aria-label="Показать подтверждение пароля" aria-pressed="false">Показать</button>
-                    </div>
-                    <?= field_error($errors, 'password_confirmation') ?>
-                </div>
+                <div class="form-field"><label for="new-password">Временный пароль *</label><div class="password-field"><input id="new-password" class="form-input" type="password" name="password" minlength="10" maxlength="128" required autocomplete="new-password"><button class="password-toggle-button" type="button" data-password-toggle="new-password" aria-label="Показать временный пароль" aria-pressed="false">Показать</button></div><?= field_error($errors, 'password') ?></div>
+                <div class="form-field"><label for="new-password-confirmation">Подтверждение *</label><div class="password-field"><input id="new-password-confirmation" class="form-input" type="password" name="password_confirmation" minlength="10" maxlength="128" required autocomplete="new-password"><button class="password-toggle-button" type="button" data-password-toggle="new-password-confirmation" aria-label="Показать подтверждение пароля" aria-pressed="false">Показать</button></div><?= field_error($errors, 'password_confirmation') ?></div>
             </div>
             <p class="form-help">Минимум 10 символов, одна буква и одна цифра.</p>
-            <div class="checkbox-row">
-                <label><input type="checkbox" name="is_temporary" value="1"<?= $values['is_temporary'] ? ' checked' : '' ?>> Временная учетная запись</label>
-                <label><input type="checkbox" name="must_change_password" value="1"<?= $values['must_change_password'] ? ' checked' : '' ?>> Потребовать смену пароля</label>
-            </div>
+            <div class="checkbox-row"><label><input type="checkbox" name="is_temporary" value="1"<?= $values['is_temporary'] ? ' checked' : '' ?>> Временная учетная запись</label><label><input type="checkbox" name="must_change_password" value="1"<?= $values['must_change_password'] ? ' checked' : '' ?>> Потребовать смену пароля</label></div>
         </fieldset>
-
         <fieldset class="form-section"><legend>Начальные роли</legend>
-            <?php if (!$canAssignRoles): ?>
-                <p class="form-help">У вас нет разрешения назначать роли. Учетная запись будет создана без роли.</p>
-            <?php elseif ($roles === []): ?>
-                <p class="form-help">Нет доступных ролей.</p>
-            <?php else: ?>
-                <div class="role-choice-grid">
-                <?php foreach ($roles as $role): ?>
-                    <label class="role-choice"><input type="checkbox" name="role_ids[]" value="<?= $role['id'] ?>"<?= in_array((int) $role['id'], $values['role_ids'], true) ? ' checked' : '' ?>><span><strong><?= e($role['name']) ?></strong><small><?= e((string) ($role['description'] ?? '')) ?></small></span></label>
-                <?php endforeach; ?>
-                </div>
-                <?= field_error($errors, 'role_ids') ?>
-                <p class="form-help">Без роли пользователь не получит доступ к административным разделам после подтверждения.</p>
-            <?php endif; ?>
+            <?php if (!$canAssignRoles): ?><p class="form-help">У вас нет разрешения назначать роли. Учетная запись будет создана без роли.</p>
+            <?php elseif ($roles === []): ?><p class="form-help">Нет доступных ролей.</p>
+            <?php else: ?><div class="role-choice-grid"><?php foreach ($roles as $role): ?><label class="role-choice"><input type="checkbox" name="role_ids[]" value="<?= $role['id'] ?>"<?= in_array((int) $role['id'], $values['role_ids'], true) ? ' checked' : '' ?>><span><strong><?= e($role['name']) ?></strong><small><?= e((string) ($role['description'] ?? '')) ?></small></span></label><?php endforeach; ?></div><?= field_error($errors, 'role_ids') ?><p class="form-help">Без роли пользователь не получит доступ к административным разделам после подтверждения.</p><?php endif; ?>
         </fieldset>
-
         <div class="form-actions"><button class="primary-button" type="submit">Создать пользователя</button><a class="secondary-button" href="/admin/users.php">Отмена</a></div>
     </form>
 </section>

@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_permission('security.users.view');
 
@@ -40,40 +39,24 @@ $securitySections = [
 function users_list_url(int $page, string $query, string $status): string
 {
     $params = ['page' => $page];
-    if ($query !== '') {
-        $params['q'] = $query;
-    }
-    if ($status !== 'all') {
-        $params['status'] = $status;
-    }
+    if ($query !== '') { $params['q'] = $query; }
+    if ($status !== 'all') { $params['status'] = $status; }
     return '/admin/users.php?' . http_build_query($params);
 }
 
 function user_primary_status(array $row): string
 {
-    if ($row['deleted_at'] !== null) {
-        return 'Архивирован';
-    }
-    if ($row['approval_status'] === 'pending') {
-        return 'Ожидает подтверждения';
-    }
-    if ($row['approval_status'] === 'rejected') {
-        return 'Отклонен';
-    }
+    if ($row['deleted_at'] !== null) { return 'Архивирован'; }
+    if ($row['approval_status'] === 'pending') { return 'Ожидает подтверждения'; }
+    if ($row['approval_status'] === 'rejected') { return 'Отклонен'; }
     return (int) $row['is_active'] === 1 ? 'Активен' : 'Заблокирован';
 }
 
 function user_status_class(array $row): string
 {
-    if ($row['deleted_at'] !== null) {
-        return 'state-badge--muted';
-    }
-    if ($row['approval_status'] === 'pending') {
-        return 'state-badge--warning';
-    }
-    if ($row['approval_status'] === 'rejected') {
-        return 'state-badge--error';
-    }
+    if ($row['deleted_at'] !== null) { return 'state-badge--muted'; }
+    if ($row['approval_status'] === 'pending') { return 'state-badge--warning'; }
+    if ($row['approval_status'] === 'rejected') { return 'state-badge--error'; }
     return (int) $row['is_active'] === 1 ? 'state-badge--success' : 'state-badge--error';
 }
 ?>
@@ -83,8 +66,8 @@ function user_status_class(array $row): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пользователи — АСУ-ВЧ</title>
-    <link rel="stylesheet" href="/themes/asu-blue/assets/css/theme.css">
-    <link rel="stylesheet" href="/themes/asu-blue/assets/css/users.css">
+    <link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
+    <link rel="stylesheet" href="<?= e(theme_asset('css/users.css')) ?>">
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile"><div class="site-logo">АСУ</div><div class="site-heading"><h1 class="site-title">Пользователи</h1><p class="site-description">Учетные записи, роли и разрешения</p></div><a class="secondary-button" href="/admin/">К панели</a></div></div></header>
