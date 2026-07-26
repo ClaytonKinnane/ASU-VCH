@@ -241,13 +241,49 @@ function require_system_owner(): array
     return $user;
 }
 
+function create_operation_result(string $type, string $message): string
+{
+    if (!in_array($type, ['success', 'error'], true) || $message === '') {
+        throw new InvalidArgumentException('Некорректный результат операции.');
+    }
+
+    $token = bin2hex(random_bytes(16));
+    $_SESSION['_operation_results'][$token] = [
+        'type' => $type,
+        'message' => $message,
+    ];
+
+    return $token;
+}
+
+function operation_result_message(string $type): ?string
+{
+    $tokenValue = $_GET['result'] ?? null;
+    if (!is_string($tokenValue) || preg_match('/\A[a-f0-9]{32}\z/D', $tokenValue) !== 1) {
+        return null;
+    }
+
+    $state = $_SESSION['_operation_results'][$tokenValue] ?? null;
+    if (!is_array($state) || ($state['type'] ?? null) !== $type || !is_string($state['message'] ?? null)) {
+        return null;
+    }
+
+    unset($_SESSION['_operation_results'][$tokenValue]);
+    return $state['message'];
+}
+
 function flash(string $key, ?string $value = null): ?string
 {
     if ($value !== null) {
         $_SESSION['_flash'][$key] = $value;
         return null;
     }
+
     $message = $_SESSION['_flash'][$key] ?? null;
     unset($_SESSION['_flash'][$key]);
-    return is_string($message) ? $message : null;
+    if (is_string($message)) {
+        return $message;
+    }
+
+    return operation_result_message($key);
 }
