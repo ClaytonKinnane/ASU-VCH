@@ -15,11 +15,11 @@ main @ dce36c371b3eb6ef8a1365b24972660c0e62dd54
 feature/directories-landing
 ```
 
-Дата автоматических проверок: `2026-07-27`.
+Дата проверок: `2026-07-27`.
 
 ## 2. Проверенная область
 
-Проверены подготовленные изменения:
+Проверены изменения:
 
 ```text
 public/admin/content.php
@@ -29,27 +29,85 @@ docs/design/DIRECTORIES-LANDING-V1-REVIEW.md
 docs/decisions/DIRECTORIES-LANDING-V1-APPROVAL.md
 ```
 
-## 3. PHP syntax
+## 3. Локальный checkout
+
+Пользователь выполнил получение удалённой feature-ветки в локальный репозиторий:
+
+```text
+C:\Project\ASU-VCH
+```
+
+Подтверждено:
+
+```text
+branch: feature/directories-landing
+HEAD: 6929073d5f09c90fc51c2d385f38fddac7185311
+tracking: origin/feature/directories-landing
+pull --ff-only: Already up to date
+working tree: clean
+```
+
+Статус: **PASS**.
+
+## 4. PHP syntax в целевой среде
+
+Версия PHP:
+
+```text
+PHP 8.5.4 (cli)
+Zend Engine v4.5.4
+```
 
 Команды:
 
 ```text
-php -l public/admin/content.php
-php -l public/admin/directories.php
+php -l public\admin\content.php
+php -l public\admin\directories.php
 ```
 
 Результат:
 
 ```text
-No syntax errors detected in public/admin/content.php
-No syntax errors detected in public/admin/directories.php
+No syntax errors detected in public\admin\content.php
+No syntax errors detected in public\admin\directories.php
 ```
 
 Статус: **PASS**.
 
-Примечание: проверка выполнена в доступной среде на PHP `8.4.16`. Целевое локальное развёртывание пользователя использует PHP `8.5.4`, поэтому после deploy требуется повторный lint в целевой среде.
+## 5. Deploy в локальное окружение
 
-## 4. Структурная проверка
+Целевое развёртывание:
+
+```text
+C:\OSPanel\home\asu-vch.local
+```
+
+Скопированы файлы:
+
+```text
+public\admin\content.php
+public\admin\directories.php
+```
+
+### 5.1 Контроль целостности `content.php`
+
+SHA-256 исходного и развёрнутого файлов совпадает:
+
+```text
+5DCD66E64F6AFD5D6DCBD1E4EAB85C88CF6FA556DE67EA3823EBE21938081A51
+```
+
+### 5.2 Контроль целостности `directories.php`
+
+SHA-256 исходного и развёрнутого файлов совпадает:
+
+```text
+9B626164062F334D8EBE15310BDC4D0F88AB61AE0833CEA80EB7F22B9D27ABB6
+```
+
+Статус deploy: **PASS**.
+
+## 6. Структурная проверка
 
 Автоматическими assertions подтверждено:
 
@@ -68,7 +126,7 @@ No syntax errors detected in public/admin/directories.php
 
 Статус: **PASS**.
 
-## 5. RBAC / security review
+## 7. RBAC / security review
 
 Статически подтверждено:
 
@@ -78,11 +136,13 @@ No syntax errors detected in public/admin/directories.php
 - формы и POST-маршруты отсутствуют;
 - динамический `display_name` выводится через существующий `e()`.
 
-Статус: **PASS (STATIC)**.
+Статус статической проверки: **PASS**.
 
-Полная runtime-проверка ответов 403 требует целевого локального развёртывания и тестовых сессий ролей.
+Runtime-проверка владельца и тематического ответа 403 для остальных ролей остаётся обязательной.
 
-## 6. Визуальная проверка
+Статус runtime RBAC: **PENDING**.
+
+## 8. Визуальная проверка
 
 Автоматически подтверждён class contract:
 
@@ -90,32 +150,36 @@ No syntax errors detected in public/admin/directories.php
 - компактный размер сохраняется классом `module-tile`;
 - статичные плитки не содержат `dashboard-tile` и остаются неинтерактивными.
 
-Фактическая desktop-визуальная проверка в браузере для тем `АСУ Синяя` и `АСУ Светлая синяя` **не выполнялась в доступной среде** и остаётся обязательным пользовательским этапом после deploy.
+Фактическая desktop-визуальная проверка в браузере для тем `АСУ Синяя` и `АСУ Светлая синяя` остаётся обязательной.
 
 Статус: **PENDING USER DESKTOP ACCEPTANCE**.
 
-## 7. Мобильное тестирование
+## 9. Мобильное тестирование
 
 Мобильное тестирование исключено из области работ и не выполнялось. Заявление о проверенной мобильной версии не делается.
 
-## 8. Ограничения среды
+## 10. Оставшиеся проверки
 
-Недоступны:
+Необходимо проверить на `https://asu-vch.local`:
 
-- локальный репозиторий пользователя `C:\Project\ASU-VCH`;
-- локальное развёртывание `C:\OSPanel\home\asu-vch.local`;
-- домен `https://asu-vch.local`;
-- runtime-сессии владельца и остальных ролей;
-- браузерная desktop-приёмка целевого развёртывания.
+1. открытие `/admin/content.php` владельцем;
+2. активную плитку `Справочники` и переход на `/admin/directories.php`;
+3. наличие ровно двух статичных плиток;
+4. работу кнопки `К контенту`;
+5. прямой доступ владельца;
+6. тематическую страницу 403 для администратора, оператора или наблюдателя;
+7. desktop-внешний вид и hover-поведение в обеих темах.
 
-## 9. Итог
+## 11. Итог
 
-- PHP syntax: **PASS**;
+- local checkout / branch sync: **PASS**;
+- PHP syntax на PHP 8.5.4: **PASS**;
+- deploy file integrity: **PASS**;
 - structural assertions: **PASS**;
 - static RBAC/security review: **PASS**;
-- scope compliance: **PASS**;
-- runtime deploy/smoke: **NOT RUN**;
+- runtime navigation smoke: **PENDING**;
+- runtime RBAC: **PENDING**;
 - desktop-визуальная приёмка обеих тем: **PENDING**;
 - мобильное тестирование: **OUT OF SCOPE / NOT RUN**.
 
-Инкремент готов к публикации в feature-ветку и последующему deploy пользователем для обязательной runtime и desktop-приёмки. Merge до отдельного разрешения запрещён.
+Merge до завершения runtime-проверок, пользовательской desktop-приёмки и отдельного явного разрешения запрещён.
