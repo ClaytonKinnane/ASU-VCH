@@ -44,7 +44,7 @@
 .theme-card-heading h2 { margin: 7px 0 0; font-size: 22px; }
 .theme-card > p { margin: 18px 0 0; color: var(--text-secondary); line-height: 1.55; }
 .theme-palette { display: flex; gap: 10px; margin-top: 22px; }
-.theme-palette span { width: 48px; height: 48px; border: 1px solid rgba(255,255,255,.28); border-radius: 12px; background: var(--theme-preview-color); box-shadow: 0 7px 18px rgba(0,0,0,.22); }
+.theme-palette span { width: 48px; height: 48px; border: 1px solid rgba(255,255,255,.28); border-radius: 8px; background: var(--theme-preview-color); box-shadow: 0 7px 18px rgba(0,0,0,.22); }
 .theme-unavailable-note { color: #ffb0b0 !important; }
 .theme-card-actions { margin-top: auto; padding-top: 24px; display: flex; align-items: center; }
 .theme-card-actions form { width: 100%; margin: 0; }
