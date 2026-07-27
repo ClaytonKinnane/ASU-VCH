@@ -209,37 +209,44 @@ SET @org_element_version_id = (
 
 INSERT INTO organizational_element_catalog_version_sources
     (catalog_version_id, legal_source_id, source_role, sort_order)
-SELECT @org_element_version_id, id, 'general-composition', 1
-FROM legal_sources WHERE code = 'federal-law-61-fz-article-11'
-ON DUPLICATE KEY UPDATE source_role = VALUES(source_role), sort_order = VALUES(sort_order);
-
-INSERT INTO organizational_element_catalog_version_sources
-    (catalog_version_id, legal_source_id, source_role, sort_order)
-SELECT @org_element_version_id, id, 'classification', 2
-FROM legal_sources WHERE code = 'presidential-decree-1237-article-11'
-ON DUPLICATE KEY UPDATE source_role = VALUES(source_role), sort_order = VALUES(sort_order);
-
-INSERT INTO organizational_element_catalog_version_sources
-    (catalog_version_id, legal_source_id, source_role, sort_order)
-SELECT @org_element_version_id, id, 'internal-service', 3
-FROM legal_sources WHERE code = 'presidential-decree-1495-internal-service-charter'
-ON DUPLICATE KEY UPDATE source_role = VALUES(source_role), sort_order = VALUES(sort_order);
-
-INSERT INTO organizational_element_catalog_version_sources
-    (catalog_version_id, legal_source_id, source_role, sort_order)
-SELECT @org_element_version_id, id, 'naval-organization', 4
-FROM legal_sources WHERE code = 'presidential-decree-511-ship-charter'
-ON DUPLICATE KEY UPDATE source_role = VALUES(source_role), sort_order = VALUES(sort_order);
+SELECT @org_element_version_id, s.id, seed.source_role, seed.sort_order
+FROM JSON_TABLE(
+    '[
+        {"code":"federal-law-61-fz-article-11","source_role":"general-composition","sort_order":1},
+        {"code":"presidential-decree-1237-article-11","source_role":"classification","sort_order":2},
+        {"code":"presidential-decree-1495-internal-service-charter","source_role":"internal-service","sort_order":3},
+        {"code":"presidential-decree-511-ship-charter","source_role":"naval-organization","sort_order":4}
+    ]',
+    '$[*]' COLUMNS (
+        code VARCHAR(120) PATH '$.code',
+        source_role VARCHAR(80) PATH '$.source_role',
+        sort_order SMALLINT PATH '$.sort_order'
+    )
+) AS seed
+JOIN legal_sources s ON s.code = seed.code
+ON DUPLICATE KEY UPDATE
+    source_role = VALUES(source_role),
+    sort_order = VALUES(sort_order);
 
 INSERT INTO organizational_element_classes
     (catalog_version_id, code, name, description, sort_order, created_at)
-VALUES
-    (@org_element_version_id, 'military-command-body', 'Орган военного управления', 'Организационный элемент, выполняющий функции военного управления в установленном нормативном контексте.', 1, @org_element_now),
-    (@org_element_version_id, 'association', 'Объединение', 'Организационный класс оперативного или стратегического масштаба, прямо используемый нормативными актами.', 2, @org_element_now),
-    (@org_element_version_id, 'formation', 'Соединение', 'Организационный класс, объединяющий несколько воинских частей или меньших соединений.', 3, @org_element_now),
-    (@org_element_version_id, 'military-unit', 'Воинская часть', 'Самостоятельный организационный класс, статус которого определяется утверждённым штатом и правовым основанием.', 4, @org_element_now),
-    (@org_element_version_id, 'organization', 'Организация', 'Организация Вооружённых Сил, не классифицируемая в данном контексте как воинская часть.', 5, @org_element_now),
-    (@org_element_version_id, 'subdivision', 'Подразделение', 'Организационный элемент, входящий в состав другого элемента согласно утверждённой структуре.', 6, @org_element_now)
+SELECT @org_element_version_id, seed.code, seed.name, seed.description, seed.sort_order, @org_element_now
+FROM JSON_TABLE(
+    '[
+        {"code":"military-command-body","name":"Орган военного управления","description":"Организационный элемент, выполняющий функции военного управления в установленном нормативном контексте.","sort_order":1},
+        {"code":"association","name":"Объединение","description":"Организационный класс оперативного или стратегического масштаба, прямо используемый нормативными актами.","sort_order":2},
+        {"code":"formation","name":"Соединение","description":"Организационный класс, объединяющий несколько воинских частей или меньших соединений.","sort_order":3},
+        {"code":"military-unit","name":"Воинская часть","description":"Самостоятельный организационный класс, статус которого определяется утверждённым штатом и правовым основанием.","sort_order":4},
+        {"code":"organization","name":"Организация","description":"Организация Вооружённых Сил, не классифицируемая в данном контексте как воинская часть.","sort_order":5},
+        {"code":"subdivision","name":"Подразделение","description":"Организационный элемент, входящий в состав другого элемента согласно утверждённой структуре.","sort_order":6}
+    ]',
+    '$[*]' COLUMNS (
+        code VARCHAR(100) PATH '$.code',
+        name VARCHAR(255) PATH '$.name',
+        description VARCHAR(1000) PATH '$.description',
+        sort_order SMALLINT PATH '$.sort_order'
+    )
+) AS seed
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
     description = VALUES(description),
@@ -247,35 +254,48 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO organizational_element_types
     (catalog_version_id, code, name, short_name, description, applicability_note, sort_order, created_at)
-VALUES
-    (@org_element_version_id, 'administration', 'управление', NULL, 'Организационный элемент управления, официально используемый для органов и внутренних элементов структуры.', 'Класс определяется конкретным нормативным положением и утверждённой структурой.', 1, @org_element_now),
-    (@org_element_version_id, 'headquarters', 'штаб', NULL, 'Орган управления, обеспечивающий планирование, координацию и управление в установленном контексте.', 'Может выступать органом военного управления либо подразделением другого элемента.', 2, @org_element_now),
-    (@org_element_version_id, 'service', 'служба', NULL, 'Функциональное подразделение по установленному направлению деятельности.', 'Состав и место службы определяются утверждённым штатом.', 3, @org_element_now),
-    (@org_element_version_id, 'direction', 'направление', NULL, 'Функциональный организационный элемент, официально употребляемый в структурах органов управления.', 'Не задаёт универсального уровня и применяется только в подтверждённом контексте.', 4, @org_element_now),
-    (@org_element_version_id, 'department', 'отдел', NULL, 'Функциональное подразделение органа управления или организации.', 'Место отдела в структуре определяется конкретным положением или штатом.', 5, @org_element_now),
-    (@org_element_version_id, 'army', 'армия', NULL, 'Организационный тип, нормативно классифицируемый как объединение.', 'Не определяет состав конкретной армии.', 6, @org_element_now),
-    (@org_element_version_id, 'corps', 'корпус', NULL, 'Организационный тип, нормативно классифицируемый как соединение.', 'Не определяет состав конкретного корпуса.', 7, @org_element_now),
-    (@org_element_version_id, 'division', 'дивизия', NULL, 'Организационный тип, нормативно классифицируемый как соединение.', 'Не определяет состав конкретной дивизии.', 8, @org_element_now),
-    (@org_element_version_id, 'brigade', 'бригада', NULL, 'Организационный тип, нормативно классифицируемый как соединение.', 'Не определяет состав конкретной бригады.', 9, @org_element_now),
-    (@org_element_version_id, 'regiment', 'полк', NULL, 'Основная тактическая и административно-хозяйственная единица, содержащаяся по установленному штату.', 'В справочнике фиксируется общий тип без состава конкретного полка.', 10, @org_element_now),
-    (@org_element_version_id, 'arsenal', 'арсенал', NULL, 'Организационный тип, официально относимый к воинским частям в нормативном контексте.', 'Фактическое назначение и состав конкретного арсенала не хранятся.', 11, @org_element_now),
-    (@org_element_version_id, 'test-center', 'испытательный центр', NULL, 'Организационный тип, официально относимый к воинским частям в нормативном контексте.', 'Не описывает специализацию и состав конкретного центра.', 12, @org_element_now),
-    (@org_element_version_id, 'storage-supply-base', 'база хранения и снабжения', NULL, 'Организационный тип, официально относимый к воинским частям в нормативном контексте.', 'Не содержит сведений о запасах, дислокации или фактической структуре.', 13, @org_element_now),
-    (@org_element_version_id, 'enterprise', 'предприятие', NULL, 'Организация, официально упоминаемая в составе системы Вооружённых Сил.', 'Организационно-правовая форма конкретного предприятия определяется отдельно.', 14, @org_element_now),
-    (@org_element_version_id, 'institution', 'учреждение', NULL, 'Организация, официально упоминаемая в составе системы Вооружённых Сил.', 'Не определяет ведомственный статус конкретного учреждения.', 15, @org_element_now),
-    (@org_element_version_id, 'military-educational-organization', 'военная образовательная организация', NULL, 'Организация, осуществляющая образовательную деятельность в установленной сфере.', 'Конкретный вид и статус определяются учредительными и нормативными документами.', 16, @org_element_now),
-    (@org_element_version_id, 'battalion', 'батальон', NULL, 'Тактический организационный элемент, используемый как подразделение и в отдельных случаях как воинская часть.', 'Самостоятельный статус возможен только при наличии соответствующего утверждённого основания.', 17, @org_element_now),
-    (@org_element_version_id, 'divizion', 'дивизион', NULL, 'Организационный элемент, используемый в сухопутной и корабельной организации.', 'Самостоятельный статус и область применения определяются конкретным нормативным контекстом.', 18, @org_element_now),
-    (@org_element_version_id, 'company', 'рота', NULL, 'Тактическое подразделение, официально используемое в общевоинской организации.', 'Состав и место в структуре определяются утверждённым штатом.', 19, @org_element_now),
-    (@org_element_version_id, 'battery', 'батарея', NULL, 'Тактическое подразделение, официально используемое в общевоинской и корабельной организации.', 'Состав и принадлежность определяются утверждённой структурой.', 20, @org_element_now),
-    (@org_element_version_id, 'platoon', 'взвод', NULL, 'Тактическое подразделение, официально используемое в общевоинской организации.', 'Состав и место в структуре определяются утверждённым штатом.', 21, @org_element_now),
-    (@org_element_version_id, 'group', 'группа', NULL, 'Организационное подразделение, официально употребляемое в уставах.', 'Название само по себе не определяет уровень, численность или назначение.', 22, @org_element_now),
-    (@org_element_version_id, 'section', 'отделение', NULL, 'Низовое подразделение, официально используемое в общевоинской и корабельной организации.', 'Состав определяется конкретным штатом или корабельной организацией.', 23, @org_element_now),
-    (@org_element_version_id, 'team', 'команда', NULL, 'Организационное подразделение, официально используемое в уставах.', 'Не следует смешивать с временной командой вне подтверждённого организационного контекста.', 24, @org_element_now),
-    (@org_element_version_id, 'raschet', 'расчёт', NULL, 'Организационное подразделение личного состава для совместного выполнения установленных обязанностей.', 'Конкретное назначение расчёта в справочнике не фиксируется.', 25, @org_element_now),
-    (@org_element_version_id, 'crew', 'экипаж', NULL, 'Организационное подразделение личного состава, обслуживающее соответствующий объект или средство.', 'Тип не содержит сведений о технике и фактическом составе экипажа.', 26, @org_element_now),
-    (@org_element_version_id, 'ship', 'корабль', NULL, 'Боевая тактическая и административно-хозяйственная единица, содержащаяся по установленному штату.', 'Классификация как воинской части применяется только в соответствующем правовом контексте.', 27, @org_element_now),
-    (@org_element_version_id, 'combat-unit', 'боевая часть', 'БЧ', 'Основной организационный элемент корабельной организации по установленному назначению.', 'Применяется к корабельной организации и не является универсальным общевойсковым подразделением.', 28, @org_element_now)
+SELECT @org_element_version_id, seed.code, seed.name, seed.short_name, seed.description,
+    seed.applicability_note, seed.sort_order, @org_element_now
+FROM JSON_TABLE(
+    '[
+        {"code":"administration","name":"управление","short_name":null,"description":"Организационный элемент управления, официально используемый для органов и внутренних элементов структуры.","applicability_note":"Класс определяется конкретным нормативным положением и утверждённой структурой.","sort_order":1},
+        {"code":"headquarters","name":"штаб","short_name":null,"description":"Орган управления, обеспечивающий планирование, координацию и управление в установленном контексте.","applicability_note":"Может выступать органом военного управления либо подразделением другого элемента.","sort_order":2},
+        {"code":"service","name":"служба","short_name":null,"description":"Функциональное подразделение по установленному направлению деятельности.","applicability_note":"Состав и место службы определяются утверждённым штатом.","sort_order":3},
+        {"code":"direction","name":"направление","short_name":null,"description":"Функциональный организационный элемент, официально употребляемый в структурах органов управления.","applicability_note":"Не задаёт универсального уровня и применяется только в подтверждённом контексте.","sort_order":4},
+        {"code":"department","name":"отдел","short_name":null,"description":"Функциональное подразделение органа управления или организации.","applicability_note":"Место отдела в структуре определяется конкретным положением или штатом.","sort_order":5},
+        {"code":"army","name":"армия","short_name":null,"description":"Организационный тип, нормативно классифицируемый как объединение.","applicability_note":"Не определяет состав конкретной армии.","sort_order":6},
+        {"code":"corps","name":"корпус","short_name":null,"description":"Организационный тип, нормативно классифицируемый как соединение.","applicability_note":"Не определяет состав конкретного корпуса.","sort_order":7},
+        {"code":"division","name":"дивизия","short_name":null,"description":"Организационный тип, нормативно классифицируемый как соединение.","applicability_note":"Не определяет состав конкретной дивизии.","sort_order":8},
+        {"code":"brigade","name":"бригада","short_name":null,"description":"Организационный тип, нормативно классифицируемый как соединение.","applicability_note":"Не определяет состав конкретной бригады.","sort_order":9},
+        {"code":"regiment","name":"полк","short_name":null,"description":"Основная тактическая и административно-хозяйственная единица, содержащаяся по установленному штату.","applicability_note":"В справочнике фиксируется общий тип без состава конкретного полка.","sort_order":10},
+        {"code":"arsenal","name":"арсенал","short_name":null,"description":"Организационный тип, официально относимый к воинским частям в нормативном контексте.","applicability_note":"Фактическое назначение и состав конкретного арсенала не хранятся.","sort_order":11},
+        {"code":"test-center","name":"испытательный центр","short_name":null,"description":"Организационный тип, официально относимый к воинским частям в нормативном контексте.","applicability_note":"Не описывает специализацию и состав конкретного центра.","sort_order":12},
+        {"code":"storage-supply-base","name":"база хранения и снабжения","short_name":null,"description":"Организационный тип, официально относимый к воинским частям в нормативном контексте.","applicability_note":"Не содержит сведений о запасах, дислокации или фактической структуре.","sort_order":13},
+        {"code":"enterprise","name":"предприятие","short_name":null,"description":"Организация, официально упоминаемая в составе системы Вооружённых Сил.","applicability_note":"Организационно-правовая форма конкретного предприятия определяется отдельно.","sort_order":14},
+        {"code":"institution","name":"учреждение","short_name":null,"description":"Организация, официально упоминаемая в составе системы Вооружённых Сил.","applicability_note":"Не определяет ведомственный статус конкретного учреждения.","sort_order":15},
+        {"code":"military-educational-organization","name":"военная образовательная организация","short_name":null,"description":"Организация, осуществляющая образовательную деятельность в установленной сфере.","applicability_note":"Конкретный вид и статус определяются учредительными и нормативными документами.","sort_order":16},
+        {"code":"battalion","name":"батальон","short_name":null,"description":"Тактический организационный элемент, используемый как подразделение и в отдельных случаях как воинская часть.","applicability_note":"Самостоятельный статус возможен только при наличии соответствующего утверждённого основания.","sort_order":17},
+        {"code":"divizion","name":"дивизион","short_name":null,"description":"Организационный элемент, используемый в сухопутной и корабельной организации.","applicability_note":"Самостоятельный статус и область применения определяются конкретным нормативным контекстом.","sort_order":18},
+        {"code":"company","name":"рота","short_name":null,"description":"Тактическое подразделение, официально используемое в общевоинской организации.","applicability_note":"Состав и место в структуре определяются утверждённым штатом.","sort_order":19},
+        {"code":"battery","name":"батарея","short_name":null,"description":"Тактическое подразделение, официально используемое в общевоинской и корабельной организации.","applicability_note":"Состав и принадлежность определяются утверждённой структурой.","sort_order":20},
+        {"code":"platoon","name":"взвод","short_name":null,"description":"Тактическое подразделение, официально используемое в общевоинской организации.","applicability_note":"Состав и место в структуре определяются утверждённым штатом.","sort_order":21},
+        {"code":"group","name":"группа","short_name":null,"description":"Организационное подразделение, официально употребляемое в уставах.","applicability_note":"Название само по себе не определяет уровень, численность или назначение.","sort_order":22},
+        {"code":"section","name":"отделение","short_name":null,"description":"Низовое подразделение, официально используемое в общевоинской и корабельной организации.","applicability_note":"Состав определяется конкретным штатом или корабельной организацией.","sort_order":23},
+        {"code":"team","name":"команда","short_name":null,"description":"Организационное подразделение, официально используемое в уставах.","applicability_note":"Не следует смешивать с временной командой вне подтверждённого организационного контекста.","sort_order":24},
+        {"code":"raschet","name":"расчёт","short_name":null,"description":"Организационное подразделение личного состава для совместного выполнения установленных обязанностей.","applicability_note":"Конкретное назначение расчёта в справочнике не фиксируется.","sort_order":25},
+        {"code":"crew","name":"экипаж","short_name":null,"description":"Организационное подразделение личного состава, обслуживающее соответствующий объект или средство.","applicability_note":"Тип не содержит сведений о технике и фактическом составе экипажа.","sort_order":26},
+        {"code":"ship","name":"корабль","short_name":null,"description":"Боевая тактическая и административно-хозяйственная единица, содержащаяся по установленному штату.","applicability_note":"Классификация как воинской части применяется только в соответствующем правовом контексте.","sort_order":27},
+        {"code":"combat-unit","name":"боевая часть","short_name":"БЧ","description":"Основной организационный элемент корабельной организации по установленному назначению.","applicability_note":"Применяется к корабельной организации и не является универсальным общевойсковым подразделением.","sort_order":28}
+    ]',
+    '$[*]' COLUMNS (
+        code VARCHAR(100) PATH '$.code',
+        name VARCHAR(255) PATH '$.name',
+        short_name VARCHAR(100) PATH '$.short_name' NULL ON EMPTY,
+        description VARCHAR(1000) PATH '$.description',
+        applicability_note VARCHAR(1000) PATH '$.applicability_note',
+        sort_order SMALLINT PATH '$.sort_order'
+    )
+) AS seed
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
     short_name = VALUES(short_name),
@@ -285,39 +305,54 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO organizational_element_type_classes
     (catalog_version_id, type_id, class_id, is_primary, context_note, sort_order)
-VALUES
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'administration'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-command-body'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'administration'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 0, 'Управление может быть внутренним подразделением другого организационного элемента.', 2),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'headquarters'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-command-body'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'headquarters'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 0, 'Штаб может входить в состав другого организационного элемента как подразделение.', 2),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'service'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'direction'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'department'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'army'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'association'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'corps'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'formation'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'division'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'formation'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'brigade'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'formation'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'regiment'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-unit'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'arsenal'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-unit'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'test-center'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-unit'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'storage-supply-base'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-unit'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'enterprise'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'organization'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'institution'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'organization'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'military-educational-organization'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'organization'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'battalion'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'battalion'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-unit'), 0, 'Отдельный батальон может иметь статус воинской части при наличии утверждённого основания.', 2),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'divizion'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'divizion'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-unit'), 0, 'Отдельный дивизион может иметь статус воинской части при наличии утверждённого основания.', 2),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'company'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'battery'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'platoon'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'group'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'section'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'team'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'raschet'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'crew'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'ship'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'military-unit'), 1, NULL, 1),
-    (@org_element_version_id, (SELECT id FROM organizational_element_types WHERE catalog_version_id = @org_element_version_id AND code = 'combat-unit'), (SELECT id FROM organizational_element_classes WHERE catalog_version_id = @org_element_version_id AND code = 'subdivision'), 1, NULL, 1)
+SELECT @org_element_version_id, t.id, c.id, seed.is_primary, seed.context_note, seed.sort_order
+FROM JSON_TABLE(
+    '[
+        {"type_code":"administration","class_code":"military-command-body","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"administration","class_code":"subdivision","is_primary":0,"context_note":"Управление может быть внутренним подразделением другого организационного элемента.","sort_order":2},
+        {"type_code":"headquarters","class_code":"military-command-body","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"headquarters","class_code":"subdivision","is_primary":0,"context_note":"Штаб может входить в состав другого организационного элемента как подразделение.","sort_order":2},
+        {"type_code":"service","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"direction","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"department","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"army","class_code":"association","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"corps","class_code":"formation","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"division","class_code":"formation","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"brigade","class_code":"formation","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"regiment","class_code":"military-unit","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"arsenal","class_code":"military-unit","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"test-center","class_code":"military-unit","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"storage-supply-base","class_code":"military-unit","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"enterprise","class_code":"organization","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"institution","class_code":"organization","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"military-educational-organization","class_code":"organization","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"battalion","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"battalion","class_code":"military-unit","is_primary":0,"context_note":"Отдельный батальон может иметь статус воинской части при наличии утверждённого основания.","sort_order":2},
+        {"type_code":"divizion","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"divizion","class_code":"military-unit","is_primary":0,"context_note":"Отдельный дивизион может иметь статус воинской части при наличии утверждённого основания.","sort_order":2},
+        {"type_code":"company","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"battery","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"platoon","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"group","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"section","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"team","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"raschet","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"crew","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"ship","class_code":"military-unit","is_primary":1,"context_note":null,"sort_order":1},
+        {"type_code":"combat-unit","class_code":"subdivision","is_primary":1,"context_note":null,"sort_order":1}
+    ]',
+    '$[*]' COLUMNS (
+        type_code VARCHAR(100) PATH '$.type_code',
+        class_code VARCHAR(100) PATH '$.class_code',
+        is_primary TINYINT PATH '$.is_primary',
+        context_note VARCHAR(1000) PATH '$.context_note' NULL ON EMPTY,
+        sort_order SMALLINT PATH '$.sort_order'
+    )
+) AS seed
+JOIN organizational_element_types t
+    ON t.catalog_version_id = @org_element_version_id AND t.code = seed.type_code
+JOIN organizational_element_classes c
+    ON c.catalog_version_id = @org_element_version_id AND c.code = seed.class_code
 ON DUPLICATE KEY UPDATE
     is_primary = VALUES(is_primary),
     context_note = VALUES(context_note),
