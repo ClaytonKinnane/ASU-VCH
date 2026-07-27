@@ -5,9 +5,10 @@
 .theme-audit { display: grid; gap: 5px; min-width: 220px; text-align: right; }
 .theme-audit span, .theme-audit small { color: var(--text-secondary); font-size: 12px; }
 .theme-card-grid { margin-top: 22px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
-.theme-card { min-height: 300px; padding: 22px; display: flex; flex-direction: column; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
-.theme-card:hover { transform: translateY(-3px); border-color: #054f9e; box-shadow: 0 0 20px rgba(8,106,213,.15); }
-.theme-card.is-active { border-width: 2px; box-shadow: 0 0 20px rgba(8,106,213,.16); }
+.theme-card { position: relative; min-height: 300px; padding: 22px; display: flex; flex-direction: column; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.theme-card:hover { transform: translateY(-3px); border-color: #054f9e; box-shadow: 0 0 0 1px rgba(8,106,213,.42), 0 0 9px 1px rgba(8,106,213,.24); }
+.theme-card.is-active { border-width: 2px; box-shadow: 0 0 0 1px rgba(8,106,213,.30), 0 0 8px rgba(8,106,213,.18); }
+.theme-card.is-active:hover { box-shadow: 0 0 0 1px rgba(8,106,213,.56), 0 0 11px 1px rgba(8,106,213,.30); }
 .theme-card.is-unavailable { opacity: .68; }
 .theme-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .theme-card-heading h2 { margin: 7px 0 0; color: #086ad5; font-size: 22px; }
