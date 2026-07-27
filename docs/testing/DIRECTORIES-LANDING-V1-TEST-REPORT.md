@@ -47,7 +47,7 @@ pull --ff-only: Already up to date
 working tree: clean
 ```
 
-После фиксации настоящего отчёта удалённая feature-ветка получила дополнительный documentation commit. Перед следующей локальной проверкой требуется выполнить `git pull --ff-only`.
+После фиксации настоящего отчёта удалённая feature-ветка получила дополнительные documentation commits. Перед следующей локальной проверкой требуется выполнить `git pull --ff-only`.
 
 Статус: **PASS**.
 
