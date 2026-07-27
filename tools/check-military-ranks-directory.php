@@ -16,6 +16,7 @@ if (!is_file($localFile)) {
 }
 
 require_once $root . '/app/Directory/MilitaryRankCatalogRepository.php';
+require_once $root . '/app/Theme/ThemeRegistry.php';
 
 $local = require $localFile;
 $config = array_replace_recursive($app, $local);
@@ -180,6 +181,7 @@ try {
     echo "OK system permissions: 19\n";
 
     $themes = require $root . '/config/themes.php';
+    $themeRegistry = new ThemeRegistry($root, $root . '/config/themes.php');
     foreach (['asu-blue', 'asu-light-blue'] as $themeSlug) {
         $requiredAssets = $themes['themes'][$themeSlug]['required_assets'] ?? [];
         military_ranks_check(
@@ -188,7 +190,12 @@ try {
         );
         military_ranks_check(
             is_file($root . '/themes/' . $themeSlug . '/assets/css/directories.css'),
-            "Не найден CSS справочников для темы {$themeSlug}."
+            "Не найден исходный CSS справочников для темы {$themeSlug}."
+        );
+        military_ranks_check(
+            $themeRegistry->assetUrl($themeSlug, 'css/directories.css')
+                === '/themes/' . $themeSlug . '/assets/css/directories.css',
+            "Опубликованный CSS справочников недоступен для темы {$themeSlug}."
         );
     }
     echo "OK theme assets: 2\n";
