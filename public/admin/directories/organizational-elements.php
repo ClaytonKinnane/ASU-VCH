@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 require dirname(__DIR__, 3) . '/app/bootstrap.php';
-require_once dirname(__DIR__, 3) . '/app/Directory/OrganizationalElementCatalogRepository.php';
 
 $user = require_permission('system.*.*');
 
@@ -12,7 +11,7 @@ if (mb_strlen($query, 'UTF-8') > 150) {
     $query = mb_substr($query, 0, 150, 'UTF-8');
 }
 
-$repository = new OrganizationalElementCatalogRepository(db());
+$repository = organizational_element_catalog_repository();
 $version = $repository->currentVersion();
 $versionId = (int) $version['id'];
 $sources = $repository->versionSources($versionId);
