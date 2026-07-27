@@ -6,12 +6,12 @@
 
 ## Реестр
 
-Установленные темы перечислены в `config/themes.php`. Реестр является allow-list и не формируется из HTTP-параметров или сканирования каталогов.
+Установленные темы перечислены в `config/themes.php`. Реестр является статическим allow-list и не формируется из HTTP-параметров или сканирования каталогов.
 
 Встроенные темы:
 
-- **АСУ Синяя** — `asu-blue`, тёмная тема и безопасный fallback;
-- **АСУ Светлая синяя** — `asu-light-blue`, светлая минималистичная тема с основным цветом `#086ad5`.
+- **АСУ Синяя** — `asu-blue`, тёмная сине-бирюзовая тема и безопасный fallback;
+- **АСУ Светлая синяя** — `asu-light-blue`, светлая минималистичная тема с синими контурами.
 
 ## Управление
 
@@ -29,11 +29,11 @@
 system_settings.ui.active_theme
 ```
 
-`config/app.php['theme']` используется только как bootstrap/pre-install fallback.
+`config/app.php['theme']` используется как bootstrap/pre-install fallback.
 
-## Состав темы
+## Обязательные assets
 
-Каждая тема содержит CSS-assets с единым class contract:
+Обе темы реализуют единый class contract и содержат:
 
 ```text
 themes/{slug}/assets/css/theme.css
@@ -41,19 +41,38 @@ themes/{slug}/assets/css/auth.css
 themes/{slug}/assets/css/account.css
 themes/{slug}/assets/css/users.css
 themes/{slug}/assets/css/theme-management.css
+themes/{slug}/assets/css/directories.css
 themes/{slug}/assets/css/operation-result-modal.css
 ```
 
-Поведение operation-result modal является общим и находится в:
+Общее поведение operation-result modal находится в:
 
 ```text
 public/assets/js/operation-result-modal.js
 ```
 
+## Публикация
+
+Исходные темы находятся в корневом каталоге `themes`. Apache обслуживает только `public`, поэтому deploy публикует темы в:
+
+```text
+C:\OSPanel\home\asu-vch.local\public\themes\{slug}
+```
+
+`ThemeRegistry` проверяет регистрацию slug, наличие обязательных файлов и строит URL только для доступных assets.
+
 ## Безопасность
 
-- slug должен быть зарегистрирован;
+- slug должен присутствовать в `config/themes.php`;
 - обязательные assets проверяются до активации;
 - неизвестное или повреждённое значение приводит к fallback `asu-blue`;
-- query, cookie и GET-preview не поддерживаются;
-- загрузка ZIP, произвольного CSS/JS и редактирование темы из браузера отсутствуют.
+- path traversal, абсолютные пути, URL-схемы, NUL и backslash в имени asset отклоняются;
+- query-, cookie- и GET-preview темы не поддерживаются;
+- активация выполняется POST-only с permission, CSRF и PRG;
+- загрузка ZIP, произвольного CSS/JS, удаление темы и browser-редактор отсутствуют.
+
+## Проверка
+
+Integration checker управления темами проверяет реестр, доступность assets, persistence, audit и fallback. Справочные checker'ы дополнительно вызывают `ThemeRegistry::assetUrl()` для `css/directories.css` обеих тем.
+
+Desktop-приёмка тем `asu-blue` и `asu-light-blue` завершена. Мобильная приёмка последних справочных инкрементов не выполнялась.
