@@ -5,7 +5,11 @@ require dirname(__DIR__, 2) . '/app/bootstrap.php';
 $user = require_permission('system.*.*');
 
 $directories = [
-    ['Подразделения', 'Справочник подразделений воинской части.', null],
+    [
+        'Организационные элементы и подразделения',
+        'Классификатор типов органов военного управления, объединений, соединений, воинских частей, организаций и подразделений.',
+        '/admin/directories/organizational-elements.php',
+    ],
     [
         'Составы военнослужащих и воинские звания',
         'Нормативный перечень составов военнослужащих, войсковых и корабельных воинских званий.',
@@ -28,11 +32,7 @@ $directories = [
 <section class="section-intro glass-tile"><div><strong><?= e($user['display_name']) ?></strong><span>Выберите справочник для просмотра. Нормативные системные справочники доступны только для чтения.</span></div></section>
 <section class="module-grid" aria-label="Доступные справочники">
 <?php foreach ($directories as [$title, $description, $href]): ?>
-<?php if (is_string($href)): ?>
 <a class="dashboard-tile module-tile glass-tile directory-link-tile" href="<?= e($href) ?>"><span class="tile-kicker">Доступно</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p><span class="tile-action">Открыть →</span></a>
-<?php else: ?>
-<article class="module-tile glass-tile is-disabled"><span class="status-badge">В разработке</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p></article>
-<?php endif; ?>
 <?php endforeach; ?>
 </section>
 </div></main>

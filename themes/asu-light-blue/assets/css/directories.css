@@ -46,7 +46,37 @@
 .directory-rank-number { color: #086ad5; font-weight: 850; }
 .directory-composition-path { color: #18324d; font-weight: 700; }
 .directory-empty { min-height: 170px; display: grid; place-items: center; color: var(--text-secondary); text-align: center; }
+.directory-empty p { margin: 7px 0 0; }
 .directory-muted-value { color: #8b9baa; }
+
+.organizational-element-filters { grid-template-columns: minmax(220px, 1fr) minmax(190px, .7fr) minmax(240px, .85fr) auto auto; }
+.organizational-element-table th:nth-child(1) { width: 24%; }
+.organizational-element-table th:nth-child(2) { width: 19%; }
+.organizational-element-table th:nth-child(3) { width: 17%; }
+.organizational-element-table th:nth-child(4) { width: 20%; }
+.organizational-element-table th:nth-child(5) { width: 20%; }
+.organizational-element-name { display: block; color: #18324d; font-size: 16px; }
+.organizational-element-short-name { display: inline-flex; margin-top: 7px; padding: 3px 8px; border: 1px solid #4aa481; border-radius: 999px; color: #17664a; background: #edf9f4; font-size: 12px; font-weight: 850; }
+.organizational-element-description { margin: 9px 0 0; }
+.organizational-element-aliases { margin: 8px 0 0; color: #086ad5; font-size: 12px; }
+.organizational-class-list { display: grid; gap: 7px; }
+.organizational-class-list small { color: var(--text-secondary); line-height: 1.4; }
+.organizational-class-badge { display: inline-flex; width: fit-content; padding: 4px 8px; border: 1px solid #a9cbed; border-radius: 999px; color: #086ad5; background: #f3f8fe; font-size: 12px; font-weight: 750; }
+.organizational-class-badge.is-primary { border-color: #4aa481; color: #17664a; background: #edf9f4; }
+.organizational-scope-badge { display: inline-flex; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; line-height: 1.3; }
+.organizational-scope-badge.scope-non_subdivision_only { border: 1px solid #8bb8e5; color: #086ad5; background: #f3f8fe; }
+.organizational-scope-badge.scope-subdivision_only { border: 1px solid #c6d3df; color: #526779; background: #f7f9fb; }
+.organizational-scope-badge.scope-mixed { border: 1px solid #4aa481; color: #17664a; background: #edf9f4; }
+.organizational-source-list { display: grid; gap: 8px; }
+.organizational-source-list details { padding: 8px 9px; border: 1px solid #c6dcf1; border-radius: 7px; background: #fbfdff; }
+.organizational-source-list summary { color: #18324d; cursor: pointer; font-weight: 750; }
+.organizational-source-list p { margin: 8px 0; }
+.organizational-source-list a { color: #086ad5; font-weight: 700; text-decoration: none; }
+.organizational-source-list a:hover { color: #054f9e; text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 1180px) {
+    .organizational-element-filters { grid-template-columns: 1fr 1fr; }
+}
 
 @media (max-width: 980px) {
     .directory-meta { grid-template-columns: 1fr; }
@@ -59,4 +89,5 @@
     .legal-sources-grid, .directory-filters { grid-template-columns: 1fr; }
     .directory-table-wrap { overflow-x: auto; }
     .directory-table { min-width: 820px; }
+    .organizational-element-table { min-width: 1220px; }
 }
