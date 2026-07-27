@@ -89,10 +89,22 @@ try {
         . 'WHERE vs.catalog_version_id = :version_id ORDER BY vs.sort_order'
     );
     $sourceCodes->execute(['version_id' => $versionId]);
-    military_ranks_check($sourceCodes->fetchAll() === [
+    $sourceRows = $sourceCodes->fetchAll();
+    $expectedSources = [
         ['code' => 'federal-law-53-fz-article-46', 'source_role' => 'primary-list', 'sort_order' => 1],
         ['code' => 'presidential-decree-1237-article-20', 'source_role' => 'equivalence-and-order', 'sort_order' => 2],
-    ], 'Нормативные источники или их порядок не совпадают.');
+    ];
+    military_ranks_check(count($sourceRows) === count($expectedSources), 'Количество нормативных источников не совпадает.');
+    foreach ($expectedSources as $index => $expectedSource) {
+        $actualSource = $sourceRows[$index] ?? null;
+        military_ranks_check(
+            is_array($actualSource)
+            && $actualSource['code'] === $expectedSource['code']
+            && $actualSource['source_role'] === $expectedSource['source_role']
+            && (int) $actualSource['sort_order'] === $expectedSource['sort_order'],
+            'Нормативные источники или их порядок не совпадают.'
+        );
+    }
     echo "OK legal sources: 2\n";
 
     $compositionCount = $pdo->prepare(
