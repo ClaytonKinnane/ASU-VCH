@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
-$user = require_system_owner();
+$user = require_permission('system.*.*');
 
 $directories = [
     ['Подразделения', 'Справочник подразделений воинской части.'],
