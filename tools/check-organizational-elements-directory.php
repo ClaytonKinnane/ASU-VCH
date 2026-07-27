@@ -30,6 +30,56 @@ function organizational_elements_check(bool $condition, string $message): void
 }
 
 try {
+    $bootstrapContents = file_get_contents($root . '/app/bootstrap.php');
+    organizational_elements_check(
+        is_string($bootstrapContents),
+        'Не удалось прочитать app/bootstrap.php.'
+    );
+    organizational_elements_check(
+        str_contains(
+            $bootstrapContents,
+            "require_once __DIR__ . '/Directory/OrganizationalElementCatalogRepository.php';"
+        ),
+        'Bootstrap не подключает OrganizationalElementCatalogRepository.'
+    );
+    organizational_elements_check(
+        str_contains(
+            $bootstrapContents,
+            'function organizational_element_catalog_repository(): OrganizationalElementCatalogRepository'
+        ),
+        'Bootstrap factory организационного справочника не найдена.'
+    );
+
+    $pageContents = file_get_contents(
+        $root . '/public/admin/directories/organizational-elements.php'
+    );
+    organizational_elements_check(
+        is_string($pageContents),
+        'Не удалось прочитать страницу организационного справочника.'
+    );
+    organizational_elements_check(
+        str_contains(
+            $pageContents,
+            '$repository = organizational_element_catalog_repository();'
+        ),
+        'Страница не использует bootstrap factory.'
+    );
+    organizational_elements_check(
+        !str_contains(
+            $pageContents,
+            'new OrganizationalElementCatalogRepository'
+        ),
+        'На странице найден прямой конструктор репозитория.'
+    );
+    organizational_elements_check(
+        !str_contains(
+            $pageContents,
+            "/app/Directory/OrganizationalElementCatalogRepository.php"
+        ),
+        'На странице найдено прямое подключение репозитория.'
+    );
+    echo "OK bootstrap factory\n";
+
     $dsn = sprintf(
         'mysql:host=%s;port=%d;dbname=%s;charset=%s',
         $db['host'],
