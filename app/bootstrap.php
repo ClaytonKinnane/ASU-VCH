@@ -13,6 +13,7 @@ $config = array_replace_recursive($app, $local);
 
 require_once __DIR__ . '/BootstrapOwnerService.php';
 require_once __DIR__ . '/Directory/MilitaryRankCatalogRepository.php';
+require_once __DIR__ . '/Directory/OrganizationalElementCatalogRepository.php';
 require_once __DIR__ . '/Security/AuthorizationService.php';
 require_once __DIR__ . '/Security/UserListRepository.php';
 require_once __DIR__ . '/Security/UserCreateService.php';
@@ -158,6 +159,15 @@ function military_rank_catalog_repository(): MilitaryRankCatalogRepository
     static $repository = null;
     if (!$repository instanceof MilitaryRankCatalogRepository) {
         $repository = new MilitaryRankCatalogRepository(db());
+    }
+    return $repository;
+}
+
+function organizational_element_catalog_repository(): OrganizationalElementCatalogRepository
+{
+    static $repository = null;
+    if (!$repository instanceof OrganizationalElementCatalogRepository) {
+        $repository = new OrganizationalElementCatalogRepository(db());
     }
     return $repository;
 }
