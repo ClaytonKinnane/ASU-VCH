@@ -2,18 +2,30 @@
 
 ## 1. Объект review
 
-Проверен документ:
+Проверены:
 
 ```text
 docs/design/ORGANIZATIONAL-ELEMENT-TYPES-V1-DESIGN.md
+database/install.php
+database/migrations/008_organizational_element_types_directory.sql
+app/bootstrap.php
+app/Directory/OrganizationalElementCatalogRepository.php
+public/admin/directories.php
+public/admin/directories/organizational-elements.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+tools/check-organizational-elements-directory.php
 ```
 
-База и ветка:
+База, ветка и финально проверенный runtime HEAD:
 
 ```text
 main @ a1d29cac1652481dd844b325945abef2522ea630
 feature/organizational-element-types-directory
+runtime-tested GitHub HEAD @ 2e16450cef7f5cb0993b8838018b652b3059b1e6
 ```
+
+Документационные изменения после runtime-проверки не изменяют исполняемый код.
 
 ## 2. Нормативный review
 
@@ -83,6 +95,31 @@ historical-context
 
 Статус: **PASS**.
 
+### 3.5 Bootstrap factory
+
+Утверждённая архитектура требует factory-функцию репозитория в `app/bootstrap.php`.
+
+Финальная реализация содержит:
+
+```text
+require_once __DIR__ . '/Directory/OrganizationalElementCatalogRepository.php';
+organizational_element_catalog_repository(): OrganizationalElementCatalogRepository
+```
+
+Страница использует factory и не подключает класс напрямую.
+
+CLI checker контролирует:
+
+- наличие require в bootstrap;
+- наличие factory-функции;
+- использование factory страницей;
+- отсутствие прямого конструктора;
+- отсутствие прямого require на странице.
+
+Runtime smoke test подтвердил создание и повторное использование экземпляра repository.
+
+Статус: **CORRECTED / PASS**.
+
 ## 4. Database review
 
 ### 4.1 Версионирование
@@ -103,7 +140,7 @@ Generated column `primary_guard` и UNIQUE-индекс обеспечивают
 
 ### 4.3 Целостность версии
 
-Композитные внешние ключи должны гарантировать:
+Композитные внешние ключи гарантируют:
 
 - принадлежность типа и класса одной версии;
 - принадлежность alias и типа одной версии;
@@ -126,7 +163,7 @@ UNIQUE(catalog_version_id, type_id, alias_type, alias)
 
 ### 4.5 CHECK constraints
 
-Обязательны CHECK для:
+Реализованы CHECK для:
 
 - boolean-полей;
 - дат;
@@ -139,14 +176,36 @@ UNIQUE(catalog_version_id, type_id, alias_type, alias)
 
 ### 4.6 Идемпотентность migration
 
-Migration 008 должна быть безопасна при повторном запуске после частичного отказа до регистрации migration:
+Migration 008 безопасно повторена после частичного отказа до регистрации migration:
 
-- `CREATE TABLE IF NOT EXISTS`;
-- upsert по стабильным кодам;
-- отсутствие фиксированных числовых идентификаторов;
-- отсутствие дубликатов связей.
+- использованы `CREATE TABLE IF NOT EXISTS`;
+- upsert выполняется по стабильным кодам;
+- фиксированные числовые идентификаторы не используются;
+- повторное выполнение не создало дубликатов связей.
 
-Статус: **PASS WITH TARGET MYSQL CONDITION**.
+Фактическая проверка:
+
+```text
+первый запуск: остановлен из-за connection collation
+повторный запуск после исправления installer: PASS
+контрольный повтор: Новых миграций нет
+```
+
+Статус: **PASS**.
+
+### 4.7 Connection collation
+
+Первый запуск выявил различие `utf8mb4_unicode_ci` и `utf8mb4_general_ci` в соединении installer и JSON seed.
+
+В `database/install.php` добавлено:
+
+```sql
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci
+```
+
+После исправления migration 008 и повторный installer прошли.
+
+Статус: **CORRECTED / PASS**.
 
 ## 5. Классификационное состояние
 
@@ -166,7 +225,7 @@ mixed
 
 ## 6. Seed review
 
-После корректировок:
+Подтверждено:
 
 ```text
 источников версии: 4
@@ -195,32 +254,38 @@ weapon-team → raschet
 
 ## 7. Repository review
 
-Repository должен:
+Repository:
 
-- оставаться read-only;
-- использовать prepared statements;
-- не принимать SQL-фрагменты из пользовательского ввода;
-- ограничивать поиск 150 символами на уровне route;
-- искать буквально по `name`, `short_name` и aliases;
-- не создавать `IN ()` для пустых наборов;
-- не выполнять N+1-запросы;
-- не дублировать типы при JOIN;
-- сортировать по `sort_order`, затем `id`;
-- требовать ровно одну текущую версию.
+- остаётся read-only;
+- использует prepared statements;
+- не принимает SQL-фрагменты из пользовательского ввода;
+- ограничивает поиск 150 символами на уровне route;
+- ищет буквально по `name`, `short_name` и aliases;
+- не создаёт `IN ()` для пустых наборов;
+- не выполняет N+1-запросы;
+- не дублирует типы при JOIN;
+- сортирует по `sort_order`, затем `id`;
+- требует ровно одну текущую версию.
+
+Integration checker подтвердил поиск, фильтры и агрегацию связанных данных.
 
 Статус: **PASS**.
 
 ## 8. RBAC / security review
 
+Подтверждено:
+
 - доступ владельца через `require_permission('system.*.*')`;
 - тематический HTTP 403 для не-владельца;
 - новые permissions отсутствуют;
-- количество permissions остаётся 19;
+- количество системных permissions остаётся 19;
 - GET-фильтры не требуют CSRF;
 - пользовательский вывод экранируется;
 - официальные ссылки используют `noopener noreferrer`;
 - CRUD и mutation routes отсутствуют;
 - закрытые и фактические сведения не входят в scope.
+
+Пользовательская desktop-приёмка подтвердила тематическую страницу `Доступ запрещен` и отсутствие данных справочника.
 
 Статус: **PASS**.
 
@@ -236,49 +301,155 @@ Repository должен:
 
 ### 9.2 Плитка
 
-Плитка переименовывается в:
+Плитка называется:
 
 ```text
 Организационные элементы и подразделения
 ```
 
-и становится активной с действием `Открыть →`.
+Она активна и содержит действие `Открыть →`.
 
 Статус: **PASS**.
 
 ### 9.3 Предупреждение
 
-Страница обязательно сообщает, что каталог не является утверждённым штатом или структурой конкретной части.
+Страница сообщает, что каталог не является утверждённым штатом или структурой конкретной части.
 
 Статус: **PASS**.
 
 ### 9.4 Themes
 
-Используется существующий `css/directories.css`. Checker обязан проверять опубликованный asset через `ThemeRegistry::assetUrl()`.
+Используется существующий `css/directories.css`. Checker проверяет опубликованный asset через `ThemeRegistry::assetUrl()`.
 
-Статус: **PASS WITH DEPLOY CONDITION**.
+Пользовательская desktop-приёмка выполнена в темах:
 
-## 10. Обязательные проверки реализации
+```text
+АСУ Синяя
+АСУ Светлая синяя
+```
 
-1. PHP lint всех новых и изменённых PHP-файлов на PHP 8.5.4.
-2. Проверка migration 008 на MySQL 8.4.
-3. Резервное копирование БД и deploy-файлов.
-4. Применение migration 008.
-5. Повторный installer с результатом `Новых миграций нет`.
-6. CLI checker нового справочника.
-7. Регрессионный checker справочника воинских званий.
-8. Проверка 28 типов и 32 связей.
-9. Проверка поиска `БЧ` и фильтров.
-10. Owner navigation.
-11. Тематический HTTP 403 для не-владельца.
-12. Desktop-приёмка обеих тем.
+Статус: **PASS**.
 
-Мобильное тестирование исключено.
+### 9.5 Поиск и фильтры
 
-## 11. Итог review
+Desktop-приёмка и checker подтвердили:
 
-**PASS WITH REQUIRED CORRECTIONS**.
+```text
+батальон → 1
+БЧ → 1
+боев → 1
+Объединение → 1
+Соединение → 3
+Воинская часть → 7
+Организация → 3
+Подразделение → 16
+non_subdivision_only → 12
+subdivision_only → 12
+mixed → 4
+батальон + military-unit → 1
+батальон + organization → 0
+```
 
-Все обязательные корректировки включены в Specification v0.2 и утверждены заказчиком.
+Empty state отображается штатно.
 
-Реализация разрешена только после явного Approval заказчика.
+Статус: **PASS**.
+
+## 10. Target runtime review
+
+Фактически выполнены:
+
+1. SQL backup до migration 008.
+2. Backup deploy-файлов.
+3. PHP lint на PHP 8.5.4.
+4. Deploy с сохранением `config/local.php`.
+5. SHA-256 source/deploy.
+6. Migration 008 на MySQL 8.4.8.
+7. Контрольный installer с `Новых миграций нет`.
+8. Runtime smoke test bootstrap factory.
+9. CLI checker нового справочника.
+10. Регрессионный checker справочника воинских званий.
+11. HTTP 200 опубликованных CSS обеих тем.
+12. Desktop-приёмка владельца.
+13. Проверка тематического запрета доступа не-владельца.
+14. Синхронизация локальной ветки с GitHub HEAD и чистое рабочее дерево.
+
+Финальные маркеры:
+
+```text
+BOOTSTRAP FACTORY SMOKE PASSED
+ORGANIZATIONAL ELEMENT TYPES DIRECTORY CHECK PASSED
+MILITARY RANKS DIRECTORY CHECK PASSED
+```
+
+Статус: **PASS**.
+
+## 11. Regression review
+
+Подтверждено:
+
+- migration 007 зарегистрирована;
+- справочник званий содержит 20 нормативных пар;
+- checker справочника званий проходит;
+- обе плитки справочников активны;
+- системных permissions по-прежнему 19;
+- обе desktop-темы отображают страницы справочников.
+
+Статус: **PASS**.
+
+## 12. Process conformance
+
+Изменения исполняемого кода финальной correction внесены в feature-ветку через GitHub.
+
+Локальная среда использована только для:
+
+- fetch и синхронизации;
+- backup;
+- deploy;
+- lint;
+- installer;
+- checker;
+- runtime и desktop-приёмки.
+
+Ошибочно созданный ранее локальный commit не был отправлен, сохранён в patch-файл и удалён при синхронизации с GitHub HEAD.
+
+Финальное состояние:
+
+```text
+Local HEAD = GitHub HEAD
+2e16450cef7f5cb0993b8838018b652b3059b1e6
+расхождение: 0/0
+рабочее дерево: чистое
+```
+
+Статус: **CORRECTED / PASS**.
+
+## 13. Ограничения review
+
+Не выполнялись и не заявляются:
+
+- мобильное тестирование;
+- CRUD типов;
+- проверка реальных организационных структур;
+- проверка закрытых или ограниченных сведений.
+
+## 14. Итог Formal Review
+
+```text
+Normative review: PASS
+Architecture review: PASS
+Database review: PASS
+Seed review: PASS
+Repository review: PASS
+RBAC/security review: PASS
+UI review: PASS
+Target runtime review: PASS
+Regression review: PASS
+Process conformance: PASS
+Mobile testing: NOT RUN / OUT OF SCOPE
+```
+
+Итог: **PASS**.
+
+Блокирующих замечаний для перевода PR в Ready for review нет.
+
+Merge остаётся запрещён до отдельного явного разрешения заказчика.
