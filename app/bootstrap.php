@@ -12,6 +12,7 @@ $local = require $localFile;
 $config = array_replace_recursive($app, $local);
 
 require_once __DIR__ . '/BootstrapOwnerService.php';
+require_once __DIR__ . '/Directory/MilitaryRankCatalogRepository.php';
 require_once __DIR__ . '/Security/AuthorizationService.php';
 require_once __DIR__ . '/Security/UserListRepository.php';
 require_once __DIR__ . '/Security/UserCreateService.php';
@@ -150,6 +151,15 @@ function theme_asset(string $asset): string
 function installed_themes(): array
 {
     return theme_registry_service()->themesWithAvailability();
+}
+
+function military_rank_catalog_repository(): MilitaryRankCatalogRepository
+{
+    static $repository = null;
+    if (!$repository instanceof MilitaryRankCatalogRepository) {
+        $repository = new MilitaryRankCatalogRepository(db());
+    }
+    return $repository;
 }
 
 function bootstrap_owner_service(): BootstrapOwnerService
