@@ -41,11 +41,13 @@ C:\Project\ASU-VCH
 
 ```text
 branch: feature/directories-landing
-HEAD: 6929073d5f09c90fc51c2d385f38fddac7185311
+HEAD перед фиксацией результатов deploy: 6929073d5f09c90fc51c2d385f38fddac7185311
 tracking: origin/feature/directories-landing
 pull --ff-only: Already up to date
 working tree: clean
 ```
+
+После фиксации настоящего отчёта удалённая feature-ветка получила дополнительный documentation commit. Перед следующей локальной проверкой требуется выполнить `git pull --ff-only`.
 
 Статус: **PASS**.
 
