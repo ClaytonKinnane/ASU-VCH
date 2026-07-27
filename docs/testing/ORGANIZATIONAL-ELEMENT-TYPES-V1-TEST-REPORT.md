@@ -8,21 +8,24 @@
 Справочник типов организационных элементов v1
 ```
 
-База и ветка:
+База, ветка и проверенный GitHub HEAD:
 
 ```text
 main @ a1d29cac1652481dd844b325945abef2522ea630
 feature/organizational-element-types-directory
+GitHub HEAD @ 2e16450cef7f5cb0993b8838018b652b3059b1e6
 ```
 
-Дата подготовки предварительного отчёта: `2026-07-27`.
+Дата финализации отчёта: `2026-07-27`.
 
 ## 2. Утверждённая область
 
-Проверке подлежат:
+Проверены:
 
 ```text
+database/install.php
 database/migrations/008_organizational_element_types_directory.sql
+app/bootstrap.php
 app/Directory/OrganizationalElementCatalogRepository.php
 public/admin/directories.php
 public/admin/directories/organizational-elements.php
@@ -37,11 +40,25 @@ tools/check-organizational-elements-directory.php
 docs/design/ORGANIZATIONAL-ELEMENT-TYPES-V1-DESIGN.md
 docs/design/ORGANIZATIONAL-ELEMENT-TYPES-V1-REVIEW.md
 docs/decisions/ORGANIZATIONAL-ELEMENT-TYPES-V1-APPROVAL.md
+docs/testing/ORGANIZATIONAL-ELEMENT-TYPES-V1-TEST-REPORT.md
 ```
 
-## 3. Контрольная модель
+## 3. Целевая среда
 
-Ожидается:
+```text
+Open Server Panel 6.5.1
+Apache
+PHP 8.5.4
+MySQL 8.4.8
+Windows / PowerShell 5.1
+Deploy root: C:\OSPanel\home\asu-vch.local
+```
+
+Мобильное тестирование исключено из области работ и не выполнялось.
+
+## 4. Контрольная модель
+
+Подтверждено:
 
 ```text
 новых таблиц: 7
@@ -56,7 +73,7 @@ mixed: 4
 системных permissions: 19
 ```
 
-Типы `смена` и `боевой пост` не должны присутствовать.
+Типы `смена` и `боевой пост` отсутствуют.
 
 Официальное сокращение:
 
@@ -64,107 +81,293 @@ mixed: 4
 боевая часть — БЧ
 ```
 
-## 4. Обязательные проверки целевой среды
+## 5. Резервное копирование
 
-На локальной среде пользователя необходимо выполнить:
-
-1. синхронизацию feature-ветки;
-2. создание SQL backup перед migration 008;
-3. резервное копирование изменяемых deploy-файлов;
-4. PHP lint новых и изменённых PHP-файлов на PHP 8.5.4;
-5. deploy с сохранением `config/local.php`;
-6. публикацию CSS в `themes` и `public/themes`;
-7. проверку SHA-256 исходных и deploy-файлов;
-8. применение migration 008 на MySQL 8.4;
-9. повторный installer с результатом `Новых миграций нет`;
-10. запуск `tools/check-organizational-elements-directory.php`;
-11. повторный запуск checker справочника воинских званий;
-12. проверку owner navigation;
-13. тематическую HTTP 403 для не-владельца;
-14. поиск и все фильтры;
-15. desktop-приёмку обеих тем.
-
-## 5. CLI checker
-
-Ожидаемый финал:
+До первого применения migration 008 создан SQL backup:
 
 ```text
+C:\Project\Backups\ASU-VCH\asu_vch-before-migration-008-20260727-200613.sql
+размер: 34063 байт
+SHA-256: 5E77E817A06903609390BB338AF001A25FA009D115EDCCDFA3CC4E6AF240C99D
+```
+
+Также создан backup deploy-файлов:
+
+```text
+C:\Project\Backups\ASU-VCH\deploy-files-before-migration-008-20260727-200613
+```
+
+После частичного отказа создан повторный SQL backup:
+
+```text
+C:\Project\Backups\ASU-VCH\asu_vch-before-migration-008-retry-20260727-204735.sql
+размер: 50413 байт
+SHA-256: 2C1080A508C6C2BA5C19C9AD8013F7DE02CB3EFC3310515BA8E34F9DD55B96CF
+```
+
+И повторный backup deploy-файлов:
+
+```text
+C:\Project\Backups\ASU-VCH\deploy-files-before-migration-008-retry-20260727-204735
+```
+
+Перед финальной синхронизацией factory-исправления создан backup:
+
+```text
+C:\Project\Backups\ASU-VCH\remote-factory-sync-20260727-221110
+```
+
+Локальный технический дубликат commit сохранён вне репозитория:
+
+```text
+C:\Project\Backups\ASU-VCH\remote-factory-sync-20260727-221110\discarded-local-duplicate.patch
+```
+
+После этого локальная ветка приведена к GitHub HEAD. Локальный дубликат не отправлялся в GitHub.
+
+## 6. Migration 008
+
+### 6.1 Первый запуск
+
+Первый запуск остановился на сравнении строк с разными connection collations:
+
+```text
+Illegal mix of collations
+utf8mb4_unicode_ci
+utf8mb4_general_ci
+```
+
+Migration не была зарегистрирована, но часть объектов могла быть создана.
+
+### 6.2 Коррекция
+
+В `database/install.php` соединение installer приведено к:
+
+```sql
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci
+```
+
+### 6.3 Повторный запуск
+
+Повторное применение после частичного отказа завершилось успешно:
+
+```text
+Применена миграция: 008_organizational_element_types_directory.sql
+```
+
+Контрольный повтор installer:
+
+```text
+Применено миграций: 8
+Новых миграций нет.
+```
+
+Статус migration 008: **PASS**.
+
+## 7. Architecture conformance correction
+
+Утверждённая Specification требует factory-функцию репозитория в `app/bootstrap.php`.
+
+На GitHub выполнено:
+
+- подключение `OrganizationalElementCatalogRepository` в bootstrap;
+- добавление `organizational_element_catalog_repository()`;
+- перевод страницы с прямого конструктора на factory;
+- добавление архитектурных проверок в CLI checker.
+
+Проверенный runtime smoke test:
+
+```text
+BOOTSTRAP FACTORY SMOKE PASSED
+```
+
+Integration checker дополнительно вернул:
+
+```text
+OK bootstrap factory
+```
+
+Статус architecture conformance: **PASS**.
+
+## 8. PHP lint, deploy и целостность файлов
+
+PHP lint пройден для GitHub-исходников и deploy-копий:
+
+```text
+app/bootstrap.php
+app/Directory/OrganizationalElementCatalogRepository.php
+public/admin/directories.php
+public/admin/directories/organizational-elements.php
+database/install.php
+tools/check-organizational-elements-directory.php
+```
+
+Deploy выполнен из GitHub feature-ветки.
+
+SHA-256 исходников и deploy-копий совпал для всех публикуемых файлов.
+
+`config/local.php` сохранён без изменений.
+
+Финальная синхронизация:
+
+```text
+Local HEAD: 2e16450cef7f5cb0993b8838018b652b3059b1e6
+GitHub HEAD: 2e16450cef7f5cb0993b8838018b652b3059b1e6
+Расхождение local/remote: 0/0
+Рабочее дерево: чистое
+```
+
+Статус deploy и целостности: **PASS**.
+
+## 9. CLI integration checker
+
+Фактический финал:
+
+```text
+OK bootstrap factory
+OK migration 008
+OK tables: 7
+OK schema constraints
+OK current catalog version
+OK legal sources: 4
+OK organizational classes: 6
+OK organizational element types: 28
+OK type-class links: 32
+OK class distribution
+OK organizational scopes: 12/12/4
+OK repository search and filters
+OK system permissions: 19
+OK theme assets: 2
 ORGANIZATIONAL ELEMENT TYPES DIRECTORY CHECK PASSED
 ```
 
-Checker проверяет:
+Статус: **PASS**.
 
-- migration 008;
-- семь таблиц и ключевые ограничения;
-- одну текущую версию;
-- четыре источника;
-- шесть классов;
-- точные 28 типов;
-- 32 связи и ровно один основной класс каждого типа;
-- наличие источника у каждого типа;
-- распределение классов и вычисляемых статусов;
-- поиск и совместную фильтрацию;
-- 19 системных permissions;
-- исходные и опубликованные CSS обеих тем через `ThemeRegistry`.
+## 10. Регрессия справочника воинских званий
 
-## 6. Desktop-приёмка
-
-### Владелец
-
-Проверить:
-
-- активную плитку `Организационные элементы и подразделения`;
-- маршрут `/admin/directories/organizational-elements.php`;
-- предупреждение о границах справочника;
-- четыре источника;
-- 28 типов;
-- шесть классов;
-- поиск `батальон`, `БЧ`, `боев`;
-- фильтры классов `1 / 3 / 7 / 3 / 16` для соответствующих классов;
-- статусы `12 / 12 / 4`;
-- поиск вместе с фильтрами;
-- empty state;
-- отсутствие CRUD и mutation controls;
-- обе desktop-темы.
-
-### Не-владелец
-
-Прямой запрос должен вернуть:
+Фактический финал:
 
 ```text
-403 Forbidden
+OK migration 007
+OK tables: 5
+OK current catalog version
+OK legal sources: 2
+OK compositions: 6
+OK normative rank pairs: 20
+OK repository search and filters
+OK system permissions: 19
+OK theme assets: 2
+MILITARY RANKS DIRECTORY CHECK PASSED
 ```
 
-и существующую тематическую страницу `Доступ запрещен`.
+Дополнительно в desktop UI подтверждено отображение 20 строк.
 
-## 7. Регрессия
+Статус: **PASS**.
 
-Обязательно подтвердить:
+## 11. HTTP assets
 
-- справочник воинских званий содержит 20 строк;
-- migration 007 остаётся зарегистрированной;
-- `tools/check-military-ranks-directory.php` проходит;
-- обе плитки справочников активны;
-- количество системных permissions остаётся 19;
-- страницы справочников полностью отображаются в обеих темах.
-
-## 8. Мобильное тестирование
-
-Мобильное тестирование исключено из области работ и не выполняется.
-
-Нельзя заявлять, что мобильная версия проверена.
-
-## 9. Предварительный статус
+Опубликованные CSS обеих тем доступны:
 
 ```text
-Architecture: APPROVED
-Specification v0.2: APPROVED
+asu-blue — HTTP 200, 7612 символов
+asu-light-blue — HTTP 200, 7391 символов
+```
+
+Статус: **PASS**.
+
+## 12. Desktop-приёмка владельца
+
+По пользовательской приёмке подтверждены:
+
+- активная плитка `Организационные элементы и подразделения`;
+- маршрут `/admin/directories/organizational-elements.php`;
+- заголовок, предупреждение о границах данных и badge `Только чтение`;
+- одна текущая версия и четыре официальных источника;
+- полный каталог: 28 типов;
+- отсутствие CRUD и mutation controls;
+- корректный empty state;
+- тёмная desktop-тема `АСУ Синяя`;
+- светлая desktop-тема `АСУ Светлая синяя`.
+
+Поиск:
+
+```text
+батальон → 1
+БЧ → 1
+боев → 1
+```
+
+Фильтры классов:
+
+```text
+Объединение → 1
+Соединение → 3
+Воинская часть → 7
+Организация → 3
+Подразделение → 16
+```
+
+Совместные фильтры:
+
+```text
+батальон + Воинская часть → 1
+батальон + Организация → 0
+```
+
+Организационные статусы:
+
+```text
+Не является подразделением → 12
+Только подразделение → 12
+Зависит от утверждённой структуры → 4
+```
+
+Статус desktop-приёмки владельца: **PASS**.
+
+## 13. Проверка не-владельца
+
+Подтверждена тематическая страница:
+
+```text
+Доступ запрещен
+```
+
+Route использует `require_permission('system.*.*')`, а общий authorization helper устанавливает HTTP 403 перед выводом тематической страницы.
+
+Данные справочника пользователю без разрешения не отображаются.
+
+Статус: **PASS**.
+
+## 14. Границы проверки
+
+Не выполнялись и не заявляются:
+
+- мобильное тестирование;
+- CRUD типов;
+- реальные воинские части и подразделения;
+- фактическая структура и подчинённость;
+- численность, вооружение и дислокация;
+- закрытые или ограниченные документы.
+
+## 15. Финальный статус
+
+```text
+Architecture: APPROVED / CONFORMANT
+Specification v0.2: APPROVED / CONFORMANT
 Formal Review: PASS
 Approval: RECORDED
-Implementation: IN PROGRESS
-Target runtime testing: PENDING
-Desktop acceptance: PENDING
-Merge: PROHIBITED
+Implementation: PASS
+Migration 008: PASS
+Automated target runtime testing: PASS
+Desktop acceptance: PASS
+Dark desktop theme: PASS
+Light desktop theme: PASS
+Non-owner access denial: PASS
+Military ranks regression: PASS
+Mobile testing: NOT RUN / OUT OF SCOPE
+GitHub/local synchronization: PASS
+Ready for review: YES
+Merge: PROHIBITED UNTIL SEPARATE EXPLICIT APPROVAL
 ```
 
-Финальный статус будет заполнен только после фактических проверок в целевой среде и пользовательской desktop-приёмки.
+Итог Test Report: **PASS**.
