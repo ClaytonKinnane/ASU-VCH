@@ -28,7 +28,7 @@ $modules = [
 <main class="admin-main"><div class="container">
 <section class="section-intro glass-tile"><div><strong><?= e($user['display_name']) ?></strong><span>Раздел доступен владельцу системы. Вложенные модули вводятся поэтапно.</span></div></section>
 <section class="module-grid" aria-label="Модули контента">
-<a class="dashboard-tile module-tile glass-tile" href="/admin/directories.php"><h2>Справочники</h2><p>Системные и предметные классификаторы.</p></a>
+<a class="dashboard-tile module-tile glass-tile" href="/admin/directories.php"><h2>Справочники</h2><p>Системные и предметные классификаторы.</p><span class="tile-action">Открыть →</span></a>
 <?php foreach ($modules as [$title, $description]): ?>
 <article class="module-tile glass-tile is-disabled"><span class="status-badge">В разработке</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p></article>
 <?php endforeach; ?>
