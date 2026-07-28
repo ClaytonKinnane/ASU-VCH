@@ -73,6 +73,34 @@
 .organization-history-state h3 { margin: 0 0 6px; font-size: 13px; }
 .organization-history-state pre { margin: 0; padding: 10px; overflow: auto; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--page-background); color: var(--text-primary); white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
 
+.organization-layout summary { cursor: pointer; }
+.organization-disclosure { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 8px 12px; border: 1px solid var(--input-border); border-radius: var(--control-radius); color: var(--text-primary); background: color-mix(in srgb, var(--focus-color) 10%, var(--input-background)); font: inherit; font-weight: 750; line-height: 1.2; list-style: none; user-select: none; transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease; }
+.organization-disclosure::marker { content: ""; }
+.organization-disclosure::-webkit-details-marker { display: none; }
+.organization-disclosure:hover { border-color: var(--focus-color); background: color-mix(in srgb, var(--focus-color) 18%, var(--input-background)); }
+.organization-disclosure:focus-visible { outline: 2px solid var(--focus-color); outline-offset: 2px; }
+details[open] > .organization-disclosure { border-color: var(--focus-color); background: color-mix(in srgb, var(--focus-color) 22%, var(--input-background)); box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus-color) 22%, transparent); }
+.organization-disclosure-icon { width: 16px; height: 16px; flex: 0 0 16px; background: var(--focus-color); -webkit-mask: linear-gradient(45deg, transparent 42%, #000 43% 57%, transparent 58%) left / 55% 100% no-repeat, linear-gradient(-45deg, transparent 42%, #000 43% 57%, transparent 58%) right / 55% 100% no-repeat; mask: linear-gradient(45deg, transparent 42%, #000 43% 57%, transparent 58%) left / 55% 100% no-repeat, linear-gradient(-45deg, transparent 42%, #000 43% 57%, transparent 58%) right / 55% 100% no-repeat; transition: transform .15s ease; }
+details[open] > .organization-disclosure .organization-disclosure-icon { transform: rotate(180deg); }
+.organization-disclosure--edit .organization-disclosure-icon { -webkit-mask: linear-gradient(135deg, transparent 0 18%, #000 18% 72%, transparent 72% 100%) center / 100% 100% no-repeat, linear-gradient(135deg, transparent 0 35%, #000 36% 64%, transparent 65%) left bottom / 7px 7px no-repeat; mask: linear-gradient(135deg, transparent 0 18%, #000 18% 72%, transparent 72% 100%) center / 100% 100% no-repeat, linear-gradient(135deg, transparent 0 35%, #000 36% 64%, transparent 65%) left bottom / 7px 7px no-repeat; }
+.organization-disclosure--add .organization-disclosure-icon { -webkit-mask: linear-gradient(#000 0 0) center / 3px 100% no-repeat, linear-gradient(#000 0 0) center / 100% 3px no-repeat; mask: linear-gradient(#000 0 0) center / 3px 100% no-repeat, linear-gradient(#000 0 0) center / 100% 3px no-repeat; }
+details[open] > .organization-disclosure--edit .organization-disclosure-icon, details[open] > .organization-disclosure--add .organization-disclosure-icon { transform: none; }
+.organization-disclosure--danger { border-color: rgba(255,100,100,.72); color: #fff; background: rgba(160,35,45,.72); }
+.organization-disclosure--danger .organization-disclosure-icon { background: rgba(255,255,255,.95); }
+.organization-disclosure--danger:hover, details[open] > .organization-disclosure--danger { border-color: rgba(255,135,135,.95); background: rgba(180,42,54,.88); }
+.organization-actions details, .organization-node-actions details, .organization-document-actions details, .organization-panel > details { padding: 0; border: 0; border-radius: 0; }
+.organization-actions details[open] { flex: 1 1 100%; }
+.organization-node-actions .organization-disclosure, .organization-document-actions .organization-disclosure { width: 100%; justify-content: flex-start; }
+.organization-node-actions details > form:not(.organization-compact-form) { margin-top: 10px; display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+#documents > details { margin-top: 14px; }
+details[open] > .organization-disclosure + form { margin-top: 10px; }
+.organization-layout input:-webkit-autofill, .organization-layout input:-webkit-autofill:hover, .organization-layout input:-webkit-autofill:focus, .organization-layout input:-webkit-autofill:active { -webkit-text-fill-color: var(--text-primary); caret-color: var(--text-primary); -webkit-box-shadow: 0 0 0 1000px var(--input-background) inset; box-shadow: 0 0 0 1000px var(--input-background) inset; border-color: var(--input-border); transition: background-color 9999s ease-out 0s; }
+.organization-date-label { display: grid; gap: 6px; }
+.organization-date-control { position: relative; display: block; width: 100%; }
+.organization-date-control input[type="date"] { padding-right: 44px; }
+.organization-date-control input[type="date"]::-webkit-calendar-picker-indicator { width: 28px; height: 28px; opacity: 0; cursor: pointer; }
+.organization-date-icon { position: absolute; top: 50%; right: 12px; width: 18px; height: 18px; transform: translateY(-50%); pointer-events: none; background: var(--focus-color); -webkit-mask: linear-gradient(#000 0 0) center 3px / 100% 2px no-repeat, linear-gradient(#000 0 0) left 3px / 2px calc(100% - 3px) no-repeat, linear-gradient(#000 0 0) right 3px / 2px calc(100% - 3px) no-repeat, linear-gradient(#000 0 0) center bottom / 100% 2px no-repeat, linear-gradient(#000 0 0) 3px top / 2px 6px no-repeat, linear-gradient(#000 0 0) calc(100% - 5px) top / 2px 6px no-repeat, radial-gradient(circle, #000 0 1.4px, transparent 1.6px) 3px 7px / 6px 6px repeat; mask: linear-gradient(#000 0 0) center 3px / 100% 2px no-repeat, linear-gradient(#000 0 0) left 3px / 2px calc(100% - 3px) no-repeat, linear-gradient(#000 0 0) right 3px / 2px calc(100% - 3px) no-repeat, linear-gradient(#000 0 0) center bottom / 100% 2px no-repeat, linear-gradient(#000 0 0) 3px top / 2px 6px no-repeat, linear-gradient(#000 0 0) calc(100% - 5px) top / 2px 6px no-repeat, radial-gradient(circle, #000 0 1.4px, transparent 1.6px) 3px 7px / 6px 6px repeat; }
+
 .danger-button { min-height: 44px; padding: 10px 16px; border: 1px solid rgba(255,100,100,.8); border-radius: var(--control-radius); color: #fff; background: rgba(160,35,45,.78); font: inherit; font-weight: 750; cursor: pointer; }
 .danger-button:hover { filter: brightness(1.1); }
 .danger-details { border-color: rgba(255,100,100,.65) !important; }
