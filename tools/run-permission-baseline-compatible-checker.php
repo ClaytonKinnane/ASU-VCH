@@ -31,24 +31,38 @@ if ($source === false) {
     exit(3);
 }
 
-$replacements = [
+$requiredReplacements = [
     '$permissionCount === 19' => '$permissionCount >= 19',
     'Ожидалось 19 системных разрешений, найдено {$permissionCount}.'
         => 'Ожидалось не менее 19 системных разрешений, найдено {$permissionCount}.',
-    'echo "OK system permissions: 19\\n";'
-        => 'echo "OK system permissions: {$permissionCount}\\n";',
 ];
 
 $prepared = $source;
-foreach ($replacements as $search => $replace) {
+foreach ($requiredReplacements as $search => $replace) {
     $prepared = str_replace($search, $replace, $prepared, $replacementCount);
     if ($replacementCount !== 1) {
         fwrite(
             STDERR,
-            "REGRESSION ADAPTER FAILED: ожидалась одна замена в {$relativePath}, найдено {$replacementCount}.\n"
+            "REGRESSION ADAPTER FAILED: ожидалась одна обязательная замена в {$relativePath}, найдено {$replacementCount}.\n"
         );
         exit(4);
     }
+}
+
+$fixedOutput = 'echo "OK system permissions: 19\\n";';
+$dynamicOutput = 'echo "OK system permissions: {$permissionCount}\\n";';
+if (str_contains($prepared, $fixedOutput)) {
+    $prepared = str_replace($fixedOutput, $dynamicOutput, $outputReplacementCount);
+    if ($outputReplacementCount !== 1) {
+        fwrite(
+            STDERR,
+            "REGRESSION ADAPTER FAILED: ожидалась одна замена вывода в {$relativePath}, найдено {$outputReplacementCount}.\n"
+        );
+        exit(5);
+    }
+} elseif (substr_count($prepared, $dynamicOutput) !== 1) {
+    fwrite(STDERR, "REGRESSION ADAPTER FAILED: вывод permission count не распознан в {$relativePath}.\n");
+    exit(5);
 }
 
 if (str_contains($prepared, '$permissionCount === 19')) {
