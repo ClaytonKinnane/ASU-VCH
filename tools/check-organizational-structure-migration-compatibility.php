@@ -9,6 +9,7 @@ if (PHP_SAPI !== 'cli') {
 
 $root = dirname(__DIR__);
 require_once $root . '/database/OrganizationalStructureMigrationCompatibility.php';
+require_once $root . '/tools/PermissionBaselineRegressionAdapter.php';
 
 $migrationPath = $root . '/database/migrations/009_organizational_structure_v1.sql';
 $sql = file_get_contents($migrationPath);
@@ -64,27 +65,25 @@ $expectedAdaptedCheckers = [
     'tools/check-military-ranks-directory-core.php',
     'tools/check-organizational-elements-directory-core.php',
 ];
-$adapterWhitelistsAllCheckers = true;
-$adaptedCheckerShapesValid = true;
-$legacyCondition = '$permissionCount === 19';
-$legacyMessage = 'Ожидалось 19 системных разрешений, найдено {$permissionCount}.';
-$fixedOutput = 'echo "OK system permissions: 19\\n";';
+$adapterPreparationValid = permission_baseline_compatible_checker_paths() === $expectedAdaptedCheckers;
 $dynamicOutput = 'echo "OK system permissions: {$permissionCount}\\n";';
 foreach ($expectedAdaptedCheckers as $checker) {
-    $adapterWhitelistsAllCheckers = $adapterWhitelistsAllCheckers
-        && str_contains($regressionAdapter, "'{$checker}'");
-
     $checkerSource = file_get_contents($root . '/' . $checker);
-    $adaptedCheckerShapesValid = $adaptedCheckerShapesValid
-        && is_string($checkerSource)
-        && substr_count($checkerSource, $legacyCondition) === 1
-        && substr_count($checkerSource, $legacyMessage) === 1
-        && (substr_count($checkerSource, $fixedOutput) + substr_count($checkerSource, $dynamicOutput)) === 1;
-}
+    if (!is_string($checkerSource)) {
+        $adapterPreparationValid = false;
+        continue;
+    }
 
-$exactPermissionReplacementNeedle = <<<'PHP'
-'$permissionCount === 19' => '$permissionCount >= 19'
-PHP;
+    try {
+        $preparedChecker = prepare_permission_baseline_compatible_checker($checkerSource, $checker);
+        $adapterPreparationValid = $adapterPreparationValid
+            && !str_contains($preparedChecker, '$permissionCount === 19')
+            && substr_count($preparedChecker, '$permissionCount >= 19') === 1
+            && substr_count($preparedChecker, $dynamicOutput) === 1;
+    } catch (Throwable) {
+        $adapterPreparationValid = false;
+    }
+}
 
 $checks = [
     'таблиц после подготовки: 7' => preg_match_all('/^\s*CREATE\s+TABLE\b/im', $prepared) === 7,
@@ -107,15 +106,12 @@ $checks = [
         $organizationSchema,
         "\$root . '/themes/'"
     ),
-    'permission regression adapter ограничен четырьмя checker-файлами' => $adapterWhitelistsAllCheckers,
-    'формат всех четырёх legacy checker совместим с adapter' => $adaptedCheckerShapesValid,
-    'permission regression adapter требует ровно одну замену' => str_contains(
+    'permission regression adapter ограничен четырьмя checker-файлами' => permission_baseline_compatible_checker_paths()
+        === $expectedAdaptedCheckers,
+    'permission regression adapter реально готовит все четыре checker-файла' => $adapterPreparationValid,
+    'CLI adapter использует протестированную функцию подготовки' => str_contains(
         $regressionAdapter,
-        '$replacementCount !== 1'
-    ),
-    'permission regression adapter ослабляет только точное число 19' => str_contains(
-        $regressionAdapter,
-        $exactPermissionReplacementNeedle
+        'prepare_permission_baseline_compatible_checker($source, $relativePath)'
     ),
     'runner использует permission regression adapter четыре раза' => substr_count(
         $runner,
