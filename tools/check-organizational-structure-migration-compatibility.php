@@ -70,6 +70,10 @@ foreach ($expectedAdaptedCheckers as $checker) {
         && str_contains($regressionAdapter, "'{$checker}'");
 }
 
+$exactPermissionReplacementNeedle = <<<'PHP'
+'$permissionCount === 19' => '$permissionCount >= 19'
+PHP;
+
 $checks = [
     'таблиц после подготовки: 7' => preg_match_all('/^\s*CREATE\s+TABLE\b/im', $prepared) === 7,
     'triggers после подготовки: 16' => preg_match_all('/^\s*CREATE\s+TRIGGER\b/im', $prepared) === 16,
@@ -98,7 +102,7 @@ $checks = [
     ),
     'permission regression adapter ослабляет только точное число 19' => str_contains(
         $regressionAdapter,
-        "'$permissionCount === 19' => '$permissionCount >= 19'"
+        $exactPermissionReplacementNeedle
     ),
     'runner использует permission regression adapter четыре раза' => substr_count(
         $runner,
