@@ -104,7 +104,8 @@ XML namespace `http://www.w3.org/2000/svg` является стандартны
 - статической проверки SVG;
 - запрета внешних CSS URL, data URI, `@import` и зависимостей от каталогов других тем;
 - подтверждения отсутствия JavaScript в новой теме;
-- транзакционного write/read с использованием новой темы.
+- транзакционного write/read с использованием новой темы;
+- одинаковой работы в source checkout и deploy-root с опубликованными assets в `public/themes`.
 
 ### 6.2 Directory checker compatibility
 
@@ -118,7 +119,7 @@ check-organizational-elements-directory.php       — wrapper
 check-organizational-elements-directory-core.php  — неизменённый прежний checker
 ```
 
-Wrapper сначала проверяет `css/directories.css` для всех тем, полученных динамически из `config/themes.php`, затем запускает прежний профильный checker без изменения его DB и repository assertions.
+Wrapper сначала определяет фактический asset-root (`public/themes` в deploy или `themes` в source checkout), проверяет `css/directories.css` для всех тем из `config/themes.php`, затем запускает прежний профильный checker без изменения его DB и repository assertions.
 
 Это устраняет hardcoded coverage нового списка тем и сохраняет проверенную нормативную регрессию побайтно неизменной в core-файлах.
 
