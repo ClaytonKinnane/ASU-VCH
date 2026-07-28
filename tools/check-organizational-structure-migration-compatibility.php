@@ -72,12 +72,19 @@ $expectedAdaptedCheckers = [
     'tools/check-military-ranks-directory-core.php',
     'tools/check-organizational-elements-directory-core.php',
 ];
+$expectedDeployThemePathCheckers = [
+    'tools/check-military-ranks-directory-core.php',
+    'tools/check-organizational-elements-directory-core.php',
+];
 $adapterPreparationValid = permission_baseline_compatible_checker_paths() === $expectedAdaptedCheckers;
+$deployThemePathPreparationValid = deploy_theme_path_compatible_checker_paths() === $expectedDeployThemePathCheckers;
 $dynamicOutput = 'echo "OK system permissions: {$permissionCount}\\n";';
+$legacyThemePath = '$root . \'/themes/\' . $themeSlug . \'/assets/css/directories.css\'';
 foreach ($expectedAdaptedCheckers as $checker) {
     $checkerSource = file_get_contents($root . '/' . $checker);
     if (!is_string($checkerSource)) {
         $adapterPreparationValid = false;
+        $deployThemePathPreparationValid = false;
         continue;
     }
 
@@ -87,8 +94,16 @@ foreach ($expectedAdaptedCheckers as $checker) {
             && !str_contains($preparedChecker, '$permissionCount === 19')
             && substr_count($preparedChecker, '$permissionCount >= 19') === 1
             && substr_count($preparedChecker, $dynamicOutput) === 1;
+        if (in_array($checker, $expectedDeployThemePathCheckers, true)) {
+            $deployThemePathPreparationValid = $deployThemePathPreparationValid
+                && !str_contains($preparedChecker, $legacyThemePath)
+                && str_contains($preparedChecker, "is_dir(\$root . '/public/themes')");
+        }
     } catch (Throwable) {
         $adapterPreparationValid = false;
+        if (in_array($checker, $expectedDeployThemePathCheckers, true)) {
+            $deployThemePathPreparationValid = false;
+        }
     }
 }
 
@@ -124,6 +139,7 @@ $checks = [
     'permission regression adapter ограничен четырьмя checker-файлами' => permission_baseline_compatible_checker_paths()
         === $expectedAdaptedCheckers,
     'permission regression adapter реально готовит все четыре checker-файла' => $adapterPreparationValid,
+    'directory regression adapter использует опубликованные темы' => $deployThemePathPreparationValid,
     'CLI adapter использует протестированную функцию подготовки' => str_contains(
         $regressionAdapter,
         'prepare_permission_baseline_compatible_checker($source, $relativePath)'
