@@ -14,13 +14,22 @@ FEATURE BRANCH: feature/organizational-structure-v1
 ## 1. Предусловия
 
 ```powershell
-Set-Location C:\Project\ASU-VCH
+$RepositoryRoot = 'C:\Project\ASU-VCH'
+$DeployRoot = 'C:\OSPanel\home\asu-vch.local'
+
+Set-Location $RepositoryRoot
 git branch --show-current
 git status --short
-(Get-FileHash .\config\local.php -Algorithm SHA256).Hash
+
+if (-not (Test-Path "$DeployRoot\config\local.php")) {
+    throw "Не найден deploy-конфиг: $DeployRoot\config\local.php"
+}
+
+$DeployConfigHashBefore = (Get-FileHash "$DeployRoot\config\local.php" -Algorithm SHA256).Hash
+"DEPLOY_CONFIG_LOCAL_SHA256_BEFORE=$DeployConfigHashBefore"
 ```
 
-Ожидается ветка `feature/organizational-structure-v1`. Перед migration создаётся резервная копия локальной БД утверждённым способом проекта.
+Ожидается ветка `feature/organizational-structure-v1`, чистое рабочее дерево и существующий deploy-конфиг. `config/local.php` намеренно отсутствует в Git checkout и проверяется только в deploy-копии. Перед migration создаётся резервная копия локальной БД утверждённым способом проекта.
 
 ## 2. Статические проверки
 
@@ -41,12 +50,15 @@ php .\tools\check-organizational-structure.php
 
 ## 3. Migration
 
+Перед запуском installer GitHub checkout разворачивается в `C:\OSPanel\home\asu-vch.local` утверждённым способом проекта с сохранением deploy-файла `config/local.php`.
+
 ```powershell
+Set-Location C:\OSPanel\home\asu-vch.local
 php .\database\install.php
 php .\database\install.php
 ```
 
-Первый запуск должен применить `009_organizational_structure_v1.sql`. Повторный запуск должен сообщить об отсутствии новых миграций.
+Первый запуск должен применить `009_organizational_structure_v1.sql`. Повторный запуск должен сообщить об отсутствии новых миграций. SHA-256 deploy-файла `config/local.php` после развёртывания должен совпасть с зафиксированным значением.
 
 Контрольное состояние:
 
@@ -174,11 +186,14 @@ asu-evgeniya-rostova
 ## 10. Post-test integrity
 
 ```powershell
-(Get-FileHash .\config\local.php -Algorithm SHA256).Hash
+$DeployConfigHashAfter = (Get-FileHash 'C:\OSPanel\home\asu-vch.local\config\local.php' -Algorithm SHA256).Hash
+"DEPLOY_CONFIG_LOCAL_SHA256_AFTER=$DeployConfigHashAfter"
+
+Set-Location C:\Project\ASU-VCH
 git status --short
 ```
 
-SHA-256 `config/local.php` должен совпасть с исходным. В рабочей БД и отчёте не должны остаться синтетические checker-структуры.
+SHA-256 deploy-файла `config/local.php` должен совпасть с исходным. В рабочей БД и отчёте не должны остаться синтетические checker-структуры.
 
 ## 11. Test Report gate
 
