@@ -10,10 +10,66 @@
                 <?php if ($canUpdate && $isDraft): ?>
                 <div class="organization-node-actions">
                     <form method="post" action="/admin/organization/nodes/reorder.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="structure_id" value="<?= $structureId ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="node_id" value="<?= (int) $node['id'] ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><button class="secondary-button" name="direction" value="up" type="submit" <?= $node['parent_node_id'] === null ? 'disabled' : '' ?>>Выше</button><button class="secondary-button" name="direction" value="down" type="submit" <?= $node['parent_node_id'] === null ? 'disabled' : '' ?>>Ниже</button></form>
-                    <?php if ($node['parent_node_id'] !== null): ?><details><summary>Переместить</summary><form method="post" action="/admin/organization/nodes/move.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="structure_id" value="<?= $structureId ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="node_id" value="<?= (int) $node['id'] ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><select name="parent_node_id" required><?php foreach ($flatTree as $parentEntry): $parent = $parentEntry['node']; if ((int) $parent['id'] === (int) $node['id']) continue; ?><option value="<?= (int) $parent['id'] ?>" <?= (int) ($node['parent_node_id'] ?? 0) === (int) $parent['id'] ? 'selected' : '' ?>><?= e(str_repeat('— ', (int) $parentEntry['depth']) . (string) $parent['name']) ?></option><?php endforeach; ?></select><button class="primary-button" type="submit">Переместить</button></form></details><?php endif; ?>
-                    <details><summary>Изменить</summary><form method="post" action="/admin/organization/nodes/update.php" class="organization-compact-form"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="structure_id" value="<?= $structureId ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="node_id" value="<?= (int) $node['id'] ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><label>Тип<select name="type_id" required><?php foreach ($nodeTypeOptions as $type): ?><option value="<?= (int) $type['id'] ?>" <?= (int) $node['organizational_element_type_id'] === (int) $type['id'] ? 'selected' : '' ?>><?= e((string) $type['name']) ?></option><?php endforeach; ?></select></label><label>Полное наименование<input name="name" maxlength="255" required value="<?= e((string) $node['name']) ?>"></label><label>Краткое наименование<input name="short_name" maxlength="128" value="<?= e((string) ($node['short_name'] ?? '')) ?>"></label><label>Внутренний код<input name="internal_code" maxlength="64" value="<?= e((string) ($node['internal_code'] ?? '')) ?>"></label><label>Примечание<textarea name="note" maxlength="4000"><?= e((string) ($node['note'] ?? '')) ?></textarea></label><button class="primary-button" type="submit">Сохранить</button></form></details>
-                    <details><summary>Добавить дочерний</summary><form method="post" action="/admin/organization/nodes/create.php" class="organization-compact-form"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="structure_id" value="<?= $structureId ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="parent_node_id" value="<?= (int) $node['id'] ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><label>Тип<select name="type_id" required><?php foreach ($types as $type): ?><option value="<?= (int) $type['id'] ?>"><?= e((string) $type['name']) ?><?= $type['class_names'] ? ' · ' . e((string) $type['class_names']) : '' ?></option><?php endforeach; ?></select></label><label>Полное наименование<input name="name" maxlength="255" required></label><label>Краткое наименование<input name="short_name" maxlength="128"></label><label>Внутренний код<input name="internal_code" maxlength="64"></label><label>Примечание<textarea name="note" maxlength="4000"></textarea></label><button class="primary-button" type="submit">Добавить</button></form></details>
-                    <?php if ($node['parent_node_id'] !== null): ?><details class="danger-details"><summary>Удалить</summary><form method="post" action="/admin/organization/nodes/delete.php" class="organization-compact-form"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="structure_id" value="<?= $structureId ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="node_id" value="<?= (int) $node['id'] ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><?php if ((int) $node['child_count'] > 0): ?><label class="checkbox-label"><input type="checkbox" name="confirm_subtree" value="1" required>Удалить всё поддерево (непосредственных дочерних: <?= (int) $node['child_count'] ?>)</label><label>Основание<textarea name="reason" maxlength="1000" required></textarea></label><?php endif; ?><button class="danger-button" type="submit">Удалить</button></form></details><?php endif; ?>
+                    <?php if ($node['parent_node_id'] !== null): ?>
+                    <details>
+                        <summary class="organization-disclosure"><span class="organization-disclosure-icon" aria-hidden="true"></span><span>Переместить</span></summary>
+                        <form method="post" action="/admin/organization/nodes/move.php">
+                            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                            <input type="hidden" name="structure_id" value="<?= $structureId ?>">
+                            <input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>">
+                            <input type="hidden" name="node_id" value="<?= (int) $node['id'] ?>">
+                            <input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>">
+                            <select name="parent_node_id" required><?php foreach ($flatTree as $parentEntry): $parent = $parentEntry['node']; if ((int) $parent['id'] === (int) $node['id']) continue; ?><option value="<?= (int) $parent['id'] ?>" <?= (int) ($node['parent_node_id'] ?? 0) === (int) $parent['id'] ? 'selected' : '' ?>><?= e(str_repeat('— ', (int) $parentEntry['depth']) . (string) $parent['name']) ?></option><?php endforeach; ?></select>
+                            <button class="primary-button" type="submit">Переместить</button>
+                        </form>
+                    </details>
+                    <?php endif; ?>
+                    <details>
+                        <summary class="organization-disclosure organization-disclosure--edit"><span class="organization-disclosure-icon" aria-hidden="true"></span><span>Изменить</span></summary>
+                        <form method="post" action="/admin/organization/nodes/update.php" class="organization-compact-form">
+                            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                            <input type="hidden" name="structure_id" value="<?= $structureId ?>">
+                            <input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>">
+                            <input type="hidden" name="node_id" value="<?= (int) $node['id'] ?>">
+                            <input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>">
+                            <label>Тип<select name="type_id" required><?php foreach ($nodeTypeOptions as $type): ?><option value="<?= (int) $type['id'] ?>" <?= (int) $node['organizational_element_type_id'] === (int) $type['id'] ? 'selected' : '' ?>><?= e((string) $type['name']) ?></option><?php endforeach; ?></select></label>
+                            <label>Полное наименование<input name="name" maxlength="255" required value="<?= e((string) $node['name']) ?>"></label>
+                            <label>Краткое наименование<input name="short_name" maxlength="128" value="<?= e((string) ($node['short_name'] ?? '')) ?>"></label>
+                            <label>Внутренний код<input name="internal_code" maxlength="64" value="<?= e((string) ($node['internal_code'] ?? '')) ?>"></label>
+                            <label>Примечание<textarea name="note" maxlength="4000"><?= e((string) ($node['note'] ?? '')) ?></textarea></label>
+                            <button class="primary-button" type="submit">Сохранить</button>
+                        </form>
+                    </details>
+                    <details>
+                        <summary class="organization-disclosure organization-disclosure--add"><span class="organization-disclosure-icon" aria-hidden="true"></span><span>Добавить дочерний</span></summary>
+                        <form method="post" action="/admin/organization/nodes/create.php" class="organization-compact-form">
+                            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                            <input type="hidden" name="structure_id" value="<?= $structureId ?>">
+                            <input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>">
+                            <input type="hidden" name="parent_node_id" value="<?= (int) $node['id'] ?>">
+                            <input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>">
+                            <label>Тип<select name="type_id" required><?php foreach ($types as $type): ?><option value="<?= (int) $type['id'] ?>"><?= e((string) $type['name']) ?><?= $type['class_names'] ? ' · ' . e((string) $type['class_names']) : '' ?></option><?php endforeach; ?></select></label>
+                            <label>Полное наименование<input name="name" maxlength="255" required></label>
+                            <label>Краткое наименование<input name="short_name" maxlength="128"></label>
+                            <label>Внутренний код<input name="internal_code" maxlength="64"></label>
+                            <label>Примечание<textarea name="note" maxlength="4000"></textarea></label>
+                            <button class="primary-button" type="submit">Добавить</button>
+                        </form>
+                    </details>
+                    <?php if ($node['parent_node_id'] !== null): ?>
+                    <details class="danger-details">
+                        <summary class="organization-disclosure organization-disclosure--danger"><span class="organization-disclosure-icon" aria-hidden="true"></span><span>Удалить</span></summary>
+                        <form method="post" action="/admin/organization/nodes/delete.php" class="organization-compact-form">
+                            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                            <input type="hidden" name="structure_id" value="<?= $structureId ?>">
+                            <input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>">
+                            <input type="hidden" name="node_id" value="<?= (int) $node['id'] ?>">
+                            <input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>">
+                            <?php if ((int) $node['child_count'] > 0): ?><label class="checkbox-label"><input type="checkbox" name="confirm_subtree" value="1" required>Удалить всё поддерево (непосредственных дочерних: <?= (int) $node['child_count'] ?>)</label><label>Основание<textarea name="reason" maxlength="1000" required></textarea></label><?php endif; ?>
+                            <button class="danger-button" type="submit">Удалить</button>
+                        </form>
+                    </details>
+                    <?php endif; ?>
                 </div>
                 <?php endif; ?>
             </article>
@@ -21,4 +77,3 @@
         </div>
         <?php endif; ?>
     </section>
-
