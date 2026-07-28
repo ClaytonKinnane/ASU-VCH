@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/OrganizationalStructureMigrationCompatibility.php';
+
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
     exit;
@@ -65,6 +67,12 @@ try {
         if ($sql === false) {
             throw new RuntimeException("Не удалось прочитать миграцию: {$migrationName}");
         }
+        $sql = prepare_migration_sql_for_environment(
+            $pdo,
+            (string) $db['name'],
+            $migrationName,
+            $sql
+        );
 
         $pdo->exec($sql);
         $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
