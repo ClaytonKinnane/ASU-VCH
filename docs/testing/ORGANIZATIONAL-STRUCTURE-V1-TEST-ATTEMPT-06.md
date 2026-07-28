@@ -47,7 +47,8 @@ FAIL Evgeniya Rostova required assets registered
 - whitelist-преобразование legacy theme path только для:
   - `tools/check-military-ranks-directory-core.php`;
   - `tools/check-organizational-elements-directory-core.php`;
-- фактическая проверка сформированного `public/themes` пути в compatibility checker.
+- фактическая проверка сформированного `public/themes` пути в compatibility checker;
+- повтор `git fetch` при временном TLS-сбое и локальный `merge --ff-only` вместо второго сетевого `git pull` в test runner.
 
 Предметная логика тем, справочников и acceptance-сценариев не изменяется.
 
