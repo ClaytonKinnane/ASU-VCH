@@ -13,6 +13,15 @@ function permission_baseline_compatible_checker_paths(): array
     ];
 }
 
+/** @return list<string> */
+function deploy_theme_path_compatible_checker_paths(): array
+{
+    return [
+        'tools/check-military-ranks-directory-core.php',
+        'tools/check-organizational-elements-directory-core.php',
+    ];
+}
+
 function prepare_permission_baseline_compatible_checker(string $source, string $relativePath): string
 {
     if (!in_array($relativePath, permission_baseline_compatible_checker_paths(), true)) {
@@ -48,6 +57,18 @@ function prepare_permission_baseline_compatible_checker(string $source, string $
         throw new RuntimeException("Вывод permission count не распознан в {$relativePath}.");
     }
 
+    if (in_array($relativePath, deploy_theme_path_compatible_checker_paths(), true)) {
+        $legacyThemePath = '$root . \'/themes/\' . $themeSlug . \'/assets/css/directories.css\'';
+        $deployThemePath = "(is_dir(\$root . '/public/themes') ? \$root . '/public/themes/' : \$root . '/themes/')"
+            . " . \$themeSlug . '/assets/css/directories.css'";
+        $prepared = str_replace($legacyThemePath, $deployThemePath, $prepared, $themePathReplacementCount);
+        if ($themePathReplacementCount !== 1) {
+            throw new RuntimeException(
+                "Ожидалась одна замена пути темы в {$relativePath}, найдено {$themePathReplacementCount}."
+            );
+        }
+    }
+
     if (str_contains($prepared, '$permissionCount === 19')) {
         throw new RuntimeException("Точное ограничение 19 осталось в {$relativePath}.");
     }
@@ -56,6 +77,15 @@ function prepare_permission_baseline_compatible_checker(string $source, string $
     }
     if (substr_count($prepared, $dynamicOutput) !== 1) {
         throw new RuntimeException("Динамический вывод permission count сформирован неверно в {$relativePath}.");
+    }
+    if (
+        in_array($relativePath, deploy_theme_path_compatible_checker_paths(), true)
+        && (
+            str_contains($prepared, '$root . \'/themes/\' . $themeSlug . \'/assets/css/directories.css\'')
+            || !str_contains($prepared, "is_dir(\$root . '/public/themes')")
+        )
+    ) {
+        throw new RuntimeException("Совместимый путь опубликованной темы сформирован неверно в {$relativePath}.");
     }
 
     return $prepared;
