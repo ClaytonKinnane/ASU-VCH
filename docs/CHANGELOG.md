@@ -1,27 +1,47 @@
 # История изменений
 
-## Unreleased — `feature/theme-evgeniya-rostova`
+## 2026-07-28
 
 ### Темы
 
+- PR #12 `feat(theme): add Evgeniya Rostova theme v1` объединён в `main` методом merge commit;
+- новый стабильный `main` commit: `967546087868f0d7eb347b186f7798015d268811`;
 - зарегистрирована третья встроенная светлая тема `asu-evgeniya-rostova` с отображаемым названием `Евгения Ростова`;
-- добавлена розово-лиловая палитра, основанная на class contract `asu-light-blue`;
-- добавлены семь CSS-файлов для auth, account, users, theme management, directories и operation-result modal;
+- добавлена розово-лиловая палитра и оформление для auth, account, users, theme management, directories и operation-result modal;
 - добавлены четыре локальных SVG: сердечки, воздушные шарики, медвежонок и зайчик;
-- все CSS/SVG включены в `required_assets` и блокируют активацию темы при неполной поставке;
+- все семь CSS и четыре SVG включены в `required_assets` и блокируют активацию темы при неполной поставке;
+- на dashboard добавлены кластеры сердечек на плитках;
+- success operation-result modal приведён к розово-лиловому стилю темы;
 - default и fallback остаются `asu-blue`;
-- миграции, permissions, RBAC, маршруты и бизнес-логика не изменены.
+- стабильных встроенных тем в `main` теперь `3`.
 
 ### Проверка
 
-- theme management checker расширен до трёх тем и выполняет SVG/CSS safety checks;
-- добавлен изолированный missing-asset checker без изменения реальных assets и active theme;
-- directory checker'ы получили общий registry-driven wrapper, а прежняя DB/repository-логика сохранена в неизменённых core-файлах;
-- статический PHP lint, XML parse, CSS parser, asset-reference scan и WCAG AA contrast sanity выполнены успешно;
-- Open Server, MySQL, HTTP и desktop/browser Testing ожидаются;
-- Mobile PASS не заявляется.
+- PHP lint: 59 файлов, PASS;
+- controlled deploy: PASS;
+- SHA-256 `config/local.php` сохранён;
+- migrations остались `001–008`, повторный installer сообщил «Новых миграций нет»;
+- theme management checker: PASS;
+- missing-asset checker: PASS;
+- оба directory checker'а: PASS;
+- security regression checker'ы: PASS;
+- system roles: `4`;
+- system permissions: `19`;
+- local smoke: PASS с предусмотренным параметром `-AllowInvalidCertificate`;
+- все семь CSS и четыре SVG возвращают HTTP 200;
+- desktop/browser-приёмка темы `Евгения Ростова`: PASS;
+- regression `asu-blue` и `asu-light-blue`: PASS;
+- тематические success/error modal и HTTP 403: PASS;
+- Final Review: PASS, blocking findings: `0`;
+- Mobile PASS не заявляется, мобильное тестирование было исключено из scope.
 
-Изменения ещё не объединены в `main`. Pull Request и merge отсутствуют.
+### Архитектура и документация
+
+- добавлены Architecture / Specification, Formal Review, Approval, Implementation Addendum, Final Test Report и PR Final Review;
+- GitHub post-merge verification подтвердила PR #12 как `MERGED`, наличие третьей темы и process-документов в `main`;
+- feature- и documentation-ветки сохранены по указанию владельца проекта.
+
+Новых migrations, permissions, RBAC-правил, маршрутов и бизнес-логики инкремент не добавил.
 
 ## 2026-07-27
 
