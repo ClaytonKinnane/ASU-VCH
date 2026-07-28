@@ -76,8 +76,16 @@ return static function (PDO $pdo, string $root, callable $assert): array {
         $assert($triggerStmt->fetchColumn() === $trigger, "trigger {$trigger} существует");
     }
 
+    $themeRegistry = theme_registry_service();
     foreach (['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'] as $theme) {
-        $assert(is_file($root . '/themes/' . $theme . '/assets/css/organization.css'), "тема {$theme} содержит organization.css");
+        $assetIsPublished = false;
+        try {
+            $assetIsPublished = $themeRegistry->assetUrl($theme, 'css/organization.css')
+                === '/themes/' . rawurlencode($theme) . '/assets/css/organization.css';
+        } catch (Throwable) {
+            $assetIsPublished = false;
+        }
+        $assert($assetIsPublished, "тема {$theme} публикует organization.css");
     }
     $assert(is_file($root . '/public/assets/js/organization-tree.js'), 'общий JavaScript дерева существует');
 
