@@ -2,44 +2,8 @@
 
 declare(strict_types=1);
 
-function prepare_migration_sql_for_environment(
-    PDO $pdo,
-    string $schemaName,
-    string $migrationName,
-    string $sql
-): string {
-    if ($migrationName !== '009_organizational_structure_v1.sql') {
-        return $sql;
-    }
-
-    $tables = [
-        'organizational_structures',
-        'organizational_structure_elements',
-        'organizational_structure_versions',
-        'organizational_structure_documents',
-        'organizational_structure_version_documents',
-        'organizational_structure_nodes',
-        'organizational_structure_change_events',
-    ];
-    $tableCheck = $pdo->prepare(
-        'SELECT COUNT(*) FROM information_schema.tables '
-        . 'WHERE table_schema = :schema_name AND table_name = :table_name'
-    );
-    foreach ($tables as $table) {
-        $tableCheck->execute(['schema_name' => $schemaName, 'table_name' => $table]);
-        if ((int) $tableCheck->fetchColumn() !== 1) {
-            continue;
-        }
-
-        $rowCount = (int) $pdo->query("SELECT COUNT(*) FROM `{$table}`")->fetchColumn();
-        if ($rowCount !== 0) {
-            throw new RuntimeException(
-                "Migration 009 не зарегистрирована, но таблица {$table} содержит {$rowCount} строк. "
-                . 'Автоматическое продолжение частичной DDL запрещено.'
-            );
-        }
-    }
-
+function transform_organizational_structure_migration_sql(string $sql): string
+{
     $invalidConstraint = '/,\s*CONSTRAINT\s+chk_org_structure_nodes_self_parent\s+'
         . 'CHECK\s*\(\s*parent_node_id\s+IS\s+NULL\s+OR\s+parent_node_id\s*<>\s*id\s*\)/i';
     $sql = preg_replace($invalidConstraint, '', $sql, 1, $constraintCount);
@@ -82,4 +46,45 @@ SQL;
     }
 
     return $sql;
+}
+
+function prepare_migration_sql_for_environment(
+    PDO $pdo,
+    string $schemaName,
+    string $migrationName,
+    string $sql
+): string {
+    if ($migrationName !== '009_organizational_structure_v1.sql') {
+        return $sql;
+    }
+
+    $tables = [
+        'organizational_structures',
+        'organizational_structure_elements',
+        'organizational_structure_versions',
+        'organizational_structure_documents',
+        'organizational_structure_version_documents',
+        'organizational_structure_nodes',
+        'organizational_structure_change_events',
+    ];
+    $tableCheck = $pdo->prepare(
+        'SELECT COUNT(*) FROM information_schema.tables '
+        . 'WHERE table_schema = :schema_name AND table_name = :table_name'
+    );
+    foreach ($tables as $table) {
+        $tableCheck->execute(['schema_name' => $schemaName, 'table_name' => $table]);
+        if ((int) $tableCheck->fetchColumn() !== 1) {
+            continue;
+        }
+
+        $rowCount = (int) $pdo->query("SELECT COUNT(*) FROM `{$table}`")->fetchColumn();
+        if ($rowCount !== 0) {
+            throw new RuntimeException(
+                "Migration 009 не зарегистрирована, но таблица {$table} содержит {$rowCount} строк. "
+                . 'Автоматическое продолжение частичной DDL запрещено.'
+            );
+        }
+    }
+
+    return transform_organizational_structure_migration_sql($sql);
 }
