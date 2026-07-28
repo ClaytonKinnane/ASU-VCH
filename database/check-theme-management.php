@@ -25,10 +25,65 @@ try {
     theme_check($registry->defaultSlug() === 'asu-blue', 'default theme is asu-blue');
 
     $themes = $registry->themesWithAvailability();
-    theme_check(array_keys($themes) === ['asu-blue', 'asu-light-blue'], 'registered themes: 2');
-    theme_check($themes['asu-blue']['available'] === true, 'asu-blue assets complete');
-    theme_check($themes['asu-light-blue']['available'] === true, 'asu-light-blue assets complete');
-    theme_check($registry->assetUrl('asu-light-blue', 'css/theme.css') === '/themes/asu-light-blue/assets/css/theme.css', 'light theme asset URL');
+    $expectedSlugs = ['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'];
+    theme_check(array_keys($themes) === $expectedSlugs, 'registered themes: 3');
+    foreach ($expectedSlugs as $themeSlug) {
+        theme_check($themes[$themeSlug]['available'] === true, $themeSlug . ' assets complete');
+    }
+
+    $evgeniya = $themes['asu-evgeniya-rostova'];
+    theme_check($evgeniya['name'] === 'Евгения Ростова', 'Evgeniya Rostova display name');
+    theme_check($evgeniya['appearance'] === 'light', 'Evgeniya Rostova appearance is light');
+    theme_check($evgeniya['preview_colors'] === ['#fff7fb', '#c12a70', '#9a6bc4'], 'Evgeniya Rostova preview palette');
+
+    $evgeniyaRequiredAssets = [
+        'css/theme.css',
+        'css/auth.css',
+        'css/account.css',
+        'css/users.css',
+        'css/theme-management.css',
+        'css/directories.css',
+        'css/operation-result-modal.css',
+        'img/hearts-pattern.svg',
+        'img/balloons.svg',
+        'img/teddy-bear.svg',
+        'img/plush-bunny.svg',
+    ];
+    theme_check($evgeniya['required_assets'] === $evgeniyaRequiredAssets, 'Evgeniya Rostova required assets registered');
+
+    foreach ($evgeniyaRequiredAssets as $asset) {
+        theme_check(
+            $registry->assetUrl('asu-evgeniya-rostova', $asset)
+                === '/themes/asu-evgeniya-rostova/assets/' . $asset,
+            'Evgeniya Rostova asset URL: ' . $asset
+        );
+    }
+
+    foreach (['hearts-pattern.svg', 'balloons.svg', 'teddy-bear.svg', 'plush-bunny.svg'] as $image) {
+        $path = $root . '/themes/asu-evgeniya-rostova/assets/img/' . $image;
+        $content = file_get_contents($path);
+        theme_check(is_string($content) && str_contains($content, '<svg'), $image . ' is SVG');
+        foreach (['<script', 'foreignObject', '<image', 'javascript:', 'onload=', 'onclick=', 'xlink:href', 'href="http://', 'href="https://', "href='http://", "href='https://"] as $forbidden) {
+            theme_check(!str_contains((string) $content, $forbidden), $image . ' excludes ' . $forbidden);
+        }
+    }
+
+    $evgeniyaThemeRoot = $root . '/themes/asu-evgeniya-rostova';
+    $themeFiles = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($evgeniyaThemeRoot, FilesystemIterator::SKIP_DOTS));
+    foreach ($themeFiles as $file) {
+        if (!$file->isFile()) {
+            continue;
+        }
+        $extension = strtolower($file->getExtension());
+        theme_check(in_array($extension, ['css', 'svg'], true), 'Evgeniya Rostova contains only CSS/SVG: ' . $file->getFilename());
+        if ($extension === 'css') {
+            $content = file_get_contents($file->getPathname());
+            theme_check(is_string($content), 'read Evgeniya Rostova CSS: ' . $file->getFilename());
+            foreach (['http://', 'https://', 'data:', '@import', '/themes/asu-blue/', '/themes/asu-light-blue/'] as $forbidden) {
+                theme_check(!str_contains((string) $content, $forbidden), $file->getFilename() . ' excludes ' . $forbidden);
+            }
+        }
+    }
 
     foreach (['', '../theme.css', '..\\theme.css', "css/\0theme.css", 'https://example.test/theme.css', '/css/theme.css', '//theme.css'] as $invalidPath) {
         try {
@@ -57,6 +112,7 @@ try {
 
     theme_check(is_file($root . '/public/assets/js/operation-result-modal.js'), 'shared operation modal JavaScript exists');
     theme_check(!is_file($root . '/themes/asu-blue/assets/js/operation-result-modal.js'), 'theme-specific operation modal JavaScript removed');
+    theme_check(!is_dir($evgeniyaThemeRoot . '/assets/js'), 'Evgeniya Rostova has no JavaScript directory');
 
     $app = require $root . '/config/app.php';
     $localFile = $root . '/config/local.php';
@@ -99,7 +155,7 @@ try {
     theme_check($ownerId !== false, 'active system owner available for repository transaction test');
 
     $repository = new ThemeSettingsRepository($pdo);
-    $testTheme = $storedTheme === 'asu-light-blue' ? 'asu-blue' : 'asu-light-blue';
+    $testTheme = $storedTheme === 'asu-evgeniya-rostova' ? 'asu-blue' : 'asu-evgeniya-rostova';
     $pdo->beginTransaction();
     try {
         $repository->lockActiveTheme();
