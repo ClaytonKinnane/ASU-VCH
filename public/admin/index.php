@@ -18,6 +18,7 @@ $roleNames = array_values(array_filter(
 $roleSummary = $roleNames !== [] ? implode(', ', $roleNames) : 'Роль не назначена';
 
 $isOwner = in_array('system_owner', current_user_role_codes(), true);
+$canViewContent = $isOwner || has_permission('organization.structures.view');
 $canViewUsers = has_permission('security.users.view');
 $canViewSettings = has_permission('system.settings.view');
 
@@ -47,11 +48,11 @@ try {
     <?php if ((int) $user['must_change_password'] === 1): ?><div class="warning-badge">Требуется смена пароля</div><?php endif; ?>
 </section>
 <section class="dashboard-grid" aria-label="Доступные разделы">
-    <?php if ($isOwner): ?><a class="dashboard-tile glass-tile" href="/admin/content.php"><span class="tile-kicker">Раздел</span><h2>Контент</h2><p>Прикладные модули, справочники, структура, военнослужащие, документы и будущие бизнес-домены.</p><span class="tile-action">Открыть раздел →</span></a><?php endif; ?>
+    <?php if ($canViewContent): ?><a class="dashboard-tile glass-tile" href="/admin/content.php"><span class="tile-kicker">Раздел</span><h2>Контент</h2><p>Прикладные модули, справочники, структура, военнослужащие, документы и будущие бизнес-домены.</p><span class="tile-action">Открыть раздел →</span></a><?php endif; ?>
     <?php if ($canViewUsers): ?><a class="dashboard-tile glass-tile" href="/admin/users.php"><span class="tile-kicker">Раздел</span><h2>Пользователи</h2><p>Учетные записи, роли, разрешения, назначения ролей и состояния доступа.</p><span class="tile-action">Открыть раздел →</span></a><?php endif; ?>
     <?php if ($canViewSettings): ?><a class="dashboard-tile glass-tile" href="/admin/settings.php"><span class="tile-kicker">Раздел</span><h2>Настройки системы</h2><p>Окружение, темы, база данных, миграции, диагностика и обслуживание приложения.</p><span class="tile-action">Открыть раздел →</span></a><?php endif; ?>
 </section>
-<?php if (!$isOwner && !$canViewUsers && !$canViewSettings): ?>
+<?php if (!$canViewContent && !$canViewUsers && !$canViewSettings): ?>
 <section class="auth-card glass-tile"><h2 class="auth-heading">Нет доступных разделов</h2><p class="auth-description">Учетная запись активна, но назначенные роли пока не предоставляют доступ к разделам панели.</p></section>
 <?php endif; ?>
 </div></main>
