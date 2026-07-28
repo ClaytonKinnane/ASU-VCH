@@ -29,7 +29,7 @@ $DeployConfigHashBefore = (Get-FileHash "$DeployRoot\config\local.php" -Algorith
 "DEPLOY_CONFIG_LOCAL_SHA256_BEFORE=$DeployConfigHashBefore"
 ```
 
-Ожидается ветка `feature/organizational-structure-v1`, чистое рабочее дерево и существующий deploy-конфиг. `config/local.php` намеренно отсутствует в Git checkout и проверяется только в deploy-копии. Перед migration создаётся резервная копия локальной БД утверждённым способом проекта.
+Ожидается ветка `feature/organizational-structure-v1`, чистое рабочее дерево и существующий deploy-конфиг. `config/local.php` намеренно отсутствует в Git checkout и проверяется только в deploy-копии.
 
 ## 2. Статические проверки
 
@@ -46,9 +46,51 @@ php .\tools\check-organizational-structure.php
 - шесть permissions;
 - отсутствие role-permission seed для `administrator`, `operator`, `viewer`;
 - наличие `organization.css` во всех трёх темах;
-- наличие `organization-tree.js`.
+- наличие `organization-tree.js`;
+- наличие `tools/Backup-Database.ps1`.
 
-## 3. Migration
+## 3. Резервная копия БД
+
+До deploy и migration выполняется штатный скрипт резервного копирования:
+
+```powershell
+Set-Location C:\Project\ASU-VCH
+powershell -ExecutionPolicy Bypass -File .\tools\Backup-Database.ps1 `
+    -DeployRoot 'C:\OSPanel\home\asu-vch.local'
+```
+
+Скрипт:
+
+- читает параметры подключения из deploy-файла `config/local.php` через PHP;
+- не выводит пароль в консоль и не передаёт его в командной строке;
+- использует временный `defaults-extra-file`, удаляемый в `finally`;
+- автоматически находит `mysqldump.exe` установленного модуля Open Server или принимает явный `-MySqlDumpExecutable`;
+- создаёт полный SQL dump с routines, triggers и events;
+- сохраняет backup вне web/deploy-каталога;
+- проверяет наличие и непустой размер файла;
+- выводит SHA-256.
+
+Каталог по умолчанию:
+
+```text
+C:\OSPanel\backups\asu-vch
+```
+
+Ожидаемый результат содержит:
+
+```text
+BACKUP_STATUS=PASS
+DATABASE_NAME=<local database name>
+MYSQLDUMP_EXECUTABLE=<resolved executable>
+MYSQLDUMP_VERSION=<version>
+BACKUP_FILE=<absolute sql path>
+BACKUP_SIZE_BYTES=<positive integer>
+BACKUP_SHA256=<sha256>
+```
+
+Migration запрещена, пока `BACKUP_STATUS=PASS` не получен. Сам SQL-файл не добавляется в Git, deploy-каталог, тестовый отчёт или публичные артефакты. В Test Report фиксируются только путь, размер и SHA-256 без содержимого и учётных данных.
+
+## 4. Migration
 
 Перед запуском installer GitHub checkout разворачивается в `C:\OSPanel\home\asu-vch.local` утверждённым способом проекта с сохранением deploy-файла `config/local.php`.
 
@@ -69,7 +111,7 @@ system permissions: 25
 organizational structures immediately after migration: 0
 ```
 
-## 4. Интеграционный checker
+## 5. Интеграционный checker
 
 ```powershell
 php .\tools\check-organizational-structure.php
@@ -94,7 +136,7 @@ Checker обязан подтвердить:
 
 После checker количество эксплуатационных структур не должно увеличиться.
 
-## 5. Regression
+## 6. Regression
 
 ```powershell
 php .\database\check-security-rbac.php
@@ -110,7 +152,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\Test-LocalSmoke.ps1 -AllowInval
 
 Если конкретный checker требует собственные аргументы, применяется его существующий runbook без изменения данных организационной структуры.
 
-## 6. RBAC acceptance
+## 7. RBAC acceptance
 
 Создаются временные синтетические пользовательские роли:
 
@@ -129,7 +171,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\Test-LocalSmoke.ps1 -AllowInval
 - `system_owner` сохраняет полный доступ через `system.*.*`;
 - blocked/inactive/archived user не проходит общую аутентификацию и авторизацию.
 
-## 7. Functional acceptance
+## 8. Functional acceptance
 
 На синтетической структуре проверяются:
 
@@ -148,7 +190,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\Test-LocalSmoke.ps1 -AllowInval
 - архивирование и восстановление;
 - история изменений.
 
-## 8. Browser и themes
+## 9. Browser и themes
 
 Фактически проверяются:
 
@@ -170,7 +212,7 @@ asu-evgeniya-rostova
 - keyboard focus;
 - отсутствие отсутствующих assets и HTTP 404.
 
-## 9. Mobile acceptance
+## 10. Mobile acceptance
 
 Проверка выполняется фактически на mobile viewport или устройстве:
 
@@ -183,7 +225,7 @@ asu-evgeniya-rostova
 
 `Mobile PASS` запрещено указывать без результатов этого раздела.
 
-## 10. Post-test integrity
+## 11. Post-test integrity
 
 ```powershell
 $DeployConfigHashAfter = (Get-FileHash 'C:\OSPanel\home\asu-vch.local\config\local.php' -Algorithm SHA256).Hash
@@ -195,7 +237,7 @@ git status --short
 
 SHA-256 deploy-файла `config/local.php` должен совпасть с исходным. В рабочей БД и отчёте не должны остаться синтетические checker-структуры.
 
-## 11. Test Report gate
+## 12. Test Report gate
 
 После фактического выполнения создаётся:
 
@@ -203,4 +245,4 @@ SHA-256 deploy-файла `config/local.php` должен совпасть с и
 docs/testing/ORGANIZATIONAL-STRUCTURE-V1-TEST-REPORT.md
 ```
 
-Отчёт фиксирует команды, фактические выводы, версии среды, desktop/mobile результаты, найденные дефекты и итоговый статус. До этого Pull Request не создаётся. Исправления по результатам Testing вносятся непосредственно в GitHub feature-ветку отдельными осмысленными commit.
+Отчёт фиксирует команды, фактические выводы, версии среды, путь/размер/SHA-256 backup, desktop/mobile результаты, найденные дефекты и итоговый статус. До этого Pull Request не создаётся. Исправления по результатам Testing вносятся непосредственно в GitHub feature-ветку отдельными осмысленными commit.
