@@ -46,6 +46,13 @@ if ($themeManagementChecker === false) {
     exit(1);
 }
 
+$uiPolishCheckerPath = $root . '/tools/check-organizational-structure-ui-polish.php';
+$uiPolishChecker = file_get_contents($uiPolishCheckerPath);
+if ($uiPolishChecker === false) {
+    fwrite(STDERR, "FAIL: UI polish checker не прочитан.\n");
+    exit(1);
+}
+
 try {
     $prepared = transform_organizational_structure_migration_sql($sql);
 } catch (Throwable $exception) {
@@ -110,6 +117,12 @@ foreach ($expectedAdaptedCheckers as $checker) {
 $themeExpectedAssetNeedle = <<<'PHP'
 'css/theme-management.css', 'css/directories.css', 'css/organization.css',
 PHP;
+$uiPolishThemeRootNeedle = <<<'PHP'
+$themeRoot = is_dir($root . '/public/themes')
+PHP;
+$uiPolishThemeReadNeedle = <<<'PHP'
+$themeCss[$slug] = ui_polish_read($themeRoot . "/{$slug}/assets/css/organization.css");
+PHP;
 
 $checks = [
     'таблиц после подготовки: 7' => preg_match_all('/^\s*CREATE\s+TABLE\b/im', $prepared) === 7,
@@ -135,6 +148,13 @@ $checks = [
     'theme management checker ожидает organization.css' => str_contains(
         $themeManagementChecker,
         $themeExpectedAssetNeedle
+    ),
+    'UI polish checker использует опубликованный theme path' => str_contains(
+        $uiPolishChecker,
+        $uiPolishThemeRootNeedle
+    ) && str_contains(
+        $uiPolishChecker,
+        $uiPolishThemeReadNeedle
     ),
     'permission regression adapter ограничен четырьмя checker-файлами' => permission_baseline_compatible_checker_paths()
         === $expectedAdaptedCheckers,
