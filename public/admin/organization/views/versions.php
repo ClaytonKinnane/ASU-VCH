@@ -11,7 +11,14 @@
         <div class="organization-version-controls">
             <div><strong>Выбрана версия № <?= (int) $selectedVersion['version_number'] ?></strong><span class="status-badge"><?= e($statusLabel((string) $selectedVersion['status'])) ?></span><small>Редакция формы: <?= (int) $selectedVersion['revision'] ?> · классификатор <?= e((string) $selectedVersion['catalog_code']) ?></small></div>
             <?php if ($canPublish && $isDraft): ?>
-            <form method="post" action="/admin/organization/versions/approve.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="structure_id" value="<?= $structureId ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><label>Дата вступления в действие<input type="date" name="effective_from" required></label><button class="primary-button" type="submit">Утвердить версию</button></form>
+            <form method="post" action="/admin/organization/versions/approve.php">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                <input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>">
+                <input type="hidden" name="structure_id" value="<?= $structureId ?>">
+                <input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>">
+                <label class="organization-date-label"><span>Дата вступления в действие</span><span class="organization-date-control"><input type="date" name="effective_from" required><span class="organization-date-icon" aria-hidden="true"></span></span></label>
+                <button class="primary-button" type="submit">Утвердить версию</button>
+            </form>
             <?php endif; ?>
             <?php if ($canPublish && $isApproved): ?>
             <form method="post" action="/admin/organization/versions/activate.php"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="structure_id" value="<?= $structureId ?>"><button class="primary-button" type="submit">Ввести в действие</button></form>
@@ -22,4 +29,3 @@
         </div>
         <?php endif; ?>
     </section>
-
