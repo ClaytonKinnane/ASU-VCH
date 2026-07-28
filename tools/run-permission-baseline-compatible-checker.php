@@ -62,6 +62,7 @@ $temporaryPath = dirname($sourcePath)
     . '-'
     . bin2hex(random_bytes(8))
     . '.php';
+$adapterExitCode = 6;
 
 try {
     if (file_put_contents($temporaryPath, $prepared, LOCK_EX) === false) {
@@ -69,13 +70,14 @@ try {
     }
 
     echo "REGRESSION_ADAPTER_CHECKER={$relativePath}\n";
-    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($temporaryPath), $exitCode);
-    exit($exitCode);
+    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($temporaryPath), $adapterExitCode);
 } catch (Throwable $exception) {
     fwrite(STDERR, 'REGRESSION ADAPTER FAILED: ' . $exception->getMessage() . PHP_EOL);
-    exit(6);
+    $adapterExitCode = 6;
 } finally {
     if (is_file($temporaryPath)) {
         @unlink($temporaryPath);
     }
 }
+
+exit($adapterExitCode);
