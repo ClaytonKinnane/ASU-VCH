@@ -29,6 +29,28 @@ function Invoke-External {
     }
 }
 
+function Invoke-ExternalWithRetry {
+    param(
+        [Parameter(Mandatory = $true)][string]$Executable,
+        [Parameter()][string[]]$Arguments = @(),
+        [Parameter()][ValidateRange(1, 10)][int]$Attempts = 5
+    )
+
+    for ($Attempt = 1; $Attempt -le $Attempts; $Attempt++) {
+        Write-Host "> $Executable $($Arguments -join ' ') [попытка $Attempt/$Attempts]" -ForegroundColor Cyan
+        & $Executable @Arguments
+        $ExitCode = $LASTEXITCODE
+        if ($ExitCode -eq 0) {
+            return
+        }
+        if ($Attempt -lt $Attempts) {
+            Start-Sleep -Seconds (5 * $Attempt)
+        }
+    }
+
+    throw "Команда завершилась с кодом $ExitCode после $Attempts попыток: $Executable"
+}
+
 $RepositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $DeployConfigPath = Join-Path $DeployRoot 'config\local.php'
 
@@ -40,9 +62,10 @@ if ($InitialChanges.Count -ne 0) {
     throw 'Рабочее дерево репозитория не является чистым.'
 }
 
-Invoke-External 'git' @('fetch', 'origin')
 Invoke-External 'git' @('switch', $ExpectedBranch)
-Invoke-External 'git' @('pull', '--ff-only')
+Invoke-External 'git' @('config', '--local', 'http.version', 'HTTP/1.1')
+Invoke-ExternalWithRetry 'git' @('fetch', 'origin')
+Invoke-External 'git' @('merge', '--ff-only', "origin/$ExpectedBranch")
 
 $CurrentBranch = ((git branch --show-current) | Out-String).Trim()
 $CurrentHead = ((git rev-parse HEAD) | Out-String).Trim()
