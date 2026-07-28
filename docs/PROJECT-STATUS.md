@@ -1,40 +1,42 @@
 # Текущее состояние проекта АСУ-ВЧ
 
-Дата актуализации feature-ветки: `2026-07-28`.
+Дата актуализации: `2026-07-28`.
 
 ## Стабильный функциональный baseline
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
 branch: main
-main commit: 3a93ddf35c872d6710951c71a0044f81dbcacfd6
-functional baseline: 17169e268e024ab50464ba13f7d0bf0f3d01a87e
-last functional PR: #9
+main commit: 967546087868f0d7eb347b186f7798015d268811
+functional baseline: 967546087868f0d7eb347b186f7798015d268811
+last functional PR: #12
 last documentation PR: #11
 migrations: 001–008
 system roles: 4
 system permissions: 19
-built-in themes in main: 2
+built-in themes in main: 3
 ```
 
-PR #10 и #11 изменяли только Markdown-документацию и не меняли runtime baseline.
+PR #12 `feat(theme): add Evgeniya Rostova theme v1` объединён в `main` методом merge commit. Новых migrations, permissions, RBAC-правил, маршрутов и бизнес-логики инкремент не добавил.
 
-## Активный функциональный инкремент
+## Состояние последнего функционального инкремента
 
 ```text
 increment: Evgeniya Rostova Theme v1
-branch: feature/theme-evgeniya-rostova
-base: main @ 3a93ddf35c872d6710951c71a0044f81dbcacfd6
-runtime implementation checkpoint: 8b9342ad19e000b12a2389f94bc522d7e59d2b4d
-stage: Implementation completed; local Testing pending
-registered themes in feature branch: 3
+feature branch: feature/theme-evgeniya-rostova
+final feature HEAD: c524480f47082b0f827bf16460617b24449d7780
+tested runtime HEAD: 8dabdda09f9f29b1bf84ea7eea1127971d4d8f45
+pull request: #12 MERGED
+merge commit: 967546087868f0d7eb347b186f7798015d268811
+final review: PASS
+blocking findings: 0
+registered themes in main: 3
 migrations: unchanged, 001–008
 system permissions: unchanged, 19
-pull request: not opened
-merge: prohibited until separate approval
+mobile acceptance: OUT OF SCOPE
 ```
 
-В feature-ветке реализована третья встроенная тема `asu-evgeniya-rostova` с отображаемым названием `Евгения Ростова`, семью CSS-файлами и четырьмя локальными SVG. Выполнены статические lint, XML/CSS safety и contrast sanity checks. Open Server, MySQL, HTTP и browser-приёмка ещё не выполнены и не заявляются как PASS.
+В `main` доступна третья встроенная тема `asu-evgeniya-rostova` с отображаемым названием `Евгения Ростова`, семью CSS-файлами и четырьмя локальными SVG. Локальное Testing, desktop/browser-приёмка, regression двух прежних тем, тематическая HTTP 403, success/error modal и HTTP-доступность всех assets завершены со статусом PASS. Mobile PASS не заявляется.
 
 ## Завершённые функциональные Pull Request
 
@@ -49,8 +51,9 @@ merge: prohibited until separate approval
 | #7 | Стартовая страница справочников v1 | MERGED |
 | #8 | Справочник составов и воинских званий v1 | MERGED |
 | #9 | Справочник типов организационных элементов v1 | MERGED |
+| #12 | Евгения Ростова Theme v1 | MERGED |
 
-Feature- и docs-ветки сохраняются. Их наличие само по себе не означает, что инкремент объединён в `main`.
+Feature- и docs-ветки сохраняются по прямому указанию владельца проекта. Их наличие после merge не означает наличие незавершённого runtime-инкремента.
 
 ## Реализованные возможности стабильного main
 
@@ -75,10 +78,12 @@ Feature- и docs-ветки сохраняются. Их наличие само
 
 - доверенный реестр `config/themes.php`;
 - глобальная активная тема в БД;
-- безопасный fallback;
-- `asu-blue` и `asu-light-blue`;
-- общие assets и operation-result modal;
-- desktop-приёмка обеих стабильных тем.
+- безопасный fallback на `asu-blue`;
+- три встроенные темы: `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova`;
+- семь обязательных CSS-контрактов каждой темы;
+- локальные SVG-декорации темы `Евгения Ростова`;
+- тематические operation-result modal и HTTP 403;
+- desktop-приёмка всех трёх стабильных тем.
 
 ### Directories
 
@@ -86,26 +91,37 @@ Feature- и docs-ветки сохраняются. Их наличие само
 - справочник воинских званий: 2 источника, 6 составов, 20 уровней;
 - справочник типов организационных элементов: 4 источника, 6 классов, 28 типов, 32 связи;
 - read-only routes, поиск и фильтры;
+- registry-driven проверка `directories.css` всех зарегистрированных тем;
 - профильные integration checker'ы.
 
-## Последняя post-merge проверка
+## Проверка последнего инкремента
 
-Для PR #9 подтверждено:
+Для `Evgeniya Rostova Theme v1` подтверждено:
 
 ```text
-Local main = GitHub main = 17169e268e024ab50464ba13f7d0bf0f3d01a87e
-local/remote divergence = 0/0
-working tree = clean
+feature local/remote divergence = 0/0
+feature working tree = clean
+PHP lint = 59 files, PASS
+deploy = PASS
+config/local.php SHA-256 = preserved
 applied migrations = 8
 new migrations = none
-organizational directory checker = PASS
-military ranks checker = PASS
-asu-blue directories.css = HTTP 200
-asu-light-blue directories.css = HTTP 200
-config/local.php = preserved
+theme management checker = PASS
+missing-asset checker = PASS
+both directory checkers = PASS
+security regression checkers = PASS
+system roles = 4
+system permissions = 19
+local smoke = PASS with -AllowInvalidCertificate
+7 CSS + 4 SVG = HTTP 200
+desktop/browser acceptance = PASS
+asu-blue regression = PASS
+asu-light-blue regression = PASS
+PR final review = PASS
+blocking findings = 0
 ```
 
-После документационных PR #10 и #11 `main` синхронизирован до `3a93ddf35c872d6710951c71a0044f81dbcacfd6`; runtime-проверки повторно не запускались, поскольку runtime не менялся.
+После merge GitHub подтвердил PR #12 как `MERGED`, новый `main` commit `967546087868f0d7eb347b186f7798015d268811`, наличие темы и process-документов в `main`, а также сохранность feature- и documentation-веток. Локальная синхронизация checkout с новым `main` и повторный post-merge smoke не заявляются как выполненные до получения отдельного фактического вывода локальной среды.
 
 ## Ограничения текущего стабильного baseline
 
@@ -127,6 +143,6 @@ config/local.php = preserved
 
 Мобильная приёмка выполнялась в ранних security-инкрементах там, где была включена в scope. Для последних справочных инкрементов и `Evgeniya Rostova Theme v1` мобильное тестирование исключено и не заявляется как выполненное.
 
-## Следующий gate активного инкремента
+## Следующий gate
 
-Необходимо синхронизировать точный feature HEAD в локальную среду, выполнить PHP lint, controlled deploy, два запуска installer, профильные и security checker'ы, HTTP asset acceptance и desktop/browser-приёмку. Только после Test Report и Final Review разрешается открыть Pull Request. Merge требует отдельного точного разрешения.
+Активный функциональный инкремент не выбран. Новая задача должна начинаться с Research → Analysis → Architecture → Specification → Formal Review → Approval и отдельной feature-ветки от актуального `main`.

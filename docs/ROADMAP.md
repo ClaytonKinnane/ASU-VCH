@@ -2,14 +2,16 @@
 
 ## Стабильная контрольная точка
 
-Все функциональные PR #1–#9 завершены, объединены в `main` и прошли post-merge проверку. Документационные PR #10 и #11 также объединены и не изменили runtime.
+Функциональные PR #1–#9 и #12 завершены и объединены в `main`. Документационные PR #10 и #11 также объединены и не изменили runtime.
 
 ```text
-main: 3a93ddf35c872d6710951c71a0044f81dbcacfd6
-functional baseline: 17169e268e024ab50464ba13f7d0bf0f3d01a87e
-completed functional pull requests: #1–#9
+main: 967546087868f0d7eb347b186f7798015d268811
+functional baseline: 967546087868f0d7eb347b186f7798015d268811
+completed functional pull requests: #1–#9, #12
 applied migrations: 001–008
-stable built-in themes: 2
+stable built-in themes: 3
+system roles: 4
+system permissions: 19
 ```
 
 ## Завершённые этапы
@@ -24,15 +26,20 @@ stable built-in themes: 2
 - [x] стартовая страница справочников;
 - [x] справочник составов военнослужащих и воинских званий;
 - [x] справочник типов организационных элементов;
-- [x] документационный аудит текущего baseline.
+- [x] документационный аудит текущего baseline;
+- [x] третья встроенная тема `Евгения Ростова`.
 
-## Активный инкремент
+## Завершённый инкремент: Evgeniya Rostova Theme v1
 
 ```text
-Evgeniya Rostova Theme v1
-branch: feature/theme-evgeniya-rostova
-runtime implementation checkpoint: 8b9342ad19e000b12a2389f94bc522d7e59d2b4d
-status: Implementation completed; Testing pending
+feature branch: feature/theme-evgeniya-rostova
+final feature HEAD: c524480f47082b0f827bf16460617b24449d7780
+tested runtime HEAD: 8dabdda09f9f29b1bf84ea7eea1127971d4d8f45
+pull request: #12 MERGED
+merge commit: 967546087868f0d7eb347b186f7798015d268811
+final review: PASS
+blocking findings: 0
+mobile acceptance: OUT OF SCOPE
 ```
 
 Этапы:
@@ -44,17 +51,18 @@ status: Implementation completed; Testing pending
 - [x] Formal Review;
 - [x] Approval;
 - [x] Implementation;
-- [ ] локальный PHP/Open Server/MySQL Testing;
-- [ ] desktop/browser-приёмка;
-- [ ] Test Report;
-- [ ] Pull Request;
-- [ ] Final Review;
-- [ ] отдельное merge approval;
-- [ ] Merge и post-merge verification.
+- [x] локальный PHP/Open Server/MySQL Testing;
+- [x] desktop/browser-приёмка;
+- [x] Test Report;
+- [x] Pull Request;
+- [x] Final Review;
+- [x] отдельное merge approval;
+- [x] Merge;
+- [x] GitHub post-merge verification.
 
-Новая тема не добавляет migration или permission. Mobile acceptance исключена из scope.
+Новая тема не добавила migration или permission. Mobile acceptance была исключена из scope и Mobile PASS не заявляется. Локальная синхронизация checkout с новым `main` и повторный post-merge smoke фиксируются только после фактического вывода локальной среды.
 
-## Следующий функциональный инкремент после текущего
+## Следующий функциональный инкремент
 
 Не выбран и не утверждён. Возможные направления не являются задачами до отдельного Research/Analysis/Approval:
 
