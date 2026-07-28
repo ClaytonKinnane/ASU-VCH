@@ -24,6 +24,20 @@ if ($organizationSchema === false) {
     exit(1);
 }
 
+$regressionAdapterPath = $root . '/tools/run-permission-baseline-compatible-checker.php';
+$regressionAdapter = file_get_contents($regressionAdapterPath);
+if ($regressionAdapter === false) {
+    fwrite(STDERR, "FAIL: permission regression adapter не прочитан.\n");
+    exit(1);
+}
+
+$runnerPath = $root . '/tools/Test-OrganizationalStructureV1.ps1';
+$runner = file_get_contents($runnerPath);
+if ($runner === false) {
+    fwrite(STDERR, "FAIL: Windows PowerShell runner не прочитан.\n");
+    exit(1);
+}
+
 try {
     $prepared = transform_organizational_structure_migration_sql($sql);
 } catch (Throwable $exception) {
@@ -44,6 +58,18 @@ $hasUtf8Bom = static function (string $path): bool {
     }
 };
 
+$expectedAdaptedCheckers = [
+    'database/check-security-user-rejection.php',
+    'database/check-security-user-archive-restore.php',
+    'tools/check-military-ranks-directory-core.php',
+    'tools/check-organizational-elements-directory-core.php',
+];
+$adapterWhitelistsAllCheckers = true;
+foreach ($expectedAdaptedCheckers as $checker) {
+    $adapterWhitelistsAllCheckers = $adapterWhitelistsAllCheckers
+        && str_contains($regressionAdapter, "'{$checker}'");
+}
+
 $checks = [
     'таблиц после подготовки: 7' => preg_match_all('/^\s*CREATE\s+TABLE\b/im', $prepared) === 7,
     'triggers после подготовки: 16' => preg_match_all('/^\s*CREATE\s+TRIGGER\b/im', $prepared) === 16,
@@ -53,9 +79,7 @@ $checks = [
         'ORG_STRUCTURE_NODE_SELF_PARENT_FORBIDDEN'
     ) === 2,
     'DELIMITER отсутствует' => preg_match('/^\s*DELIMITER\b/im', $prepared) !== 1,
-    'Windows PowerShell runner содержит UTF-8 BOM' => $hasUtf8Bom(
-        $root . '/tools/Test-OrganizationalStructureV1.ps1'
-    ),
+    'Windows PowerShell runner содержит UTF-8 BOM' => $hasUtf8Bom($runnerPath),
     'backup wrapper содержит UTF-8 BOM' => $hasUtf8Bom(
         $root . '/tools/Backup-Database.ps1'
     ),
@@ -67,6 +91,19 @@ $checks = [
         $organizationSchema,
         "\$root . '/themes/'"
     ),
+    'permission regression adapter ограничен четырьмя checker-файлами' => $adapterWhitelistsAllCheckers,
+    'permission regression adapter требует ровно одну замену' => str_contains(
+        $regressionAdapter,
+        '$replacementCount !== 1'
+    ),
+    'permission regression adapter ослабляет только точное число 19' => str_contains(
+        $regressionAdapter,
+        "'$permissionCount === 19' => '$permissionCount >= 19'"
+    ),
+    'runner использует permission regression adapter четыре раза' => substr_count(
+        $runner,
+        'run-permission-baseline-compatible-checker.php'
+    ) === 4,
 ];
 
 $failed = 0;
