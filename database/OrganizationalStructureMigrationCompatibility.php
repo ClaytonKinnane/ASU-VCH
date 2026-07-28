@@ -49,47 +49,35 @@ function prepare_migration_sql_for_environment(
         );
     }
 
-    $insertNeedle = <<<'SQL'
-IF (SELECT status FROM organizational_structure_versions WHERE id = NEW.structure_version_id) <> 'draft' THEN
-SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ORG_STRUCTURE_NODE_VERSION_IMMUTABLE';
-END IF;
-END;
-CREATE TRIGGER trg_org_structure_nodes_before_update
-SQL;
+    $insertPattern = '/('
+        . 'CREATE\s+TRIGGER\s+trg_org_structure_nodes_before_insert.*?'
+        . "SIGNAL\s+SQLSTATE\s+'45000'\s+SET\s+MESSAGE_TEXT\s*=\s*'ORG_STRUCTURE_NODE_VERSION_IMMUTABLE';\s*"
+        . 'END\s+IF;'
+        . ')(\s*END;\s*CREATE\s+TRIGGER\s+trg_org_structure_nodes_before_update)/is';
     $insertReplacement = <<<'SQL'
-IF (SELECT status FROM organizational_structure_versions WHERE id = NEW.structure_version_id) <> 'draft' THEN
-SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ORG_STRUCTURE_NODE_VERSION_IMMUTABLE';
-END IF;
+$1
 IF NEW.parent_node_id IS NOT NULL AND NEW.id IS NOT NULL AND NEW.id <> 0 AND NEW.parent_node_id = NEW.id THEN
 SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ORG_STRUCTURE_NODE_SELF_PARENT_FORBIDDEN';
-END IF;
-END;
-CREATE TRIGGER trg_org_structure_nodes_before_update
+END IF;$2
 SQL;
-    $sql = str_replace($insertNeedle, $insertReplacement, $sql, $insertCount);
-    if ($insertCount !== 1) {
+    $sql = preg_replace($insertPattern, $insertReplacement, $sql, 1, $insertCount);
+    if (!is_string($sql) || $insertCount !== 1) {
         throw new RuntimeException('Не удалось усилить trigger вставки узла проверкой self-parent.');
     }
 
-    $updateNeedle = <<<'SQL'
-IF OLD.parent_node_id IS NULL AND NEW.parent_node_id IS NOT NULL THEN
-SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ORG_STRUCTURE_ROOT_MOVE_FORBIDDEN';
-END IF;
-END;
-CREATE TRIGGER trg_org_structure_nodes_before_delete
-SQL;
+    $updatePattern = '/('
+        . 'CREATE\s+TRIGGER\s+trg_org_structure_nodes_before_update.*?'
+        . "SIGNAL\s+SQLSTATE\s+'45000'\s+SET\s+MESSAGE_TEXT\s*=\s*'ORG_STRUCTURE_ROOT_MOVE_FORBIDDEN';\s*"
+        . 'END\s+IF;'
+        . ')(\s*END;\s*CREATE\s+TRIGGER\s+trg_org_structure_nodes_before_delete)/is';
     $updateReplacement = <<<'SQL'
-IF OLD.parent_node_id IS NULL AND NEW.parent_node_id IS NOT NULL THEN
-SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ORG_STRUCTURE_ROOT_MOVE_FORBIDDEN';
-END IF;
+$1
 IF NEW.parent_node_id IS NOT NULL AND NEW.parent_node_id = OLD.id THEN
 SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ORG_STRUCTURE_NODE_SELF_PARENT_FORBIDDEN';
-END IF;
-END;
-CREATE TRIGGER trg_org_structure_nodes_before_delete
+END IF;$2
 SQL;
-    $sql = str_replace($updateNeedle, $updateReplacement, $sql, $updateCount);
-    if ($updateCount !== 1) {
+    $sql = preg_replace($updatePattern, $updateReplacement, $sql, 1, $updateCount);
+    if (!is_string($sql) || $updateCount !== 1) {
         throw new RuntimeException('Не удалось усилить trigger изменения узла проверкой self-parent.');
     }
 
