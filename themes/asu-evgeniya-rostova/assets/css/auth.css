@@ -1,0 +1,14 @@
+.auth-card .form-input:-webkit-autofill,
+.auth-card .form-input:-webkit-autofill:hover,
+.auth-card .form-input:-webkit-autofill:focus,
+.auth-card .form-input:-webkit-autofill:active {
+    border-color: var(--input-border) !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    caret-color: var(--text-primary);
+    -webkit-box-shadow: 0 0 0 1000px #fffafd inset !important;
+    box-shadow: 0 0 0 1000px #fffafd inset !important;
+    transition: background-color 9999s ease-out 0s;
+}
+.auth-card .form-input:autofill { border-color: var(--input-border) !important; color: var(--text-primary) !important; background: #fffafd !important; box-shadow: 0 0 0 1000px #fffafd inset !important; }
+.auth-card input[type="password"]::-ms-reveal,
+.auth-card input[type="password"]::-ms-clear { display: none; width: 0; height: 0; }

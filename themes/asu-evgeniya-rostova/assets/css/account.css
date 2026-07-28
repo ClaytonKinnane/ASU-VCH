@@ -1,0 +1,10 @@
+.password-change-main { align-items: flex-start; padding-top: 34px; }
+.password-change-card { width: min(560px,calc(100vw - 40px)); }
+.password-change-card .tile-kicker { display: block; margin-bottom: 8px; text-align: center; }
+.security-notice { margin: 0 0 20px; padding: 13px 15px; display: grid; gap: 4px; border: 1px solid #e3b4cb; border-radius: 10px; background: #fff2f8; }
+.security-notice span, .password-policy { color: var(--text-secondary); font-size: 13px; }
+.password-policy { margin: -1px 0 18px; line-height: 1.5; }
+.field-error { display: block; min-height: 19px; padding-top: 4px; color: #a92f40; font-size: 12px; line-height: 1.35; }
+.field-error--empty { visibility: hidden; }
+.form-message--error { border-color: #c64555; color: #8a2534; background: #fff1f3; }
+@media (max-width:600px) { .password-change-main { padding-top: 22px; } .password-change-card { width: min(100% - 20px,560px); } }

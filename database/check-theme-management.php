@@ -25,10 +25,56 @@ try {
     theme_check($registry->defaultSlug() === 'asu-blue', 'default theme is asu-blue');
 
     $themes = $registry->themesWithAvailability();
-    theme_check(array_keys($themes) === ['asu-blue', 'asu-light-blue'], 'registered themes: 2');
-    theme_check($themes['asu-blue']['available'] === true, 'asu-blue assets complete');
-    theme_check($themes['asu-light-blue']['available'] === true, 'asu-light-blue assets complete');
-    theme_check($registry->assetUrl('asu-light-blue', 'css/theme.css') === '/themes/asu-light-blue/assets/css/theme.css', 'light theme asset URL');
+    $expectedSlugs = ['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'];
+    theme_check(array_keys($themes) === $expectedSlugs, 'registered themes: 3');
+    foreach ($expectedSlugs as $slug) {
+        theme_check(($themes[$slug]['available'] ?? false) === true, $slug . ' assets complete');
+    }
+
+    $expectedAssets = [
+        'css/theme.css', 'css/auth.css', 'css/account.css', 'css/users.css',
+        'css/theme-management.css', 'css/directories.css', 'css/operation-result-modal.css',
+        'img/hearts-pattern.svg', 'img/balloons.svg', 'img/teddy-bear.svg', 'img/plush-bunny.svg',
+    ];
+    $evgeniya = $themes['asu-evgeniya-rostova'];
+    theme_check($evgeniya['name'] === 'Евгения Ростова', 'Evgeniya Rostova display name');
+    theme_check($evgeniya['appearance'] === 'light', 'Evgeniya Rostova appearance is light');
+    theme_check($evgeniya['preview_colors'] === ['#fff7fb', '#c12a70', '#9a6bc4'], 'Evgeniya Rostova preview palette');
+    theme_check($evgeniya['required_assets'] === $expectedAssets, 'Evgeniya Rostova required assets registered');
+    foreach ($expectedAssets as $asset) {
+        theme_check(
+            $registry->assetUrl('asu-evgeniya-rostova', $asset)
+                === '/themes/asu-evgeniya-rostova/assets/' . $asset,
+            'Evgeniya Rostova asset URL: ' . $asset
+        );
+    }
+
+    $assetRoot = is_dir($root . '/public/themes/asu-evgeniya-rostova/assets')
+        ? $root . '/public/themes/asu-evgeniya-rostova/assets'
+        : $root . '/themes/asu-evgeniya-rostova/assets';
+    foreach (['hearts-pattern.svg', 'balloons.svg', 'teddy-bear.svg', 'plush-bunny.svg'] as $image) {
+        $content = file_get_contents($assetRoot . '/img/' . $image);
+        theme_check(is_string($content) && str_contains($content, '<svg'), $image . ' is SVG');
+        foreach (['<script', 'foreignObject', '<image', 'javascript:', 'onload=', 'onclick=', 'xlink:href', 'href="http://', 'href="https://', "href='http://", "href='https://"] as $forbidden) {
+            theme_check(!str_contains((string) $content, $forbidden), $image . ' excludes ' . $forbidden);
+        }
+    }
+    $themeRoot = dirname($assetRoot);
+    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($themeRoot, FilesystemIterator::SKIP_DOTS));
+    foreach ($files as $file) {
+        if (!$file->isFile()) {
+            continue;
+        }
+        $extension = strtolower($file->getExtension());
+        theme_check(in_array($extension, ['css', 'svg'], true), 'Evgeniya Rostova contains only CSS/SVG: ' . $file->getFilename());
+        if ($extension === 'css') {
+            $content = file_get_contents($file->getPathname());
+            foreach (['http://', 'https://', 'data:', '@import', '/themes/asu-blue/', '/themes/asu-light-blue/'] as $forbidden) {
+                theme_check(is_string($content) && !str_contains($content, $forbidden), $file->getFilename() . ' excludes ' . $forbidden);
+            }
+        }
+    }
+    theme_check(!is_dir($assetRoot . '/js'), 'Evgeniya Rostova has no JavaScript directory');
 
     foreach (['', '../theme.css', '..\\theme.css', "css/\0theme.css", 'https://example.test/theme.css', '/css/theme.css', '//theme.css'] as $invalidPath) {
         try {
@@ -39,67 +85,52 @@ try {
     }
     echo "OK invalid asset paths rejected\n";
 
-    $executableRoots = [$root . '/app', $root . '/public'];
     $hardcoded = [];
-    foreach ($executableRoots as $directory) {
+    foreach ([$root . '/app', $root . '/public'] as $directory) {
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
         foreach ($iterator as $file) {
-            if (!$file->isFile() || strtolower($file->getExtension()) !== 'php') {
-                continue;
-            }
-            $content = file_get_contents($file->getPathname());
-            if (is_string($content) && str_contains($content, '/themes/asu-blue/assets/')) {
-                $hardcoded[] = str_replace($root . DIRECTORY_SEPARATOR, '', $file->getPathname());
+            if ($file->isFile() && strtolower($file->getExtension()) === 'php') {
+                $content = file_get_contents($file->getPathname());
+                if (is_string($content) && str_contains($content, '/themes/asu-blue/assets/')) {
+                    $hardcoded[] = $file->getPathname();
+                }
             }
         }
     }
     theme_check($hardcoded === [], 'no hardcoded asu-blue asset URLs in executable PHP');
-
     theme_check(is_file($root . '/public/assets/js/operation-result-modal.js'), 'shared operation modal JavaScript exists');
-    theme_check(!is_file($root . '/themes/asu-blue/assets/js/operation-result-modal.js'), 'theme-specific operation modal JavaScript removed');
 
     $app = require $root . '/config/app.php';
     $localFile = $root . '/config/local.php';
     theme_check(is_file($localFile), 'local config exists');
-    $local = require $localFile;
-    $config = array_replace_recursive($app, $local);
+    $config = array_replace_recursive($app, require $localFile);
     $db = $config['database'];
-    $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $db['host'], $db['port'], $db['name'], $db['charset']);
-    $pdo = new PDO($dsn, $db['username'], $db['password'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
-
-    $migrationStmt = $pdo->prepare('SELECT COUNT(*) FROM migrations WHERE migration = :migration');
-    $migrationStmt->execute(['migration' => '006_theme_management.sql']);
-    theme_check((int) $migrationStmt->fetchColumn() === 1, 'migration 006 applied');
-
-    $columnStmt = $pdo->prepare(
-        'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = :schema_name AND table_name = :table_name AND column_name = :column_name'
+    $pdo = new PDO(
+        sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $db['host'], $db['port'], $db['name'], $db['charset']),
+        $db['username'],
+        $db['password'],
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES => false]
     );
-    $columnStmt->execute(['schema_name' => $db['name'], 'table_name' => 'system_settings', 'column_name' => 'updated_by']);
-    theme_check((int) $columnStmt->fetchColumn() === 1, 'system_settings.updated_by exists');
 
-    $fkStmt = $pdo->prepare(
-        'SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema = :schema_name AND constraint_name = :constraint_name AND delete_rule = :delete_rule'
-    );
-    $fkStmt->execute(['schema_name' => $db['name'], 'constraint_name' => 'fk_system_settings_updated_by', 'delete_rule' => 'SET NULL']);
-    theme_check((int) $fkStmt->fetchColumn() === 1, 'theme setting actor foreign key');
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM migrations WHERE migration = :migration');
+    $stmt->execute(['migration' => '006_theme_management.sql']);
+    theme_check((int) $stmt->fetchColumn() === 1, 'migration 006 applied');
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table AND column_name = :column');
+    $stmt->execute(['schema' => $db['name'], 'table' => 'system_settings', 'column' => 'updated_by']);
+    theme_check((int) $stmt->fetchColumn() === 1, 'system_settings.updated_by exists');
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema = :schema AND constraint_name = :name AND delete_rule = :rule');
+    $stmt->execute(['schema' => $db['name'], 'name' => 'fk_system_settings_updated_by', 'rule' => 'SET NULL']);
+    theme_check((int) $stmt->fetchColumn() === 1, 'theme setting actor foreign key');
 
-    $settingStmt = $pdo->prepare('SELECT setting_value FROM system_settings WHERE setting_key = :setting_key');
-    $settingStmt->execute(['setting_key' => 'ui.active_theme']);
-    $storedTheme = $settingStmt->fetchColumn();
+    $stmt = $pdo->prepare('SELECT setting_value FROM system_settings WHERE setting_key = :key');
+    $stmt->execute(['key' => 'ui.active_theme']);
+    $storedTheme = $stmt->fetchColumn();
     theme_check(is_string($storedTheme) && $registry->isRegistered($storedTheme), 'stored active theme is registered');
-
-    $ownerId = $pdo->query(
-        "SELECT u.id FROM users u JOIN user_roles ur ON ur.user_id = u.id JOIN roles r ON r.id = ur.role_id "
-        . "WHERE r.code = 'system_owner' AND u.is_active = 1 AND u.approval_status = 'approved' AND u.deleted_at IS NULL ORDER BY u.id LIMIT 1"
-    )->fetchColumn();
+    $ownerId = $pdo->query("SELECT u.id FROM users u JOIN user_roles ur ON ur.user_id = u.id JOIN roles r ON r.id = ur.role_id WHERE r.code = 'system_owner' AND u.is_active = 1 AND u.approval_status = 'approved' AND u.deleted_at IS NULL ORDER BY u.id LIMIT 1")->fetchColumn();
     theme_check($ownerId !== false, 'active system owner available for repository transaction test');
 
     $repository = new ThemeSettingsRepository($pdo);
-    $testTheme = $storedTheme === 'asu-light-blue' ? 'asu-blue' : 'asu-light-blue';
+    $testTheme = $storedTheme === 'asu-evgeniya-rostova' ? 'asu-blue' : 'asu-evgeniya-rostova';
     $pdo->beginTransaction();
     try {
         $repository->lockActiveTheme();

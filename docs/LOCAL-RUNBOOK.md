@@ -13,7 +13,7 @@ URL: https://asu-vch.local
 
 ## 2. Предварительные условия
 
-- Windows 11;
+- Windows 10/11;
 - Open Server Panel 6.5.1;
 - Apache;
 - PHP 8.5.4;
@@ -37,18 +37,44 @@ git pull --ff-only origin main
 git rev-parse HEAD
 ```
 
+Для активного инкремента:
+
+```powershell
+Set-Location -LiteralPath 'C:\Project\ASU-VCH'
+git status --short
+git fetch --prune origin
+git switch feature/theme-evgeniya-rostova
+git pull --ff-only origin feature/theme-evgeniya-rostova
+git rev-parse HEAD
+git rev-list --left-right --count HEAD...origin/feature/theme-evgeniya-rostova
+git status --short
+```
+
 Требования:
 
 - рабочее дерево до и после синхронизации чистое;
-- `main` обновляется только fast-forward;
+- ветка обновляется только fast-forward;
+- divergence равен `0/0`;
 - локальные commit и push не выполняются;
-- для активного инкремента используется точное имя согласованной ветки и ожидаемый SHA.
+- тестируется точный GitHub HEAD.
 
 ## 4. Резервное копирование
 
-Перед deploy сохраняются изменяемые deploy-файлы. Перед новой миграцией, меняющей схему или данные, дополнительно создаётся SQL backup и фиксируется его SHA-256.
+Перед deploy сохраняются изменяемые deploy-файлы. Перед migration, меняющей схему или данные, дополнительно создаётся SQL backup и фиксируется его SHA-256.
 
-Повторная post-merge установка без новых миграций не требует нового SQL backup, но backup deploy-файлов сохраняется.
+`Evgeniya Rostova Theme v1` не содержит migration и не меняет данные, поэтому новый SQL backup для этого инкремента не требуется. Backup изменяемых deploy-файлов и контроль сохранности `config/local.php` обязательны.
+
+Минимально сохраняются существующие:
+
+```text
+config/themes.php
+database/check-theme-management.php
+public/themes
+tools — если каталог присутствует в deploy-root
+themes — если checker-only source copy присутствует в deploy-root
+```
+
+Содержимое `config/local.php` не выводится. До и после deploy сравнивается только SHA-256 файла.
 
 ## 5. Полная локальная инициализация
 
@@ -63,7 +89,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 2. выполняет PHP lint;
 3. запускает `deploy\Deploy-Local.ps1`;
 4. сохраняет существующий `config/local.php`;
-5. копирует `app`, `config`, `database`, `public` и опубликованные темы;
+5. копирует `app`, `config`, `database`, `public` и публикует темы в `public/themes`;
 6. восстанавливает `config/local.php`;
 7. запускает installer.
 
@@ -77,14 +103,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 php C:\OSPanel\home\asu-vch.local\database\install.php
 ```
 
-В текущем baseline ожидается:
+Для текущего baseline и `Evgeniya Rostova Theme v1` ожидается:
 
 ```text
 Применено миграций: 8
 Новых миграций нет.
 ```
 
-Число пользователей и состояние bootstrap-регистрации зависят от локальной БД и не являются константой проекта.
+Installer запускается повторно. Число пользователей и состояние bootstrap-регистрации зависят от локальной БД и не являются константой проекта.
 
 ## 7. Local-only test owner
 
@@ -110,17 +136,64 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Test-LocalSmoke.ps1'
 ```
 
-При локальном недоверенном сертификате используется предусмотренный сценарием параметр разрешения локального сертификата.
-
 Проверяются:
 
 - `/` — HTTP 200;
 - `/health.php` — HTTP 200 и подключение к БД;
 - `/admin/` для анонимного пользователя — HTTP 302.
 
-## 10. Integration checker'ы
+## 10. Theme checker'ы
 
-После изменений запускаются все профильные и регрессионные проверки. Для текущих справочников обязательны:
+После deploy выполняются:
+
+```powershell
+php C:\OSPanel\home\asu-vch.local\database\check-theme-management.php
+php C:\OSPanel\home\asu-vch.local\database\check-theme-asset-failure.php
+```
+
+Первый checker проверяет:
+
+- default `asu-blue`;
+- точный список трёх тем;
+- 11 обязательных assets `asu-evgeniya-rostova`;
+- безопасные CSS/SVG URL;
+- отсутствие external resources и theme-specific JavaScript;
+- SVG safety;
+- migration 006 и actor FK;
+- registered stored theme;
+- транзакционный write/read с rollback;
+- отклонение invalid slug.
+
+Второй checker работает только с временной копией assets, удаляет в sandbox `plush-bunny.svg` и подтверждает unavailable/missing-assets behavior. Реальные файлы и active theme не изменяются.
+
+## 11. Профильные directory checker'ы
+
+Deploy-процесс публикует runtime-темы в `public/themes`, но каталог `tools` не является runtime-каталогом. Для контролируемой проверки checker-файлы копируются из точного чистого checkout в deploy-root без редактирования:
+
+```powershell
+$SourceRoot = 'C:\Project\ASU-VCH'
+$TargetRoot = 'C:\OSPanel\home\asu-vch.local'
+
+New-Item -ItemType Directory -Path (Join-Path $TargetRoot 'tools') -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $SourceRoot 'tools\check-all-theme-directory-assets.php') -Destination (Join-Path $TargetRoot 'tools') -Force
+Copy-Item -LiteralPath (Join-Path $SourceRoot 'tools\check-military-ranks-directory.php') -Destination (Join-Path $TargetRoot 'tools') -Force
+Copy-Item -LiteralPath (Join-Path $SourceRoot 'tools\check-military-ranks-directory-core.php') -Destination (Join-Path $TargetRoot 'tools') -Force
+Copy-Item -LiteralPath (Join-Path $SourceRoot 'tools\check-organizational-elements-directory.php') -Destination (Join-Path $TargetRoot 'tools') -Force
+Copy-Item -LiteralPath (Join-Path $SourceRoot 'tools\check-organizational-elements-directory-core.php') -Destination (Join-Path $TargetRoot 'tools') -Force
+```
+
+Прежние core-checker'ы сохраняют историческую source-side проверку `themes/{slug}/assets/css/directories.css`. Для этой read-only проверки в deploy-root создаётся checker-only source copy тем; Apache продолжает обслуживать только `public/themes`:
+
+```powershell
+$SourceThemes = 'C:\Project\ASU-VCH\themes'
+$TargetThemes = 'C:\OSPanel\home\asu-vch.local\themes'
+if (Test-Path -LiteralPath $TargetThemes) {
+    Remove-Item -LiteralPath $TargetThemes -Recurse -Force
+}
+Copy-Item -LiteralPath $SourceThemes -Destination $TargetThemes -Recurse -Force
+```
+
+После подготовки выполняются:
 
 ```powershell
 php C:\OSPanel\home\asu-vch.local\tools\check-military-ranks-directory.php
@@ -130,39 +203,70 @@ php C:\OSPanel\home\asu-vch.local\tools\check-organizational-elements-directory.
 Ожидаемые финальные маркеры:
 
 ```text
+OK registered theme directory assets: 3
 MILITARY RANKS DIRECTORY CHECK PASSED
 ORGANIZATIONAL ELEMENT TYPES DIRECTORY CHECK PASSED
 ```
 
-Checker организационных элементов также подтверждает bootstrap factory, migration 008, 7 таблиц, 4 источника, 6 классов, 28 типов, 32 связи, статусы 12/12/4, 19 permissions и assets обеих тем.
+Core-checker'ы дополнительно подтверждают нормативные данные, repository search/filter behavior и 19 permissions.
 
-## 11. Проверка тем
+## 12. Security regression checker'ы
 
-Обязательные опубликованные ресурсы должны возвращать HTTP 200:
+После theme checker'ов повторяются существующие проверки:
 
-```text
-/themes/asu-blue/assets/css/theme.css
-/themes/asu-light-blue/assets/css/theme.css
-/themes/asu-blue/assets/css/directories.css
-/themes/asu-light-blue/assets/css/directories.css
+```powershell
+php C:\OSPanel\home\asu-vch.local\database\check-security-rbac.php
+php C:\OSPanel\home\asu-vch.local\database\check-security-user-approval.php
+php C:\OSPanel\home\asu-vch.local\database\check-security-required-password-change.php
+php C:\OSPanel\home\asu-vch.local\database\check-security-user-rejection.php
+php C:\OSPanel\home\asu-vch.local\database\check-security-user-archive-restore.php
 ```
 
-Исходные и deploy-файлы проверяются по SHA-256.
+Количество системных permissions остаётся `19`.
 
-## 12. Browser-приёмка
+## 13. Проверка опубликованных assets темы «Евгения Ростова»
 
-Объём ручной проверки определяется спецификацией инкремента. Обычно проверяются:
+HTTP 200 должны вернуть:
 
-- owner navigation;
-- разрешённые и запрещённые прямые маршруты;
-- тематические HTTP 403;
-- поиск, фильтры и empty state;
-- отсутствие неразрешённых mutation controls;
-- обе desktop-темы.
+```text
+/themes/asu-evgeniya-rostova/assets/css/theme.css
+/themes/asu-evgeniya-rostova/assets/css/auth.css
+/themes/asu-evgeniya-rostova/assets/css/account.css
+/themes/asu-evgeniya-rostova/assets/css/users.css
+/themes/asu-evgeniya-rostova/assets/css/theme-management.css
+/themes/asu-evgeniya-rostova/assets/css/directories.css
+/themes/asu-evgeniya-rostova/assets/css/operation-result-modal.css
+/themes/asu-evgeniya-rostova/assets/img/hearts-pattern.svg
+/themes/asu-evgeniya-rostova/assets/img/balloons.svg
+/themes/asu-evgeniya-rostova/assets/img/teddy-bear.svg
+/themes/asu-evgeniya-rostova/assets/img/plush-bunny.svg
+```
 
-Мобильная приёмка выполняется только когда прямо включена в scope. Для последних справочных инкрементов она не выполнялась.
+SVG должен обслуживаться корректным SVG MIME type. Для всех одиннадцати assets подтверждается совпадение SHA-256 между source и `public/themes` deploy-копией.
 
-## 13. Фиксация результата
+## 14. Desktop/browser-приёмка
+
+Для `asu-evgeniya-rostova` проверяются:
+
+- login;
+- dashboard;
+- settings и theme management;
+- users list/create/view;
+- change-password;
+- directories landing и оба справочника;
+- тематическая HTTP 403;
+- success/error operation-result modal;
+- search, filters, empty state, status badges;
+- отсутствие перекрытия controls декоративными SVG;
+- focus-visible, hover, disabled и danger states;
+- отсутствие горизонтального scroll на утверждённых desktop viewport;
+- persistence после reload и logout/login.
+
+Последовательно активируются `asu-evgeniya-rostova`, `asu-light-blue` и `asu-blue`; для двух существующих тем выполняется desktop smoke/regression. После теста возвращается согласованная активная тема.
+
+Мобильная приёмка этого инкремента не выполняется и Mobile PASS не заявляется.
+
+## 15. Фиксация результата
 
 При ошибке сохраняются:
 
@@ -174,4 +278,4 @@ Checker организационных элементов также подтв�
 - HTTP status и безопасный фрагмент ответа;
 - соответствующие записи журналов Apache/PHP без sensitive data.
 
-Успешный результат фиксирует ветку, local/remote SHA, расхождение, backup, installer, checker'ы и отсутствие локальных изменений.
+Успешный результат фиксирует ветку, local/remote SHA, расхождение, backup deploy-файлов, hash сохранности `config/local.php`, installer, checker'ы, HTTP assets, browser acceptance и отсутствие локальных изменений.

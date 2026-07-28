@@ -1,5 +1,28 @@
 # История изменений
 
+## Unreleased — `feature/theme-evgeniya-rostova`
+
+### Темы
+
+- зарегистрирована третья встроенная светлая тема `asu-evgeniya-rostova` с отображаемым названием `Евгения Ростова`;
+- добавлена розово-лиловая палитра, основанная на class contract `asu-light-blue`;
+- добавлены семь CSS-файлов для auth, account, users, theme management, directories и operation-result modal;
+- добавлены четыре локальных SVG: сердечки, воздушные шарики, медвежонок и зайчик;
+- все CSS/SVG включены в `required_assets` и блокируют активацию темы при неполной поставке;
+- default и fallback остаются `asu-blue`;
+- миграции, permissions, RBAC, маршруты и бизнес-логика не изменены.
+
+### Проверка
+
+- theme management checker расширен до трёх тем и выполняет SVG/CSS safety checks;
+- добавлен изолированный missing-asset checker без изменения реальных assets и active theme;
+- directory checker'ы получили общий registry-driven wrapper, а прежняя DB/repository-логика сохранена в неизменённых core-файлах;
+- статический PHP lint, XML parse, CSS parser, asset-reference scan и WCAG AA contrast sanity выполнены успешно;
+- Open Server, MySQL, HTTP и desktop/browser Testing ожидаются;
+- Mobile PASS не заявляется.
+
+Изменения ещё не объединены в `main`. Pull Request и merge отсутствуют.
+
 ## 2026-07-27
 
 ### Справочники

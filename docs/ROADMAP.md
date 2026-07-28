@@ -1,14 +1,15 @@
 # План разработки
 
-## Текущая контрольная точка
+## Стабильная контрольная точка
 
-Все утверждённые функциональные инкременты завершены, объединены в `main` и прошли post-merge проверку. Активного функционального инкремента нет.
+Все функциональные PR #1–#9 завершены, объединены в `main` и прошли post-merge проверку. Документационные PR #10 и #11 также объединены и не изменили runtime.
 
 ```text
+main: 3a93ddf35c872d6710951c71a0044f81dbcacfd6
 functional baseline: 17169e268e024ab50464ba13f7d0bf0f3d01a87e
-completed pull requests: #1–#9
+completed functional pull requests: #1–#9
 applied migrations: 001–008
-open functional work: none
+stable built-in themes: 2
 ```
 
 ## Завершённые этапы
@@ -25,21 +26,37 @@ open functional work: none
 - [x] справочник типов организационных элементов;
 - [x] документационный аудит текущего baseline.
 
-## Следующий инкремент
-
-Следующий функциональный инкремент не выбран. До начала реализации необходимо пройти:
+## Активный инкремент
 
 ```text
-Research
-→ Analysis
-→ Architecture options
-→ Recommendation
-→ Specification
-→ Formal Review
-→ Approval
+Evgeniya Rostova Theme v1
+branch: feature/theme-evgeniya-rostova
+runtime implementation checkpoint: 8b9342ad19e000b12a2389f94bc522d7e59d2b4d
+status: Implementation completed; Testing pending
 ```
 
-Возможные направления, не являющиеся утверждёнными задачами:
+Этапы:
+
+- [x] Research;
+- [x] Analysis;
+- [x] Architecture options и recommendation;
+- [x] Architecture / Specification;
+- [x] Formal Review;
+- [x] Approval;
+- [x] Implementation;
+- [ ] локальный PHP/Open Server/MySQL Testing;
+- [ ] desktop/browser-приёмка;
+- [ ] Test Report;
+- [ ] Pull Request;
+- [ ] Final Review;
+- [ ] отдельное merge approval;
+- [ ] Merge и post-merge verification.
+
+Новая тема не добавляет migration или permission. Mobile acceptance исключена из scope.
+
+## Следующий функциональный инкремент после текущего
+
+Не выбран и не утверждён. Возможные направления не являются задачами до отдельного Research/Analysis/Approval:
 
 - конкретные организационные структуры и отношения подчинённости;
 - карточка военнослужащего;
@@ -55,4 +72,4 @@ Research
 - Нельзя реализовывать фактическую организационную структуру без отдельной модели данных и Approval.
 - Нельзя включать закрытые, ограниченные или фактические сведения в открытые справочники.
 - Нельзя считать мобильную версию проверенной без отдельной приёмки.
-- Нельзя выполнять merge или удалять feature-ветку без отдельного явного разрешения владельца проекта.
+- Нельзя выполнять merge или удалять feature/docs-ветку без отдельного явного разрешения владельца проекта.
