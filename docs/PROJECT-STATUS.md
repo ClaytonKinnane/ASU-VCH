@@ -7,17 +7,18 @@
 ```text
 repository: ClaytonKinnane/ASU-VCH
 branch: main
-main commit: 967546087868f0d7eb347b186f7798015d268811
-functional baseline: 967546087868f0d7eb347b186f7798015d268811
+runtime baseline commit: 967546087868f0d7eb347b186f7798015d268811
 last functional PR: #12
-last documentation PR: #11
+last documentation PR: #13
 migrations: 001–008
 system roles: 4
 system permissions: 19
 built-in themes in main: 3
 ```
 
-PR #12 `feat(theme): add Evgeniya Rostova theme v1` объединён в `main` методом merge commit. Новых migrations, permissions, RBAC-правил, маршрутов и бизнес-логики инкремент не добавил.
+Поле `runtime baseline commit` фиксирует последний commit, изменивший runtime. Оно не является попыткой хранить в Markdown постоянно актуальный HEAD ветки `main`.
+
+PR #12 `feat(theme): add Evgeniya Rostova theme v1` объединён в `main` методом merge commit. Новых migrations, permissions, RBAC-правил, маршрутов и бизнес-логики инкремент не добавил. Документационный PR #13 актуализировал living-документацию после merge и не изменил runtime baseline.
 
 ## Состояние последнего функционального инкремента
 
@@ -27,7 +28,7 @@ feature branch: feature/theme-evgeniya-rostova
 final feature HEAD: c524480f47082b0f827bf16460617b24449d7780
 tested runtime HEAD: 8dabdda09f9f29b1bf84ea7eea1127971d4d8f45
 pull request: #12 MERGED
-merge commit: 967546087868f0d7eb347b186f7798015d268811
+merge commit / runtime baseline: 967546087868f0d7eb347b186f7798015d268811
 final review: PASS
 blocking findings: 0
 registered themes in main: 3
@@ -121,7 +122,7 @@ PR final review = PASS
 blocking findings = 0
 ```
 
-После merge GitHub подтвердил PR #12 как `MERGED`, новый `main` commit `967546087868f0d7eb347b186f7798015d268811`, наличие темы и process-документов в `main`, а также сохранность feature- и documentation-веток. Локальная синхронизация checkout с новым `main` и повторный post-merge smoke не заявляются как выполненные до получения отдельного фактического вывода локальной среды.
+После merge GitHub подтвердил PR #12 как `MERGED`, runtime baseline commit `967546087868f0d7eb347b186f7798015d268811`, наличие темы и process-документов в `main`, а также сохранность feature- и documentation-веток. Документационный PR #13 не изменял runtime. Локальная синхронизация checkout с актуальным `main` и повторный post-merge smoke не заявляются как выполненные до получения отдельного фактического вывода локальной среды.
 
 ## Ограничения текущего стабильного baseline
 
