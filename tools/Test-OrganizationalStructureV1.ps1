@@ -134,8 +134,11 @@ Invoke-External 'powershell' @(
     '-PhpExecutable', 'php'
 )
 
-Write-Step 'Migration 009 and idempotency'
+Write-Step 'UI polish presentation contract'
 Set-Location $DeployRoot
+Invoke-External 'php' @('.\tools\check-organizational-structure-ui-polish.php')
+
+Write-Step 'Migration 009 and idempotency'
 Invoke-External 'php' @('.\database\install.php')
 Invoke-External 'php' @('.\database\install.php')
 
