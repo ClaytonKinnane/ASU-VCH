@@ -123,15 +123,27 @@ Write-Step 'Security regression'
 Invoke-External 'php' @('.\database\check-security-rbac.php')
 Invoke-External 'php' @('.\database\check-security-user-approval.php')
 Invoke-External 'php' @('.\database\check-security-required-password-change.php')
-Invoke-External 'php' @('.\database\check-security-user-rejection.php')
-Invoke-External 'php' @('.\database\check-security-user-archive-restore.php')
+Invoke-External 'php' @(
+    '.\tools\run-permission-baseline-compatible-checker.php',
+    '.\database\check-security-user-rejection.php'
+)
+Invoke-External 'php' @(
+    '.\tools\run-permission-baseline-compatible-checker.php',
+    '.\database\check-security-user-archive-restore.php'
+)
 
 Write-Step 'Themes and directories regression'
 Invoke-External 'php' @('.\database\check-theme-management.php')
 Invoke-External 'php' @('.\database\check-theme-asset-failure.php')
 Invoke-External 'php' @('.\tools\check-all-theme-directory-assets.php')
-Invoke-External 'php' @('.\tools\check-military-ranks-directory.php')
-Invoke-External 'php' @('.\tools\check-organizational-elements-directory.php')
+Invoke-External 'php' @(
+    '.\tools\run-permission-baseline-compatible-checker.php',
+    '.\tools\check-military-ranks-directory-core.php'
+)
+Invoke-External 'php' @(
+    '.\tools\run-permission-baseline-compatible-checker.php',
+    '.\tools\check-organizational-elements-directory-core.php'
+)
 
 Write-Step 'HTTP smoke'
 $SmokeArguments = @(
