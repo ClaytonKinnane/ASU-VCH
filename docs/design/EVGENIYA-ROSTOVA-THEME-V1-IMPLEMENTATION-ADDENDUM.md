@@ -107,6 +107,8 @@ XML namespace `http://www.w3.org/2000/svg` является стандартны
 - транзакционного write/read с использованием новой темы;
 - одинаковой работы в source checkout и deploy-root с опубликованными assets в `public/themes`.
 
+Дополнительный изолированный checker `database/check-theme-asset-failure.php` создаёт временную копию трёх тем, удаляет в sandbox один обязательный SVG и подтверждает, что `ThemeRegistry` помечает тему недоступной и точно сообщает отсутствующий asset. Реальные assets и active theme не изменяются.
+
 ### 6.2 Directory checker compatibility
 
 Чтобы не переписывать крупные проверенные каталоговые checker'ы и не повышать риск регрессии их нормативной логики, применён совместимый wrapper-подход:
@@ -146,12 +148,13 @@ Wrapper сначала определяет фактический asset-root (`
 4. controlled deploy с сохранением `config/local.php`;
 5. installer и повторный installer с результатом «Новых миграций нет»;
 6. theme management checker;
-7. оба directory checker'а;
-8. системные security regression checker'ы;
-9. HTTP 200 для CSS и SVG новой темы;
-10. desktop/browser-приёмка всех ключевых страниц новой темы;
-11. проверка переключения между тремя темами;
-12. возврат к согласованной активной теме после тестирования;
-13. Final Test Report и Final Review.
+7. missing-asset checker;
+8. оба directory checker'а;
+9. системные security regression checker'ы;
+10. HTTP 200 для CSS и SVG новой темы;
+11. desktop/browser-приёмка всех ключевых страниц новой темы;
+12. проверка переключения между тремя темами;
+13. возврат к согласованной активной теме после тестирования;
+14. Final Test Report и Final Review.
 
 Mobile acceptance остаётся вне scope и не заявляется как выполненная.
