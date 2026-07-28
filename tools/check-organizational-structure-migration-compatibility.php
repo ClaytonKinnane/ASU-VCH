@@ -65,7 +65,7 @@ $checks = [
     ),
     'organization checker не проверяет непубликуемый source theme path' => !str_contains(
         $organizationSchema,
-        "$root . '/themes/'"
+        "\$root . '/themes/'"
     ),
 ];
 
