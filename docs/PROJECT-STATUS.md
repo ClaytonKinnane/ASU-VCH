@@ -9,6 +9,7 @@ repository: ClaytonKinnane/ASU-VCH
 branch: main
 functional baseline: 17169e268e024ab50464ba13f7d0bf0f3d01a87e
 last functional PR: #9
+last documentation PR: #10
 migrations: 001–008
 system roles: 4
 system permissions: 19
@@ -18,7 +19,7 @@ active functional increment: none
 
 Документационные изменения после этого SHA не меняют runtime baseline.
 
-## Завершённые Pull Request
+## Завершённые функциональные Pull Request
 
 | PR | Инкремент | Статус |
 |---:|---|---|
@@ -91,7 +92,7 @@ config/local.php = preserved
 
 На момент контрольной проверки незавершённых функциональных задач, открытых функциональных PR или открытых Issues нет.
 
-Документационный аудит выполняется отдельным docs-only инкрементом и не меняет runtime.
+Документационный аудит завершён и объединён в `main` через PR #10; он не изменил runtime baseline.
 
 ## Ограничения текущего baseline
 
