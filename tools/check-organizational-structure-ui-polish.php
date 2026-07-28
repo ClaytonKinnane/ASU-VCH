@@ -142,9 +142,12 @@ try {
     );
 
     $themeSlugs = ['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'];
+    $themeRoot = is_dir($root . '/public/themes')
+        ? $root . '/public/themes'
+        : $root . '/themes';
     $themeCss = [];
     foreach ($themeSlugs as $slug) {
-        $themeCss[$slug] = ui_polish_read($root . "/themes/{$slug}/assets/css/organization.css");
+        $themeCss[$slug] = ui_polish_read($themeRoot . "/{$slug}/assets/css/organization.css");
     }
     ui_polish_check(
         count(array_unique(array_values($themeCss))) === 1,
