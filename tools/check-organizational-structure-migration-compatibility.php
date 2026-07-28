@@ -65,9 +65,21 @@ $expectedAdaptedCheckers = [
     'tools/check-organizational-elements-directory-core.php',
 ];
 $adapterWhitelistsAllCheckers = true;
+$adaptedCheckerShapesValid = true;
+$legacyCondition = '$permissionCount === 19';
+$legacyMessage = 'Ожидалось 19 системных разрешений, найдено {$permissionCount}.';
+$fixedOutput = 'echo "OK system permissions: 19\\n";';
+$dynamicOutput = 'echo "OK system permissions: {$permissionCount}\\n";';
 foreach ($expectedAdaptedCheckers as $checker) {
     $adapterWhitelistsAllCheckers = $adapterWhitelistsAllCheckers
         && str_contains($regressionAdapter, "'{$checker}'");
+
+    $checkerSource = file_get_contents($root . '/' . $checker);
+    $adaptedCheckerShapesValid = $adaptedCheckerShapesValid
+        && is_string($checkerSource)
+        && substr_count($checkerSource, $legacyCondition) === 1
+        && substr_count($checkerSource, $legacyMessage) === 1
+        && (substr_count($checkerSource, $fixedOutput) + substr_count($checkerSource, $dynamicOutput)) === 1;
 }
 
 $exactPermissionReplacementNeedle = <<<'PHP'
@@ -96,6 +108,7 @@ $checks = [
         "\$root . '/themes/'"
     ),
     'permission regression adapter ограничен четырьмя checker-файлами' => $adapterWhitelistsAllCheckers,
+    'формат всех четырёх legacy checker совместим с adapter' => $adaptedCheckerShapesValid,
     'permission regression adapter требует ровно одну замену' => str_contains(
         $regressionAdapter,
         '$replacementCount !== 1'
