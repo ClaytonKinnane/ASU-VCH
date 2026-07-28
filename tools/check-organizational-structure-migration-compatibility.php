@@ -39,6 +39,13 @@ if ($runner === false) {
     exit(1);
 }
 
+$themeManagementCheckerPath = $root . '/database/check-theme-management.php';
+$themeManagementChecker = file_get_contents($themeManagementCheckerPath);
+if ($themeManagementChecker === false) {
+    fwrite(STDERR, "FAIL: theme management checker не прочитан.\n");
+    exit(1);
+}
+
 try {
     $prepared = transform_organizational_structure_migration_sql($sql);
 } catch (Throwable $exception) {
@@ -85,6 +92,10 @@ foreach ($expectedAdaptedCheckers as $checker) {
     }
 }
 
+$themeExpectedAssetNeedle = <<<'PHP'
+'css/theme-management.css', 'css/directories.css', 'css/organization.css',
+PHP;
+
 $checks = [
     'таблиц после подготовки: 7' => preg_match_all('/^\s*CREATE\s+TABLE\b/im', $prepared) === 7,
     'triggers после подготовки: 16' => preg_match_all('/^\s*CREATE\s+TRIGGER\b/im', $prepared) === 16,
@@ -105,6 +116,10 @@ $checks = [
     'organization checker не проверяет непубликуемый source theme path' => !str_contains(
         $organizationSchema,
         "\$root . '/themes/'"
+    ),
+    'theme management checker ожидает organization.css' => str_contains(
+        $themeManagementChecker,
+        $themeExpectedAssetNeedle
     ),
     'permission regression adapter ограничен четырьмя checker-файлами' => permission_baseline_compatible_checker_paths()
         === $expectedAdaptedCheckers,
