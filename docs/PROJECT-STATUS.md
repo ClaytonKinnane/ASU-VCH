@@ -1,23 +1,40 @@
 # Текущее состояние проекта АСУ-ВЧ
 
-Дата контрольной проверки: `2026-07-27`.
+Дата актуализации feature-ветки: `2026-07-28`.
 
 ## Стабильный функциональный baseline
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
 branch: main
+main commit: 3a93ddf35c872d6710951c71a0044f81dbcacfd6
 functional baseline: 17169e268e024ab50464ba13f7d0bf0f3d01a87e
 last functional PR: #9
-last documentation PR: #10
+last documentation PR: #11
 migrations: 001–008
 system roles: 4
 system permissions: 19
-built-in themes: 2
-active functional increment: none
+built-in themes in main: 2
 ```
 
-Документационные изменения после этого SHA не меняют runtime baseline.
+PR #10 и #11 изменяли только Markdown-документацию и не меняли runtime baseline.
+
+## Активный функциональный инкремент
+
+```text
+increment: Evgeniya Rostova Theme v1
+branch: feature/theme-evgeniya-rostova
+base: main @ 3a93ddf35c872d6710951c71a0044f81dbcacfd6
+runtime implementation checkpoint: 8b9342ad19e000b12a2389f94bc522d7e59d2b4d
+stage: Implementation completed; local Testing pending
+registered themes in feature branch: 3
+migrations: unchanged, 001–008
+system permissions: unchanged, 19
+pull request: not opened
+merge: prohibited until separate approval
+```
+
+В feature-ветке реализована третья встроенная тема `asu-evgeniya-rostova` с отображаемым названием `Евгения Ростова`, семью CSS-файлами и четырьмя локальными SVG. Выполнены статические lint, XML/CSS safety и contrast sanity checks. Open Server, MySQL, HTTP и browser-приёмка ещё не выполнены и не заявляются как PASS.
 
 ## Завершённые функциональные Pull Request
 
@@ -33,9 +50,9 @@ active functional increment: none
 | #8 | Справочник составов и воинских званий v1 | MERGED |
 | #9 | Справочник типов организационных элементов v1 | MERGED |
 
-Feature-ветки сохраняются. Их наличие не означает незавершённую задачу.
+Feature- и docs-ветки сохраняются. Их наличие само по себе не означает, что инкремент объединён в `main`.
 
-## Реализованные возможности
+## Реализованные возможности стабильного main
 
 ### Security и пользователи
 
@@ -61,7 +78,7 @@ Feature-ветки сохраняются. Их наличие не означа
 - безопасный fallback;
 - `asu-blue` и `asu-light-blue`;
 - общие assets и operation-result modal;
-- desktop-приёмка обеих тем.
+- desktop-приёмка обеих стабильных тем.
 
 ### Directories
 
@@ -88,13 +105,9 @@ asu-light-blue directories.css = HTTP 200
 config/local.php = preserved
 ```
 
-## Активные задачи
+После документационных PR #10 и #11 `main` синхронизирован до `3a93ddf35c872d6710951c71a0044f81dbcacfd6`; runtime-проверки повторно не запускались, поскольку runtime не менялся.
 
-На момент контрольной проверки незавершённых функциональных задач, открытых функциональных PR или открытых Issues нет.
-
-Документационный аудит завершён и объединён в `main` через PR #10; он не изменил runtime baseline.
-
-## Ограничения текущего baseline
+## Ограничения текущего стабильного baseline
 
 Не реализованы:
 
@@ -112,8 +125,8 @@ config/local.php = preserved
 
 ## Мобильное тестирование
 
-Мобильная приёмка выполнялась в ранних security-инкрементах там, где была включена в scope. Для последних справочных инкрементов мобильное тестирование было исключено и не заявляется как выполненное.
+Мобильная приёмка выполнялась в ранних security-инкрементах там, где была включена в scope. Для последних справочных инкрементов и `Evgeniya Rostova Theme v1` мобильное тестирование исключено и не заявляется как выполненное.
 
-## Следующий шаг
+## Следующий gate активного инкремента
 
-Новый функциональный инкремент должен начинаться с Research → Analysis → Architecture. Реализация запрещена до утверждённой Specification, Formal Review и отдельного Approval.
+Необходимо синхронизировать точный feature HEAD в локальную среду, выполнить PHP lint, controlled deploy, два запуска installer, профильные и security checker'ы, HTTP asset acceptance и desktop/browser-приёмку. Только после Test Report и Final Review разрешается открыть Pull Request. Merge требует отдельного точного разрешения.
