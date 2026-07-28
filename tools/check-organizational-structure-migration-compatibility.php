@@ -17,6 +17,13 @@ if ($sql === false) {
     exit(1);
 }
 
+$organizationSchemaPath = $root . '/database/checks/organization/schema.php';
+$organizationSchema = file_get_contents($organizationSchemaPath);
+if ($organizationSchema === false) {
+    fwrite(STDERR, "FAIL: organization schema checker не прочитан.\n");
+    exit(1);
+}
+
 try {
     $prepared = transform_organizational_structure_migration_sql($sql);
 } catch (Throwable $exception) {
@@ -51,6 +58,14 @@ $checks = [
     ),
     'backup wrapper содержит UTF-8 BOM' => $hasUtf8Bom(
         $root . '/tools/Backup-Database.ps1'
+    ),
+    'organization checker использует ThemeRegistry' => str_contains(
+        $organizationSchema,
+        'theme_registry_service()'
+    ),
+    'organization checker не проверяет непубликуемый source theme path' => !str_contains(
+        $organizationSchema,
+        "$root . '/themes/'"
     ),
 ];
 
