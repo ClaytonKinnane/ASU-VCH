@@ -148,6 +148,14 @@ $checks = [
         $runner,
         'run-permission-baseline-compatible-checker.php'
     ) === 4,
+    'runner повторяет GitHub fetch при TLS-сбое' => str_contains(
+        $runner,
+        "Invoke-ExternalWithRetry 'git' @('fetch', 'origin')"
+    ),
+    'runner не выполняет повторный сетевой git pull' => str_contains(
+        $runner,
+        "Invoke-External 'git' @('merge', '--ff-only', \"origin/\$ExpectedBranch\")"
+    ) && !str_contains($runner, "@('pull', '--ff-only')"),
 ];
 
 $failed = 0;
