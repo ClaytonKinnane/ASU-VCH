@@ -6,7 +6,7 @@
 
 ```text
 system roles: 4
-system permissions: 19
+system permissions: 25
 owner wildcard: system.*.*
 ```
 
@@ -21,9 +21,7 @@ owner wildcard: system.*.*
 
 Первый пользователь новой пустой установки создаётся через bootstrap-регистрацию и в одной транзакции получает роль `system_owner`. После успешной фиксации владельца публичная регистрация отключается.
 
-Состояние bootstrap-регистрации определяется сервером по данным БД. Клиентская форма не является источником истины.
-
-Защищены следующие инварианты:
+Защищены инварианты:
 
 - одновременно допускается только один активный владелец;
 - последнего активного владельца нельзя заблокировать, архивировать или лишить критического доступа;
@@ -32,19 +30,18 @@ owner wildcard: system.*.*
 
 ## Авторизация
 
-Центральная проверка выполняется сервисом авторизации и route-guard'ами.
-
 Permission даёт право на действие, но не отменяет:
 
 - проверку аутентификации и статуса пользователя;
 - обязательную смену временного пароля;
 - CSRF-защиту POST-операций;
-- валидацию;
+- серверную валидацию;
 - транзакционные и DB-инварианты;
+- optimistic revision checks;
 - аудит;
 - запрет операций над последним активным владельцем.
 
-Прямой доступ без требуемого permission возвращает тематическую страницу `Доступ запрещен` с HTTP 403. Анонимный доступ к административной панели перенаправляется на форму входа.
+Прямой доступ без требуемого permission возвращает тематическую страницу HTTP 403. Анонимный доступ к административной панели перенаправляется на форму входа.
 
 ## Жизненный цикл пользователя
 
@@ -62,20 +59,58 @@ Permission даёт право на действие, но не отменяет
 
 Восстановление архивированной записи не активирует пользователя автоматически.
 
-## Безопасность операций
+## Organizational Structure permissions
+
+Migration 009 добавляет:
+
+```text
+organization.structures.view
+organization.structures.create
+organization.structures.update
+organization.structures.publish
+organization.structures.archive
+organization.structures.history
+```
+
+Назначение:
+
+| Permission | Разрешённая область |
+|---|---|
+| `organization.structures.view` | список, карточка, версии и дерево структуры |
+| `organization.structures.create` | создание новой структуры и первой draft-версии |
+| `organization.structures.update` | изменение карточки, draft-дерева и metadata документов |
+| `organization.structures.publish` | approval, activation и cancellation версий |
+| `organization.structures.archive` | archive и restore структуры |
+| `organization.structures.history` | история событий и сравнение версий |
+
+Эти permissions не назначаются автоматически ролям `administrator`, `operator` и `viewer`. Доступ им появляется только через отдельное явное назначение. `system_owner` сохраняет абсолютный доступ через `system.*.*`.
+
+В приложении нет отдельной встроенной role model Organization: используются общие системные роли и permissions.
+
+## Безопасность изменяющих операций
 
 Изменяющие операции:
 
 - используют POST;
-- требуют permission;
+- требуют соответствующий permission;
 - требуют CSRF-token;
-- повторно проверяют инварианты в сервисе;
+- проверяют валидность identifiers и принадлежность aggregate;
+- повторно проверяют lifecycle и DB-инварианты в сервисе;
+- используют expected revision там, где это предусмотрено;
 - выполняются транзакционно;
 - используют prepared statements;
+- записывают change events;
 - возвращают результат через серверный белый список сообщений.
-
-Секреты, временные пароли и содержимое `config/local.php` не включаются в документацию и журналы проекта.
 
 ## Проверка
 
-RBAC и пользовательские lifecycle-сценарии имеют CLI integration checker'ы. Последняя завершённая регрессия подтвердила 19 системных permissions и прохождение проверок справочников без изменения модели доступа.
+RBAC и пользовательские lifecycle-сценарии имеют CLI integration checker'ы. Organizational Structure checker дополнительно подтвердил:
+
+```text
+system roles: 4
+system permissions: 25
+organization permissions: 6
+ordinary system-role automatic assignments: 0
+```
+
+Секреты, временные пароли и содержимое `config/local.php` не включаются в документацию и журналы проекта.

@@ -2,44 +2,43 @@
 
 Автоматизированная система учёта военнослужащих «Войсковая часть».
 
-## Состояние проекта
+## Текущий baseline
 
-Стабильная функциональная база находится в ветке `main`. Последний завершённый функциональный инкремент — справочник типов организационных элементов, объединённый через PR #9.
-
-Функциональный baseline:
+Стабильное объединённое состояние находится в ветке `main`.
 
 ```text
-main @ 17169e268e024ab50464ba13f7d0bf0f3d01a87e
-migrations: 001–008
-system permissions: 19
-built-in themes: 2
+repository: ClaytonKinnane/ASU-VCH
+branch: main
+merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
+last functional PR: #15
+migrations: 001–009
+system roles: 4
+system permissions: 25
+built-in themes: 3
+active functional increment: none
 ```
 
-Реализованы:
+`merged main commit` фиксирует merge PR #15. `tested runtime HEAD` — точный application commit, на котором выполнялись автоматические проверки и desktop-приёмка.
 
-- установка приложения и первичное создание владельца системы;
-- вход, выход, сессии и CSRF-защита;
-- RBAC с ролями `system_owner`, `administrator`, `operator`, `viewer`;
-- создание, подтверждение, редактирование, блокировка, отклонение, архивирование и восстановление пользователей;
-- обязательная смена временного пароля;
-- глобальное управление доверенными темами;
-- темы `asu-blue` и `asu-light-blue`;
-- стартовая страница справочников;
-- нормативный справочник составов военнослужащих и воинских званий;
-- нормативно-методический справочник типов организационных элементов.
+## Реализовано
 
-## Целевая среда
+- установка, аутентификация, защищённые сессии и CSRF;
+- RBAC и полный пользовательский lifecycle;
+- три встроенные доверенные темы;
+- справочники воинских званий и типов организационных элементов;
+- Organizational Structure v1: структуры, версии, дерево черновика, связи с документами, история и сравнение версий.
+
+## Локальная среда
 
 ```text
-Windows 11
+Windows 10/11
 Open Server Panel 6.5.1
 Apache
 PHP 8.5.4
-MySQL 8.4.8
+MySQL 8.4.x
 Windows PowerShell 5.1
 ```
-
-Локальный Git-клон и каталог сайта разделены:
 
 ```text
 репозиторий: C:\Project\ASU-VCH
@@ -48,42 +47,30 @@ web root: C:\OSPanel\home\asu-vch.local\public
 URL: https://asu-vch.local
 ```
 
-GitHub является единственным источником истины для кода и документации. Локальный клон используется только для синхронизации, развёртывания и тестирования.
+GitHub является единственным источником истины. Локальный клон используется для синхронизации, deploy и тестирования. Секреты и содержимое `config/local.php` в Git не помещаются.
 
 ## Процесс изменений
 
-Материальные изменения проходят обязательный цикл:
-
 ```text
-Research
-→ Analysis
-→ Architecture
-→ Specification
-→ Review
-→ Approval
-→ Implementation
-→ Testing
-→ Commit
-→ Push
-→ Pull Request
-→ Merge
+Research → Analysis → Architecture → Specification → Review → Approval
+→ Implementation → Testing → Commit → Push → Pull Request → Merge
 ```
 
-Изменения вносятся в отдельной ветке GitHub. Merge выполняется только после отдельного явного разрешения владельца проекта. Feature-ветки не удаляются без отдельного разрешения.
+Merge и удаление веток требуют отдельных явных разрешений владельца проекта.
 
 ## Документация
 
 - [Индекс документации](docs/README.md)
 - [Текущее состояние проекта](docs/PROJECT-STATUS.md)
-- [О проекте](docs/PROJECT.md)
-- [Правила разработки](docs/DEVELOPMENT.md)
 - [Локальный runbook](docs/LOCAL-RUNBOOK.md)
 - [Текущее состояние базы данных](docs/DATABASE-CURRENT.md)
-- [Темы оформления](docs/THEMES.md)
-- [Управление доступом](docs/ACCESS.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Changelog](docs/CHANGELOG.md)
+- [Repository audit 2026-07-29](docs/REPOSITORY-AUDIT-2026-07-29.md)
 
-## Границы подтверждённого тестирования
+## Границы тестирования
 
-Последние функциональные инкременты прошли автоматические проверки и desktop-приёмку обеих встроенных тем. Мобильное тестирование для инкрементов справочников было исключено из области работ и не заявляется как выполненное.
+Organizational Structure v1 прошёл автоматические проверки и ручную desktop-приёмку во всех трёх темах.
+
+```text
+mobile testing: OUT OF SCOPE / NOT RUN
+mobile PASS: NOT CLAIMED
+```
