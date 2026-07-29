@@ -32,7 +32,9 @@
 .organization-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
 .organization-section-heading h2 { margin: 0 0 5px; }
 .organization-section-heading p { margin: 0; color: var(--text-secondary); }
-.organization-tree-tools { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+.organization-tree-tools { display: grid; grid-template-columns: max-content; gap: 8px; justify-items: stretch; }
+.organization-tree-tool-buttons { display: grid; grid-template-columns: repeat(2, max-content); gap: 8px; }
+.organization-tree-search { width: 100%; min-width: 0; }
 .organization-tree-tools .secondary-button { min-height: 40px; }
 .organization-version-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .organization-version-card { padding: 12px; display: grid; gap: 5px; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--input-background); text-decoration: none; }
@@ -46,7 +48,8 @@
 .organization-node-main h3 { margin: 2px 0 4px; font-size: 17px; overflow-wrap: anywhere; }
 .organization-node-main p, .organization-node-main small { margin: 0; color: var(--text-secondary); }
 .node-level { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
-.tree-toggle { width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid var(--input-border); border-radius: var(--control-radius); color: var(--text-primary); background: transparent; cursor: pointer; }
+.tree-toggle { width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid var(--focus-color); border-radius: var(--control-radius); color: var(--focus-color); background: color-mix(in srgb, var(--focus-color) 12%, var(--input-background)); font-size: 18px; font-weight: 900; line-height: 1; cursor: pointer; transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease; }
+.tree-toggle:not(:disabled):hover { background: color-mix(in srgb, var(--focus-color) 22%, var(--input-background)); box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus-color) 18%, transparent); }
 .tree-toggle:disabled { opacity: .35; cursor: default; }
 .organization-node-actions { margin-top: 12px; display: grid; gap: 10px; }
 .organization-node-action-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -55,7 +58,8 @@
 .organization-node-action-trigger { justify-content: flex-start; }
 .organization-node-action-trigger[aria-expanded="true"] { border-color: var(--focus-color); background: color-mix(in srgb, var(--focus-color) 22%, var(--input-background)); box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus-color) 22%, transparent); }
 .organization-node-action-trigger[aria-expanded="true"] .organization-disclosure-icon { transform: rotate(180deg); }
-.organization-node-action-trigger.organization-disclosure--edit .organization-disclosure-icon, .organization-node-action-trigger.organization-disclosure--add .organization-disclosure-icon { transform: none; }
+.organization-node-action-trigger.organization-disclosure--edit .organization-disclosure-icon { transform: rotate(-45deg); }
+.organization-node-action-trigger.organization-disclosure--add .organization-disclosure-icon { transform: none; }
 .organization-node-action-trigger.organization-disclosure--danger[aria-expanded="true"] { border-color: rgba(255,135,135,.95); background: rgba(180,42,54,.88); }
 .organization-direction-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
 .organization-direction-button:disabled { opacity: .45; cursor: not-allowed; }
@@ -146,8 +150,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
     .organization-section-heading, .organization-version-controls, .organization-document-list article, .organization-history-list article > div { flex-direction: column; }
     .organization-document-actions, .organization-document-actions details { width: 100%; min-width: 0; }
     .organization-history-state > div { grid-template-columns: 1fr; }
-    .organization-tree-tools { width: 100%; }
-    .organization-tree-tools label { width: 100%; }
+    .organization-tree-tools { width: 100%; grid-template-columns: minmax(0, 1fr); }
+    .organization-tree-tool-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .organization-tree-tool-buttons .secondary-button, .organization-tree-search { width: 100%; }
     .organization-tree-row { margin-left: min(calc(var(--tree-depth) * 10px), 60px); }
     .organization-node-action-bar, .organization-node-reorder-form { width: 100%; }
     .organization-node-action-trigger { flex: 1 1 auto; }
