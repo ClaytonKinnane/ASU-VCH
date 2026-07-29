@@ -2,6 +2,8 @@
     'use strict';
 
     document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) return;
+
         const trigger = event.target.closest('[data-date-picker-target]');
         if (!(trigger instanceof HTMLButtonElement)) return;
 
@@ -16,8 +18,8 @@
             try {
                 input.showPicker();
                 return;
-            } catch (error) {
-                if (!(error instanceof DOMException)) throw error;
+            } catch {
+                // Browser-specific picker restrictions fall back to the native click path.
             }
         }
 
