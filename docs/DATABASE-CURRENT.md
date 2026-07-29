@@ -1,13 +1,13 @@
 # Текущее состояние базы данных
 
-Дата проверки: `2026-07-27`.
+Дата проверки: `2026-07-29`.
 
 Этот документ описывает фактически реализованный schema baseline. `DATABASE.md`, ERD и доменные migration specifications могут описывать более широкую целевую архитектуру.
 
 ## Технологическая база
 
 ```text
-DBMS: MySQL 8.4.8
+DBMS: MySQL 8.4.x
 engine: InnoDB
 charset: utf8mb4
 migration seed collation: utf8mb4_unicode_ci
@@ -27,7 +27,19 @@ Credentials находятся только в deploy-файле `config/local.p
 4. профильные CLI integration checker'ы;
 5. post-migration проверки в целевой MySQL.
 
-## Применённые миграции
+## Текущий baseline
+
+```text
+merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
+applied migrations: 9
+system roles: 4
+system permissions: 25
+```
+
+Контрольный installer подтвердил 9 зарегистрированных migrations и повторный запуск без новых migrations.
+
+## Применённые migrations
 
 | № | Файл | Реализованная область |
 |---:|---|---|
@@ -39,30 +51,17 @@ Credentials находятся только в deploy-файле `config/local.p
 | 006 | `006_theme_management.sql` | глобальная active theme и last actor |
 | 007 | `007_military_ranks_directory.sql` | версионируемый нормативный каталог воинских званий |
 | 008 | `008_organizational_element_types_directory.sql` | версионируемый каталог типов организационных элементов |
-
-Контрольный installer подтвердил 8 применённых миграций и отсутствие новых миграций.
+| 009 | `009_organizational_structure_v1.sql` | структуры, версии, дерево, документы, change events и DB guards |
 
 ## Security и пользователи
 
-Реализованы данные для:
-
-- пользователей;
-- системных ролей;
-- системных permissions;
-- назначений ролей;
-- связей ролей и permissions;
-- глобальных system settings;
-- approval audit;
-- rejection audit;
-- archive/restore audit;
-- обязательной смены временного пароля.
+Реализованы users, roles, permissions, назначения ролей, связи role–permission, system settings и lifecycle audit metadata.
 
 Ключевые инварианты:
 
 - username и email канонизируются и проверяются на уникальность;
 - пароль хранится только как hash;
-- owner определяется системной ролью, а не boolean-флагом пользователя;
-- в установке поддерживается один активный owner;
+- owner определяется системной ролью;
 - последний активный owner защищён от блокировки и архивирования;
 - rejected и archived records не могут войти;
 - восстановление не активирует пользователя автоматически;
@@ -76,14 +75,11 @@ Migration 006 хранит глобальную настройку активн�
 
 Migration 007 создаёт 5 таблиц версионируемого каталога.
 
-Текущая контрольная модель:
-
 ```text
 current versions: 1
 legal sources: 2
 compositions: 6
 normative rank pairs/levels: 20
-system permissions after migration: 19
 ```
 
 Каталог read-only; текущая версия и поиск проверяются `tools/check-military-ranks-directory.php`.
@@ -102,8 +98,6 @@ organizational_element_type_aliases
 organizational_element_type_sources
 ```
 
-Текущая контрольная модель:
-
 ```text
 current versions: 1
 legal sources: 4
@@ -114,20 +108,99 @@ aliases: 0
 non_subdivision_only: 12
 subdivision_only: 12
 mixed: 4
-system permissions after migration: 19
 ```
 
-Generated guards и UNIQUE constraints ограничивают текущую версию и основной класс. Композитные FK защищают принадлежность типов, классов, aliases и источников одной версии. Каталог read-only.
+Generated guards, UNIQUE constraints и composite FK защищают принадлежность данных одной версии. Каталог read-only.
+
+## Organizational Structure v1
+
+Migration 009 создаёт 7 таблиц:
+
+```text
+organizational_structures
+organizational_structure_elements
+organizational_structure_versions
+organizational_structure_documents
+organizational_structure_version_documents
+organizational_structure_nodes
+organizational_structure_change_events
+```
+
+### Назначение таблиц
+
+- `organizational_structures` — aggregate roots и lifecycle active/archived;
+- `organizational_structure_elements` — стабильная identity организационных элементов между версиями;
+- `organizational_structure_versions` — версии структуры, основание версии, catalog binding, status и revision;
+- `organizational_structure_documents` — metadata документов внутри Organization scope;
+- `organizational_structure_version_documents` — связи документов с версиями и роль документа;
+- `organizational_structure_nodes` — version-scoped дерево;
+- `organizational_structure_change_events` — immutable история изменений.
+
+### Lifecycle и consistency
+
+Реализованы статусы версий:
+
+```text
+draft
+approved
+active
+cancelled
+```
+
+Изменение дерева и связей документов разрешено только в draft-версии. Approved-версия может быть активирована либо отменена. Новая draft-версия создаётся на основе действующей или последней отменённой версии и сохраняет stable element identity.
+
+Каждая версия связана с конкретной версией справочника типов организационных элементов. Узлы одной версии должны использовать типы из того же catalog baseline.
+
+### DB-level guards
+
+Migration 009 создаёт 16 triggers. Они защищают:
+
+- допустимые lifecycle-переходы;
+- immutable либо ограниченно изменяемые historical records;
+- запрет изменения дерева вне draft;
+- согласованность structure/version/catalog ownership;
+- запрет недопустимых UPDATE/DELETE;
+- сохранность change-event history.
+
+Application layer повторяет критические проверки для понятной ошибки пользователя, а DB остаётся финальной защитой invariant.
+
+### Permissions
+
+Migration 009 добавляет 6 permissions:
+
+```text
+organization.structures.view
+organization.structures.create
+organization.structures.update
+organization.structures.publish
+organization.structures.archive
+organization.structures.history
+```
+
+Итоговое количество системных permissions: `25`. Новые permissions не назначаются автоматически ролям `administrator`, `operator` и `viewer`; owner сохраняет полный доступ через `system.*.*`.
+
+### Проверка
+
+Профильный checker подтвердил:
+
+```text
+organization checks: 58 PASS / 0 FAIL
+tables: 7
+triggers: 16
+organization permissions: 6
+system roles: 4
+system permissions: 25
+```
 
 ## Идемпотентность и recovery
 
-Installer применяет только незарегистрированные migrations. После успешного выполнения повторный запуск должен завершаться без новых migrations и без дубликатов seed-данных.
+Installer применяет только незарегистрированные migrations. После успешного выполнения повторный запуск завершается без новых migrations и без дубликатов seed-данных.
 
-Migration 008 дополнительно рассчитана на повторный запуск после частичного отказа до регистрации migration. Seed использует стабильные коды, upsert и согласованную collation.
+Migration 009 имеет отдельную compatibility-проверку для MySQL 8.4 и контролируемого повторного запуска после частичного DDL-состояния до регистрации migration.
 
 ## Backup policy
 
-Перед migration, меняющей схему или данные:
+Перед migration, меняющей schema или данные:
 
 1. создаётся SQL dump;
 2. фиксируются размер и SHA-256;
@@ -135,18 +208,14 @@ Migration 008 дополнительно рассчитана на повтор�
 4. проверяется точный GitHub SHA;
 5. после применения выполняются installer repeat и integration checker.
 
-Post-merge deploy без новой migration требует backup deploy-файлов, но не нового SQL dump.
+Post-merge deploy без новой migration требует backup изменяемых deploy-файлов, но не нового SQL dump.
 
 ## Не реализовано
 
-Целевая архитектура может содержать следующие ещё не реализованные сущности:
-
-- военнослужащие;
-- конкретные воинские части и подразделения;
-- должности и назначения;
-- фактическая структура и подчинённость;
-- документы и версии файлов;
-- универсальный reference runtime;
+- карточки военнослужащих;
+- должности, штатные позиции и кадровые назначения;
+- общий Documents domain, document files и universal workflow;
+- медицинский учёт, имущество, транспорт и обучение;
 - общий audit log всех доменов.
 
-Их описание в архитектурных документах не означает наличие соответствующих таблиц в текущем baseline.
+Metadata документов в Organizational Structure v1 принадлежит Organization scope и не означает реализацию общего Documents runtime.
