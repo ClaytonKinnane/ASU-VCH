@@ -86,6 +86,24 @@ try {
         && substr_count($views['versions'], 'type="date"') === 1,
         'сохранены три native date input'
     );
+    ui_polish_check(
+        substr_count($views['documents'], 'class="organization-date-picker-button"') === 2
+        && substr_count($views['versions'], 'class="organization-date-picker-button"') === 1
+        && substr_count($allViews, 'data-date-picker-target=') === 3,
+        'три calendar icon являются функциональными button trigger'
+    );
+    ui_polish_check(
+        str_contains($views['documents'], 'id="<?= e($documentDateId) ?>"')
+        && str_contains($views['documents'], 'data-date-picker-target="<?= e($documentDateId) ?>"')
+        && substr_count($views['documents'], 'organization-document-date-create') === 2
+        && substr_count($views['versions'], 'organization-effective-from') === 2,
+        'calendar trigger связан с уникальным date input'
+    );
+    ui_polish_check(
+        substr_count($allViews, 'class="organization-date-field"') === 3
+        && substr_count($allViews, '<label for=') === 3,
+        'date button не вложен в label и сохраняет явную связь label/input'
+    );
 
     $csrfCounts = ['summary' => 4, 'tree' => 5, 'documents' => 3, 'versions' => 3];
     foreach ($csrfCounts as $view => $expected) {
@@ -141,6 +159,28 @@ try {
         'inline event handlers отсутствуют'
     );
 
+    $layoutEnd = ui_polish_read($root . '/public/admin/organization/views/layout-end.php');
+    $uiControlsScript = ui_polish_read($root . '/public/assets/js/organization-ui-controls.js');
+    ui_polish_check(
+        substr_count($layoutEnd, '/assets/js/organization-ui-controls.js') === 1
+        && str_contains($layoutEnd, 'organization-ui-controls.js" defer'),
+        'organization UI controls script подключён один раз с defer'
+    );
+    ui_polish_check(
+        str_contains($uiControlsScript, "[data-date-picker-target]")
+        && str_contains($uiControlsScript, "typeof input.showPicker === 'function'")
+        && str_contains($uiControlsScript, 'input.showPicker()')
+        && str_contains($uiControlsScript, 'input.click()'),
+        'calendar script использует showPicker и fallback click'
+    );
+    ui_polish_check(
+        str_contains($uiControlsScript, 'input.focus({ preventScroll: true })')
+        && str_contains($uiControlsScript, 'input.disabled || input.readOnly')
+        && !str_contains($uiControlsScript, '.submit(')
+        && !str_contains($uiControlsScript, 'requestSubmit'),
+        'calendar script сохраняет focus и не отправляет форму'
+    );
+
     $themeSlugs = ['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'];
     $themeRoot = is_dir($root . '/public/themes')
         ? $root . '/public/themes'
@@ -161,10 +201,14 @@ try {
         '.organization-disclosure::-webkit-details-marker',
         '.organization-disclosure-icon',
         '.organization-disclosure--edit',
+        '.organization-disclosure--edit .organization-disclosure-icon::before',
+        '.organization-disclosure--edit .organization-disclosure-icon::after',
         '.organization-disclosure--add',
         '.organization-disclosure--danger',
         'details[open] > .organization-disclosure',
+        '.organization-date-field',
         '.organization-date-control',
+        '.organization-date-picker-button',
         '.organization-date-icon',
         'input:-webkit-autofill',
         'input[type="date"]::-webkit-calendar-picker-indicator',
@@ -176,9 +220,21 @@ try {
         }
         ui_polish_check($selectorsPresent, "{$slug}: обязательные UI polish selectors существуют");
         ui_polish_check(
+            str_contains($css, '--organization-action-height: 44px')
+            && str_contains($css, 'height: var(--organization-action-height)')
+            && str_contains($css, 'align-self: flex-end'),
+            "{$slug}: action controls имеют единый height contract"
+        );
+        ui_polish_check(
+            str_contains($css, 'transform: rotate(-45deg)')
+            && str_contains($css, 'border-left: 4px solid var(--focus-color)'),
+            "{$slug}: edit icon имеет однозначную CSS-геометрию карандаша"
+        );
+        ui_polish_check(
             str_contains($css, 'pointer-events: none')
             && str_contains($css, '-webkit-text-fill-color: var(--text-primary)')
-            && str_contains($css, '-webkit-mask:'),
+            && str_contains($css, '-webkit-mask:')
+            && str_contains($css, '.organization-date-picker-button {'),
             "{$slug}: calendar, autofill и mask contracts существуют"
         );
         ui_polish_check(
