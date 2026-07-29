@@ -4,7 +4,7 @@
             <p class="organization-empty">Документы не связаны с выбранной версией.</p>
         <?php else: ?>
             <div class="organization-document-list">
-            <?php foreach ($documents as $document): ?>
+            <?php foreach ($documents as $document): $documentDateId = 'organization-document-date-' . (int) $document['id']; ?>
                 <article>
                     <div><span class="status-badge"><?= e($roleLabel((string) $document['document_role'])) ?></span><h3><?= e((string) $document['title']) ?></h3><p><?= e((string) $document['document_type']) ?> от <?= e((string) $document['document_date']) ?> № <?= e((string) $document['document_number']) ?></p><?php if ($document['note']): ?><small><?= e((string) $document['note']) ?></small><?php endif; ?></div>
                     <?php if ($canUpdate && $isDraft): ?>
@@ -19,7 +19,7 @@
                                 <input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>">
                                 <label>Роль<select name="document_role"><option value="primary_basis" <?= $document['document_role'] === 'primary_basis' ? 'selected' : '' ?>>Основной документ</option><option value="additional_basis" <?= $document['document_role'] === 'additional_basis' ? 'selected' : '' ?>>Дополнительное основание</option><option value="amendment" <?= $document['document_role'] === 'amendment' ? 'selected' : '' ?>>Изменение</option></select></label>
                                 <label>Вид документа<input name="document_type" maxlength="128" required value="<?= e((string) $document['document_type']) ?>"></label>
-                                <label class="organization-date-label"><span>Дата</span><span class="organization-date-control"><input type="date" name="document_date" required value="<?= e((string) $document['document_date']) ?>"><span class="organization-date-icon" aria-hidden="true"></span></span></label>
+                                <div class="organization-date-field"><label for="<?= e($documentDateId) ?>">Дата</label><span class="organization-date-control"><input id="<?= e($documentDateId) ?>" type="date" name="document_date" required value="<?= e((string) $document['document_date']) ?>"><button type="button" class="organization-date-picker-button" data-date-picker-target="<?= e($documentDateId) ?>" aria-label="Открыть календарь для даты документа" title="Открыть календарь"><span class="organization-date-icon" aria-hidden="true"></span></button></span></div>
                                 <label>Номер<input name="document_number" maxlength="128" required value="<?= e((string) $document['document_number']) ?>"></label>
                                 <label>Наименование<input name="title" maxlength="255" required value="<?= e((string) $document['title']) ?>"></label>
                                 <label>Примечание<textarea name="note" maxlength="4000"><?= e((string) ($document['note'] ?? '')) ?></textarea></label>
@@ -43,7 +43,7 @@
                 <input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>">
                 <label>Роль<select name="document_role"><option value="primary_basis">Основной документ</option><option value="additional_basis">Дополнительное основание</option><option value="amendment">Изменение</option></select></label>
                 <label>Вид документа<input name="document_type" maxlength="128" required></label>
-                <label class="organization-date-label"><span>Дата</span><span class="organization-date-control"><input type="date" name="document_date" required><span class="organization-date-icon" aria-hidden="true"></span></span></label>
+                <div class="organization-date-field"><label for="organization-document-date-create">Дата</label><span class="organization-date-control"><input id="organization-document-date-create" type="date" name="document_date" required><button type="button" class="organization-date-picker-button" data-date-picker-target="organization-document-date-create" aria-label="Открыть календарь для даты документа" title="Открыть календарь"><span class="organization-date-icon" aria-hidden="true"></span></button></span></div>
                 <label>Номер<input name="document_number" maxlength="128" required placeholder="Без номера"></label>
                 <label class="span-2">Наименование<input name="title" maxlength="255" required></label>
                 <label class="span-2">Примечание<textarea name="note" maxlength="4000"></textarea></label>
