@@ -2,19 +2,18 @@
 
 ## Стабильная контрольная точка
 
-Функциональные PR #1–#9 и #12 завершены и объединены в `main`. Документационные PR #10, #11 и #13 также объединены и не изменили runtime.
+Функциональные PR #1–#9, #12 и #15 завершены и объединены в `main`. Documentation-only PR #10, #11, #13 и #14 также объединены и не изменяли runtime.
 
 ```text
-runtime baseline commit: 967546087868f0d7eb347b186f7798015d268811
-completed functional pull requests: #1–#9, #12
-last documentation pull request: #13
-applied migrations: 001–008
+merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
+completed functional pull requests: #1–#9, #12, #15
+last completed documentation pull request before baseline refresh: #14
+applied migrations: 001–009
 stable built-in themes: 3
 system roles: 4
-system permissions: 19
+system permissions: 25
 ```
-
-Поле `runtime baseline commit` фиксирует последний commit, изменивший runtime. Оно не является попыткой хранить в Markdown постоянно актуальный HEAD ветки `main`.
 
 ## Завершённые этапы
 
@@ -28,58 +27,72 @@ system permissions: 19
 - [x] стартовая страница справочников;
 - [x] справочник составов военнослужащих и воинских званий;
 - [x] справочник типов организационных элементов;
-- [x] документационный аудит текущего baseline;
-- [x] третья встроенная тема `Евгения Ростова`.
+- [x] документационный аудит baseline 2026-07-27;
+- [x] третья встроенная тема `Евгения Ростова`;
+- [x] Organizational Structure v1;
+- [x] UI Polish 1: управление состояниями дерева и controls;
+- [x] UI Polish 2: уточнение геометрии и доступности;
+- [x] UI Polish 3: дополнительная визуальная доработка;
+- [x] UI Polish 4: выравнивание поиска, единая иконка изменения и заметный level toggle;
+- [x] автоматическое тестирование Organizational Structure v1;
+- [x] ручная desktop-приёмка Organizational Structure v1;
+- [x] PR #15, Final Review, отдельный merge approval и merge;
+- [x] repository/branch audit после PR #15.
 
-## Завершённый инкремент: Evgeniya Rostova Theme v1
+## Завершённый инкремент: Organizational Structure v1
 
 ```text
-feature branch: feature/theme-evgeniya-rostova
-final feature HEAD: c524480f47082b0f827bf16460617b24449d7780
-tested runtime HEAD: 8dabdda09f9f29b1bf84ea7eea1127971d4d8f45
-pull request: #12 MERGED
-merge commit / runtime baseline: 967546087868f0d7eb347b186f7798015d268811
+feature branch: feature/organizational-structure-v1
+tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
+final feature documentation HEAD: dd2586dab7a3b3d8b3683d60e2c7eedce002eb54
+pull request: #15 MERGED
+merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 final review: PASS
 blocking findings: 0
-mobile acceptance: OUT OF SCOPE
+mobile testing: OUT OF SCOPE / NOT RUN
+mobile PASS: NOT CLAIMED
 ```
 
-Этапы:
+Реализованы structures, version lifecycle, редактируемое дерево draft-версии, metadata документов, история и сравнение версий. Migration 009 добавила 7 таблиц, 16 triggers и 6 permissions; общее количество системных permissions стало 25.
 
-- [x] Research;
-- [x] Analysis;
-- [x] Architecture options и recommendation;
-- [x] Architecture / Specification;
-- [x] Formal Review;
-- [x] Approval;
-- [x] Implementation;
-- [x] локальный PHP/Open Server/MySQL Testing;
-- [x] desktop/browser-приёмка;
-- [x] Test Report;
-- [x] Pull Request;
-- [x] Final Review;
-- [x] отдельное merge approval;
-- [x] Merge;
-- [x] GitHub post-merge verification.
+## Текущий документационный инкремент
 
-Новая тема не добавила migration или permission. Mobile acceptance была исключена из scope и Mobile PASS не заявляется. Документационный PR #13 актуализировал living-документацию и не изменил runtime baseline. Локальная синхронизация checkout с актуальным `main` и повторный post-merge smoke фиксируются только после фактического вывода локальной среды.
+`Post-Organizational-Structure v1 Baseline Refresh` обновляет living documentation и фиксирует repository audit. Он не меняет runtime, БД, checker source, deploy или Git refs.
 
 ## Следующий функциональный инкремент
 
-Не выбран и не утверждён. Возможные направления не являются задачами до отдельного Research/Analysis/Approval:
+Не выбран и не утверждён. Возможные направления не являются задачами до отдельного Research / Analysis / Architecture / Approval:
 
-- конкретные организационные структуры и отношения подчинённости;
 - карточка военнослужащего;
-- должности и кадровые назначения;
+- должности, штатные структуры и кадровые назначения;
 - развитие нормативных справочников;
-- аудит событий приложения;
-- документы и приказы;
+- общий Documents domain, документы и приказы;
+- общий audit domain;
 - production/CI-инфраструктура;
 - отдельный инкремент мобильной проверки и доработки.
 
+Отдельным техническим инкрементом должен быть устранён exact-count debt legacy checker-файлов для текущего baseline 25 permissions.
+
 ## Постоянные ограничения
 
-- Нельзя реализовывать фактическую организационную структуру без отдельной модели данных и Approval.
-- Нельзя включать закрытые, ограниченные или фактические сведения в открытые справочники.
-- Нельзя считать мобильную версию проверенной без отдельной приёмки.
+- Нельзя включать закрытые, ограниченные или фактические сведения без отдельного утверждения scope, модели данных и защиты.
+- Нельзя считать общий Documents domain реализованным только из-за metadata документов внутри Organization.
+- Нельзя считать мобильную версию проверенной без отдельной фактической приёмки.
 - Нельзя выполнять merge или удалять feature/docs-ветку без отдельного явного разрешения владельца проекта.
+
+## Обязательный workflow
+
+```text
+Research
+→ Analysis
+→ Architecture
+→ Specification
+→ Review
+→ Approval
+→ Implementation
+→ Testing
+→ Commit
+→ Push
+→ Pull Request
+→ Merge
+```
