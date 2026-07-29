@@ -1,17 +1,17 @@
 # Среда разработки и запуска
 
-## Целевая среда
+## Поддерживаемая локальная среда
 
 ```text
-ОС: Windows 11
+ОС: Windows 10/11
 Open Server Panel: 6.5.1
 Web server: Apache
 PHP: 8.5.4
-MySQL: 8.4.8
+MySQL: 8.4.x
 Shell: Windows PowerShell 5.1
 ```
 
-Проект проверяется в этой среде. Изменение версий модулей требует отдельной проверки совместимости.
+Organizational Structure v1 фактически проверялся в локальной Windows/Open Server среде с PHP 8.5.4 и MySQL 8.4. Изменение major/minor версий модулей требует отдельной проверки совместимости.
 
 ## Разделение каталогов
 
@@ -22,9 +22,7 @@ Apache web root:  C:\OSPanel\home\asu-vch.local\public
 локальный URL:    https://asu-vch.local
 ```
 
-Git-клон не является web root. Он используется только для получения GitHub-изменений и тестирования. Исходники и документация не редактируются локально.
-
-Существующий проект `C:\OSPanel\home\asu.local` не относится к АСУ-ВЧ и не должен изменяться.
+Git-клон не является web root. Он используется для получения GitHub-изменений и тестирования. Существующий проект `C:\OSPanel\home\asu.local` не относится к АСУ-ВЧ и не должен изменяться.
 
 ## Состав deploy
 
@@ -39,9 +37,9 @@ themes\    -> C:\OSPanel\home\asu-vch.local\public\themes
 deploy\ospanel\.osp\project.ini -> C:\OSPanel\home\asu-vch.local\.osp\project.ini
 ```
 
-Перед очисткой deploy root сценарий сохраняет существующий `config/local.php` во временный файл и восстанавливает его после копирования. При первой установке `config/local.php` создаётся из `config/local.example.php` и должен быть проверен до запуска installer.
+Перед очисткой deploy root сценарий сохраняет существующий `config/local.php` и восстанавливает его после копирования. При первой установке файл создаётся из `config/local.example.php` и проверяется до installer.
 
-Документация, `.git`, GitHub metadata и прочие repository-only файлы в deploy root не копируются.
+Документация, `.git`, GitHub metadata и repository-only файлы в deploy root не копируются.
 
 ## Синхронизация стабильной версии
 
@@ -51,9 +49,10 @@ git status --short
 git fetch --prune origin
 git switch main
 git pull --ff-only origin main
+git rev-parse HEAD
 ```
 
-Рабочее дерево должно быть чистым. Для проверки незавершённого инкремента используется точная утверждённая feature-ветка и ожидаемый remote HEAD.
+Рабочее дерево должно быть чистым, а локальная `main` — совпадать с `origin/main`.
 
 ## Развёртывание
 
@@ -71,7 +70,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 3. запускает контролируемый deploy;
 4. сохраняет или создаёт `config/local.php`;
 5. запускает `database\install.php`;
-6. применяет только ещё не зарегистрированные миграции.
+6. применяет только ещё не зарегистрированные migrations.
 
 Для повторного installer без deploy:
 
@@ -79,17 +78,35 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1' -SkipDeploy
 ```
 
-Локальный test-owner может создаваться только специальным local-only seed-сценарием. Его учётные данные не являются частью документации и не должны использоваться вне изолированной локальной среды.
-
 ## База данных
 
-Текущий installer поддерживает migrations 001–008. Подключение выполняется через PDO с `utf8mb4`; migration seed использует согласованную collation `utf8mb4_unicode_ci`.
+Текущий installer поддерживает migrations `001–009`. Подключение выполняется через PDO с `utf8mb4`; migration seed использует `utf8mb4_unicode_ci`.
 
-Перед новой миграцией, меняющей структуру или данные, необходимо создать SQL backup. Повторный запуск installer после успешного применения должен вывести:
+После успешного применения повторный installer должен вывести:
 
 ```text
+Применено миграций: 9
 Новых миграций нет.
 ```
+
+Перед migration, меняющей schema или данные, создаётся SQL backup с фиксацией размера и SHA-256.
+
+## Тематические assets
+
+Каждая тема должна публиковать:
+
+```text
+css/theme.css
+css/auth.css
+css/account.css
+css/users.css
+css/theme-management.css
+css/directories.css
+css/organization.css
+css/operation-result-modal.css
+```
+
+Для `asu-evgeniya-rostova` дополнительно обязательны четыре локальных SVG.
 
 ## Проверки после deploy
 
@@ -98,36 +115,37 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 - PHP lint исходников и deploy-копий;
 - совпадение SHA-256 изменённых файлов;
 - неизменность `config/local.php`;
-- installer и ожидаемое число миграций;
+- installer и ожидаемые 9 migrations;
 - профильные CLI integration checker'ы;
-- регрессионные checker'ы затронутых модулей;
+- theme, directory и security regression checker'ы;
 - HTTP smoke `/`, `/health.php`, `/admin/`;
-- HTTP 200 обязательных assets тем;
-- browser-приёмка, предусмотренная спецификацией.
+- HTTP 200 обязательных theme assets;
+- browser-приёмка, предусмотренная Specification.
 
-## Диагностика
-
-Проверьте наличие модулей:
+Проверенный комплексный runner Organizational Structure v1:
 
 ```powershell
-Get-ChildItem -LiteralPath 'C:\OSPanel\modules' -Directory |
-    Sort-Object Name |
-    Select-Object Name
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+    -File '.\tools\Test-OrganizationalStructureV1.ps1' `
+    -AllowInvalidCertificate
 ```
 
-Обязательны каталоги `Apache`, `PHP-8.5` и `MySQL-8.4`.
+`-AllowInvalidCertificate` используется только для локального self-signed HTTPS.
 
-Проверьте конфигурацию проекта:
+## Защита конфигурации
 
-```powershell
-Get-Content -LiteralPath 'C:\OSPanel\home\asu-vch.local\.osp\project.ini'
+Нельзя публиковать:
+
+- пароль БД;
+- session data;
+- содержимое `config/local.php`;
+- реальные credentials test-owner.
+
+До и после deploy допускается сравнивать только SHA-256 `config/local.php`.
+
+## Границы тестирования
+
+```text
+mobile testing for Organizational Structure v1: OUT OF SCOPE / NOT RUN
+mobile PASS: NOT CLAIMED
 ```
-
-Проверьте опубликованные темы:
-
-```powershell
-Test-Path -LiteralPath 'C:\OSPanel\home\asu-vch.local\public\themes\asu-blue\assets\css\theme.css'
-Test-Path -LiteralPath 'C:\OSPanel\home\asu-vch.local\public\themes\asu-light-blue\assets\css\theme.css'
-```
-
-При диагностике нельзя публиковать пароль БД, session data или содержимое `config/local.php`.
