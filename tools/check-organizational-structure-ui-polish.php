@@ -92,11 +92,45 @@ try {
         && substr_count($allViews, 'data-date-picker-target=') === 3,
         'три calendar icon являются функциональными button trigger'
     );
+
+    $documentEditDateBindingValid = substr_count(
+        $views['documents'],
+        '<?= e($documentDateId) ?>'
+    ) === 3
+        && str_contains($views['documents'], '<label for="<?= e($documentDateId) ?>">')
+        && str_contains($views['documents'], 'id="<?= e($documentDateId) ?>" type="date"')
+        && str_contains(
+            $views['documents'],
+            'data-date-picker-target="<?= e($documentDateId) ?>"'
+        );
+    $documentCreateDateBindingValid = substr_count(
+        $views['documents'],
+        '<label for="organization-document-date-create">'
+    ) === 1
+        && substr_count(
+            $views['documents'],
+            'id="organization-document-date-create" type="date"'
+        ) === 1
+        && substr_count(
+            $views['documents'],
+            'data-date-picker-target="organization-document-date-create"'
+        ) === 1;
+    $effectiveFromDateBindingValid = substr_count(
+        $views['versions'],
+        '<label for="organization-effective-from">'
+    ) === 1
+        && substr_count(
+            $views['versions'],
+            'id="organization-effective-from" type="date"'
+        ) === 1
+        && substr_count(
+            $views['versions'],
+            'data-date-picker-target="organization-effective-from"'
+        ) === 1;
     ui_polish_check(
-        str_contains($views['documents'], 'id="<?= e($documentDateId) ?>"')
-        && str_contains($views['documents'], 'data-date-picker-target="<?= e($documentDateId) ?>"')
-        && substr_count($views['documents'], 'organization-document-date-create') === 2
-        && substr_count($views['versions'], 'organization-effective-from') === 2,
+        $documentEditDateBindingValid
+        && $documentCreateDateBindingValid
+        && $effectiveFromDateBindingValid,
         'calendar trigger связан с уникальным date input'
     );
     ui_polish_check(
