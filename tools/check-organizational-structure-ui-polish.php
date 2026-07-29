@@ -108,6 +108,22 @@ try {
         && str_contains($tree, 'organization-node-action-panel--danger'),
         'удаление разделяет trigger и финальное подтверждение'
     );
+    ui_polish_check(
+        substr_count($tree, 'class="organization-tree-tool-buttons"') === 1
+        && substr_count($tree, 'class="organization-tree-search"') === 1
+        && substr_count($tree, 'data-tree-expand') === 1
+        && substr_count($tree, 'data-tree-collapse') === 1
+        && substr_count($tree, 'data-tree-search') === 1
+        && str_contains($tree, 'maxlength="150"')
+        && str_contains($tree, 'placeholder="Наименование, код или тип"'),
+        'поиск дерева использует общий tools-контейнер с сохранённым contract'
+    );
+    ui_polish_check(
+        substr_count($tree, 'class="tree-toggle" data-tree-toggle') === 1
+        && substr_count($tree, 'aria-label="Свернуть или раскрыть ветвь"') === 1
+        && str_contains($tree, ' ?>>▾</button>'),
+        'кнопка уровня сохраняет native tree-toggle contract'
+    );
 
     ui_polish_check(
         substr_count($views['documents'], 'class="organization-date-control"') === 2
@@ -221,6 +237,7 @@ try {
 
     $layoutEnd = ui_polish_read($root . '/public/admin/organization/views/layout-end.php');
     $uiControlsScript = ui_polish_read($root . '/public/assets/js/organization-ui-controls.js');
+    $treeScript = ui_polish_read($root . '/public/assets/js/organization-tree.js');
     ui_polish_check(
         substr_count($layoutEnd, '/assets/js/organization-ui-controls.js') === 1
         && str_contains($layoutEnd, 'organization-ui-controls.js" defer'),
@@ -249,6 +266,12 @@ try {
         && !str_contains($uiControlsScript, '.submit(')
         && !str_contains($uiControlsScript, 'requestSubmit'),
         'UI controls script сохраняет focus и не отправляет формы из toggle logic'
+    );
+    ui_polish_check(
+        str_contains($treeScript, "toggle.textContent = isCollapsed ? '▸' : '▾';")
+        && str_contains($treeScript, "toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');")
+        && str_contains($treeScript, '[data-tree-search]'),
+        'tree script сохраняет glyph, aria-expanded и search behavior'
     );
 
     $themeSlugs = ['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'];
@@ -286,6 +309,11 @@ try {
         '.organization-node-action-panel',
         '.organization-direction-icon',
         '.organization-direction-icon--down',
+        '.organization-tree-tools',
+        '.organization-tree-tool-buttons',
+        '.organization-tree-search',
+        '.tree-toggle',
+        '.tree-toggle:not(:disabled):hover',
         'input:-webkit-autofill',
         'input[type="date"]::-webkit-calendar-picker-indicator',
     ];
@@ -314,9 +342,37 @@ try {
             "{$slug}: стрелки Выше и Ниже имеют тематическую геометрию"
         );
         ui_polish_check(
-            str_contains($css, 'transform: rotate(-45deg)')
+            str_contains(
+                $css,
+                '.organization-node-action-trigger.organization-disclosure--edit .organization-disclosure-icon { transform: rotate(-45deg); }'
+            )
+            && str_contains(
+                $css,
+                '.organization-node-action-trigger.organization-disclosure--add .organization-disclosure-icon { transform: none; }'
+            )
+            && !str_contains(
+                $css,
+                '.organization-node-action-trigger.organization-disclosure--edit .organization-disclosure-icon, .organization-node-action-trigger.organization-disclosure--add .organization-disclosure-icon { transform: none; }'
+            )
             && str_contains($css, 'border-left: 4px solid var(--focus-color)'),
-            "{$slug}: edit icon имеет однозначную CSS-геометрию карандаша"
+            "{$slug}: node edit icon использует единый наклонный карандаш"
+        );
+        ui_polish_check(
+            str_contains($css, '.organization-tree-tools { display: grid; grid-template-columns: max-content;')
+            && str_contains(
+                $css,
+                '.organization-tree-tool-buttons { display: grid; grid-template-columns: repeat(2, max-content); gap: 8px; }'
+            )
+            && str_contains($css, '.organization-tree-search { width: 100%; min-width: 0; }'),
+            "{$slug}: search input выровнен по внешним границам button group"
+        );
+        ui_polish_check(
+            str_contains($css, 'border: 1px solid var(--focus-color)')
+            && str_contains($css, 'color: var(--focus-color)')
+            && str_contains($css, 'font-size: 18px')
+            && str_contains($css, 'font-weight: 900')
+            && str_contains($css, '.tree-toggle:not(:disabled):hover'),
+            "{$slug}: tree toggle имеет заметный theme-aware indicator"
         );
         ui_polish_check(
             str_contains($css, 'pointer-events: none')
