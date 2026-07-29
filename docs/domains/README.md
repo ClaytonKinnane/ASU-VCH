@@ -4,7 +4,7 @@
 
 Каталог `docs/domains` содержит целевые спецификации предметных областей АСУ-ВЧ. Они определяют границы ответственности, инварианты, зависимости, аудит, безопасность и критерии готовности.
 
-Документы доменов являются архитектурными требованиями. Реализованное состояние фиксируется отдельно в `docs/PROJECT-STATUS.md`, `docs/DATABASE-CURRENT.md`, migrations и профильных Test Report.
+Документы доменов являются архитектурными требованиями. Реализованное состояние фиксируется отдельно в `docs/PROJECT-STATUS.md`, `docs/DATABASE-CURRENT.md`, executable migrations и профильных Test Report.
 
 ## Текущая фаза проекта
 
@@ -14,11 +14,11 @@
 Project architecture     — APPROVED
 Domain modeling          — CONTINUES PER INCREMENT
 Implementation           — STARTED
-Functional increments    — PR #1–#9 MERGED
-Active increment         — NONE
+Functional increments    — PR #1–#9, #12, #15 MERGED
+Active functional increment — NONE
 ```
 
-Фундаментальные решения изменяются только через отдельный review и Approval с анализом влияния.
+Фундаментальные решения изменяются только через отдельный Review и Approval с анализом влияния.
 
 ## Карта доменов
 
@@ -26,14 +26,16 @@ Active increment         — NONE
 |---|---|
 | Security | Реализован базовый runtime: пользователи, аутентификация, RBAC, approval, password change, rejection, archive/restore |
 | Reference | Реализованы специализированные read-only каталоги воинских званий и типов организационных элементов; универсальный reference runtime не заявлен |
-| Organization | Утверждена целевая архитектура; реализован только открытый классификатор типов, без конкретных частей, дерева и подчинённости |
-| Audit | Аудит критических пользовательских операций реализован внутри соответствующих инкрементов; общий доменный журнал ещё не реализован |
+| Organization | Частично реализован runtime Organizational Structure v1: structures, versions, draft tree, document metadata, history и compare |
+| Audit | Аудит критических операций реализован внутри Security и Organization; общий доменный журнал ещё не реализован |
 | Infrastructure | Реализованы installer, migrations, local deploy, theme registry, health и CLI checker'ы |
-| Documents | Целевая архитектура подготовлена; runtime не реализован |
+| Documents | Общий Documents runtime не реализован; Organization хранит только собственную document metadata и связи с версиями |
 
 Будущие направления:
 
 ```text
+Personnel
+Positions and assignments
 Orders
 Medical
 Equipment
@@ -57,22 +59,37 @@ Notifications
 
 Чтение справочных данных не даёт права изменять владеющий домен.
 
-## Текущие границы Organization
+## Реализованные границы Organization
 
-Справочник типов организационных элементов:
+Organizational Structure v1 реализует:
 
-- содержит только общие открытые типы;
-- отделяет тип от организационного класса;
-- не содержит реальных воинских частей, номеров и дислокации;
-- не моделирует фактическую структуру или подчинённость;
-- не является штатным расписанием;
-- остаётся read-only.
+- aggregate root организационной структуры;
+- stable organizational elements;
+- version lifecycle `draft`, `approved`, `active`, `cancelled`;
+- version-scoped дерево узлов;
+- создание новой версии на основе действующей либо последней отменённой;
+- изменение дерева только в draft;
+- catalog-version binding к Reference;
+- metadata документов и version-document links внутри Organization;
+- immutable change events, history и compare;
+- RBAC, CSRF, revision checks и транзакционные операции.
 
-Конкретные структуры могут появиться только в отдельном инкременте с собственной моделью узлов и отношений.
+Migration 009 создаёт 7 таблиц и 16 DB triggers. Домен использует 6 permissions `organization.structures.*`.
+
+## Ограничения Organization
+
+Не реализованы:
+
+- карточки военнослужащих;
+- должности и штатные позиции;
+- кадровые назначения;
+- численность, вооружение и иные закрытые сведения;
+- общий Documents domain и document files;
+- общий Audit domain.
+
+Metadata документов внутри Organization не передаёт домену владение универсальными документами. Реализованная структура не должна наполняться закрытыми или фактическими сведениями без отдельного утверждения scope и защиты.
 
 ## Допустимые зависимости
-
-Целевые направления зависимостей:
 
 ```text
 Security       → Audit
@@ -83,7 +100,7 @@ Documents      → Security / Reference / Organization / Audit
 Infrastructure → внешние технические системы
 ```
 
-`Reference` не зависит от прикладных доменов. `Security` не зависит от `Organization` для входа и авторизации.
+Фактически Organizational Structure v1 читает Reference catalog и хранит actor references на Security users, не меняя Security domain. `Reference` не зависит от прикладных доменов. `Security` не зависит от `Organization` для входа и авторизации.
 
 ## Порядок нового доменного инкремента
 
@@ -108,7 +125,7 @@ Migration и runtime-код не создаются до утверждения 
 
 - `SECURITY.md` и `SECURITY-REVIEW.md`;
 - `REFERENCE.md`, review и approval;
-- `ORGANIZATION.md` и review;
+- `ORGANIZATION.md`, review и Organizational Structure v1 addenda;
 - `DOCUMENTS.md`, review и approval;
 - ERD и migration specifications в соседних каталогах.
 
