@@ -47,6 +47,9 @@ try {
         $views[$key] = ui_polish_read($path);
     }
 
+    $tree = $views['tree'];
+    $allViews = implode("\n", $views);
+
     ui_polish_check(
         substr_count($views['summary'], 'organization-disclosure organization-disclosure--edit') === 1,
         'карточка использует edit disclosure'
@@ -57,18 +60,53 @@ try {
         'документы используют edit и add disclosure'
     );
     ui_polish_check(
-        substr_count($views['tree'], '<summary class="organization-disclosure">') === 1
-        && substr_count($views['tree'], 'organization-disclosure organization-disclosure--edit') === 1
-        && substr_count($views['tree'], 'organization-disclosure organization-disclosure--add') === 1
-        && substr_count($views['tree'], 'organization-disclosure organization-disclosure--danger') === 1,
-        'дерево использует default, edit, add и danger disclosure'
+        substr_count($tree, 'organization-node-action-trigger') === 4
+        && substr_count($tree, 'organization-disclosure--edit organization-node-action-trigger') === 1
+        && substr_count($tree, 'organization-disclosure--add organization-node-action-trigger') === 1
+        && substr_count($tree, 'organization-disclosure--danger organization-node-action-trigger') === 1
+        && !str_contains($tree, '<details'),
+        'дерево использует стабильные button triggers без details'
     );
-
-    $allViews = implode("\n", $views);
     ui_polish_check(
         substr_count($allViews, 'organization-disclosure-icon') === 7
         && substr_count($allViews, 'organization-disclosure-icon" aria-hidden="true') === 7,
         'семь disclosure icon являются декоративными'
+    );
+    ui_polish_check(
+        substr_count($tree, 'class="organization-node-action-bar"') === 1
+        && substr_count($tree, 'class="organization-node-action-panels"') === 1
+        && substr_count($tree, 'data-node-actions') === 1,
+        'дерево разделяет стабильный action bar и область panels'
+    );
+    ui_polish_check(
+        substr_count($tree, 'data-node-action-target=') === 4
+        && substr_count($tree, 'aria-controls=') === 4
+        && substr_count($tree, 'aria-expanded="false"') === 4
+        && substr_count($tree, 'data-node-action-panel') === 4
+        && substr_count($tree, 'data-node-action-panel hidden') === 4,
+        'четыре node action trigger связаны с четырьмя hidden panels'
+    );
+
+    $nodePanelBindingsValid = true;
+    foreach (['$movePanelId', '$editPanelId', '$addPanelId', '$deletePanelId'] as $panelVariable) {
+        $nodePanelBindingsValid = $nodePanelBindingsValid
+            && str_contains($tree, 'data-node-action-target="<?= e(' . $panelVariable . ') ?>"')
+            && str_contains($tree, 'aria-controls="<?= e(' . $panelVariable . ') ?>"')
+            && str_contains($tree, 'id="<?= e(' . $panelVariable . ') ?>"');
+    }
+    ui_polish_check($nodePanelBindingsValid, 'node action target, aria-controls и panel id согласованы');
+    ui_polish_check(
+        substr_count($tree, 'organization-direction-icon organization-direction-icon--up') === 1
+        && substr_count($tree, 'organization-direction-icon organization-direction-icon--down') === 1
+        && str_contains($tree, 'name="direction" value="up"')
+        && str_contains($tree, 'name="direction" value="down"'),
+        'кнопки Выше и Ниже сохраняют POST contract и имеют тематические стрелки'
+    );
+    ui_polish_check(
+        substr_count($tree, '>Подтвердить удаление</button>') === 1
+        && substr_count($tree, '>Удалить</span></button>') === 1
+        && str_contains($tree, 'organization-node-action-panel--danger'),
+        'удаление разделяет trigger и финальное подтверждение'
     );
 
     ui_polish_check(
@@ -93,24 +131,15 @@ try {
         'три calendar icon являются функциональными button trigger'
     );
 
-    $documentEditDateBindingValid = substr_count(
-        $views['documents'],
-        '<?= e($documentDateId) ?>'
-    ) === 3
+    $documentEditDateBindingValid = substr_count($views['documents'], '<?= e($documentDateId) ?>') === 3
         && str_contains($views['documents'], '<label for="<?= e($documentDateId) ?>">')
         && str_contains($views['documents'], 'id="<?= e($documentDateId) ?>" type="date"')
-        && str_contains(
-            $views['documents'],
-            'data-date-picker-target="<?= e($documentDateId) ?>"'
-        );
+        && str_contains($views['documents'], 'data-date-picker-target="<?= e($documentDateId) ?>"');
     $documentCreateDateBindingValid = substr_count(
         $views['documents'],
         '<label for="organization-document-date-create">'
     ) === 1
-        && substr_count(
-            $views['documents'],
-            'id="organization-document-date-create" type="date"'
-        ) === 1
+        && substr_count($views['documents'], 'id="organization-document-date-create" type="date"') === 1
         && substr_count(
             $views['documents'],
             'data-date-picker-target="organization-document-date-create"'
@@ -119,10 +148,7 @@ try {
         $views['versions'],
         '<label for="organization-effective-from">'
     ) === 1
-        && substr_count(
-            $views['versions'],
-            'id="organization-effective-from" type="date"'
-        ) === 1
+        && substr_count($views['versions'], 'id="organization-effective-from" type="date"') === 1
         && substr_count(
             $views['versions'],
             'data-date-picker-target="organization-effective-from"'
@@ -201,18 +227,28 @@ try {
         'organization UI controls script подключён один раз с defer'
     );
     ui_polish_check(
-        str_contains($uiControlsScript, "[data-date-picker-target]")
+        str_contains($uiControlsScript, '[data-date-picker-target]')
         && str_contains($uiControlsScript, "typeof input.showPicker === 'function'")
         && str_contains($uiControlsScript, 'input.showPicker()')
         && str_contains($uiControlsScript, 'input.click()'),
         'calendar script использует showPicker и fallback click'
     );
     ui_polish_check(
+        str_contains($uiControlsScript, '[data-node-action-target]')
+        && str_contains($uiControlsScript, '[data-node-action-panel]')
+        && str_contains($uiControlsScript, 'closeNodeActionPanels(container)')
+        && str_contains($uiControlsScript, 'panel.hidden = true')
+        && str_contains($uiControlsScript, 'panel.hidden = false')
+        && str_contains($uiControlsScript, "trigger.setAttribute('aria-expanded', 'true')")
+        && str_contains($uiControlsScript, 'container.contains(panel)'),
+        'node action script синхронизирует panels и aria-expanded внутри одного узла'
+    );
+    ui_polish_check(
         str_contains($uiControlsScript, 'input.focus({ preventScroll: true })')
         && str_contains($uiControlsScript, 'input.disabled || input.readOnly')
         && !str_contains($uiControlsScript, '.submit(')
         && !str_contains($uiControlsScript, 'requestSubmit'),
-        'calendar script сохраняет focus и не отправляет форму'
+        'UI controls script сохраняет focus и не отправляет формы из toggle logic'
     );
 
     $themeSlugs = ['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'];
@@ -244,6 +280,12 @@ try {
         '.organization-date-control',
         '.organization-date-picker-button',
         '.organization-date-icon',
+        '.organization-node-action-bar',
+        '.organization-node-action-trigger',
+        '.organization-node-action-panels',
+        '.organization-node-action-panel',
+        '.organization-direction-icon',
+        '.organization-direction-icon--down',
         'input:-webkit-autofill',
         'input[type="date"]::-webkit-calendar-picker-indicator',
     ];
@@ -257,7 +299,19 @@ try {
             str_contains($css, '--organization-action-height: 44px')
             && str_contains($css, 'height: var(--organization-action-height)')
             && str_contains($css, 'align-self: flex-end'),
-            "{$slug}: action controls имеют единый height contract"
+            "{$slug}: общие action controls имеют единый height contract"
+        );
+        ui_polish_check(
+            str_contains($css, '.organization-node-action-bar .secondary-button, .organization-node-action-trigger')
+            && str_contains($css, '.organization-node-action-panel[hidden] { display: none; }')
+            && str_contains($css, '.organization-node-actions { margin-top: 12px; display: grid; gap: 10px; }')
+            && !str_contains($css, '.organization-node-actions details[open]'),
+            "{$slug}: node triggers остаются в action bar, panels раскрываются ниже"
+        );
+        ui_polish_check(
+            str_contains($css, 'clip-path: polygon(50% 0')
+            && str_contains($css, '.organization-direction-icon--down { transform: rotate(180deg); }'),
+            "{$slug}: стрелки Выше и Ниже имеют тематическую геометрию"
         );
         ui_polish_check(
             str_contains($css, 'transform: rotate(-45deg)')
