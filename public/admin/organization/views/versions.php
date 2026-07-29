@@ -16,7 +16,7 @@
                 <input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>">
                 <input type="hidden" name="structure_id" value="<?= $structureId ?>">
                 <input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>">
-                <label class="organization-date-label"><span>Дата вступления в действие</span><span class="organization-date-control"><input type="date" name="effective_from" required><span class="organization-date-icon" aria-hidden="true"></span></span></label>
+                <div class="organization-date-field"><label for="organization-effective-from">Дата вступления в действие</label><span class="organization-date-control"><input id="organization-effective-from" type="date" name="effective_from" required><button type="button" class="organization-date-picker-button" data-date-picker-target="organization-effective-from" aria-label="Открыть календарь для даты вступления в действие" title="Открыть календарь"><span class="organization-date-icon" aria-hidden="true"></span></button></span></div>
                 <button class="primary-button" type="submit">Утвердить версию</button>
             </form>
             <?php endif; ?>
