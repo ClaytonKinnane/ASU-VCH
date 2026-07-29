@@ -55,9 +55,9 @@ mobile PASS: NOT CLAIMED
 
 Реализованы structures, version lifecycle, редактируемое дерево draft-версии, metadata документов, история и сравнение версий. Migration 009 добавила 7 таблиц, 16 triggers и 6 permissions; общее количество системных permissions стало 25.
 
-## Текущий документационный инкремент
+## Документационный инкремент baseline refresh
 
-`Post-Organizational-Structure v1 Baseline Refresh` обновляет living documentation и фиксирует repository audit. Он не меняет runtime, БД, checker source, deploy или Git refs.
+`Post-Organizational-Structure v1 Baseline Refresh` предназначен для актуализации living documentation и фиксации repository audit после PR #15. Он не меняет runtime, БД, checker source, deploy или Git refs.
 
 ## Следующий функциональный инкремент
 
