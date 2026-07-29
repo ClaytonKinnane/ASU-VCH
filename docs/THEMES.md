@@ -8,13 +8,13 @@
 
 Установленные темы перечислены в `config/themes.php`. Реестр является статическим allow-list и не формируется из HTTP-параметров или сканирования каталогов.
 
-В ветке `feature/theme-evgeniya-rostova` зарегистрированы:
+В стабильном `main` зарегистрированы три встроенные темы:
 
 - **АСУ Синяя** — `asu-blue`, тёмная сине-бирюзовая тема и безопасный fallback;
 - **АСУ Светлая синяя** — `asu-light-blue`, светлая минималистичная тема с синими контурами;
 - **Евгения Ростова** — `asu-evgeniya-rostova`, светлая розово-лиловая тема с сердечками, воздушными шариками и мягкими игрушками.
 
-Третья тема реализована в feature-ветке, но до завершения локального Testing, desktop/browser-приёмки, Pull Request и отдельного merge approval не считается частью стабильного `main`.
+Все три темы объединены, доступны в реестре и прошли desktop-приёмку затронутых интерфейсов. Default/fallback остаётся `asu-blue`.
 
 ## Управление
 
@@ -34,9 +34,9 @@ system_settings.ui.active_theme
 
 `config/app.php['theme']` используется как bootstrap/pre-install fallback.
 
-## Обязательные assets
+## Обязательный CSS contract
 
-Все темы реализуют единый class contract и содержат:
+Все темы реализуют единый class contract и содержат восемь обязательных CSS-assets:
 
 ```text
 themes/{slug}/assets/css/theme.css
@@ -45,10 +45,15 @@ themes/{slug}/assets/css/account.css
 themes/{slug}/assets/css/users.css
 themes/{slug}/assets/css/theme-management.css
 themes/{slug}/assets/css/directories.css
+themes/{slug}/assets/css/organization.css
 themes/{slug}/assets/css/operation-result-modal.css
 ```
 
-Для `asu-evgeniya-rostova` дополнительно обязательны:
+`organization.css` оформляет страницы Organizational Structure v1: список, карточку, версии, дерево, документы, историю и сравнение.
+
+## Дополнительные assets темы «Евгения Ростова»
+
+Для `asu-evgeniya-rostova` обязательны:
 
 ```text
 themes/asu-evgeniya-rostova/assets/img/hearts-pattern.svg
@@ -64,6 +69,15 @@ themes/asu-evgeniya-rostova/assets/img/plush-bunny.svg
 ```text
 public/assets/js/operation-result-modal.js
 ```
+
+Общее поведение дерева Organizational Structure находится в:
+
+```text
+public/assets/js/organization-tree.js
+public/assets/js/organization-ui-controls.js
+```
+
+Отдельный theme-specific JavaScript отсутствует.
 
 ## Публикация
 
@@ -84,15 +98,27 @@ C:\OSPanel\home\asu-vch.local\public\themes\{slug}
 - query-, cookie- и GET-preview темы не поддерживаются;
 - активация выполняется POST-only с permission, CSRF и PRG;
 - загрузка ZIP, произвольного CSS/JS, удаление темы и browser-редактор отсутствуют;
-- SVG новой темы локальны и не содержат script, event handlers, embedded HTML, внешние href или remote resources;
-- отдельный JavaScript темы отсутствует.
+- SVG новой темы локальны и не содержат script, event handlers, embedded HTML или external resources;
+- theme-specific JavaScript отсутствует.
 
 ## Проверка
 
 `database/check-theme-management.php` проверяет реестр трёх тем, metadata, required assets, безопасные URL, SVG/CSS safety, persistence, audit и rollback.
 
-`database/check-theme-asset-failure.php` в изолированном временном каталоге подтверждает, что отсутствие обязательного SVG делает `asu-evgeniya-rostova` недоступной и точно отражается в `missingAssets()`.
+`database/check-theme-asset-failure.php` подтверждает в sandbox, что отсутствие обязательного SVG делает `asu-evgeniya-rostova` недоступной.
 
-Справочные checker'ы через общий wrapper проверяют `css/directories.css` всех тем из текущего реестра, после чего выполняют прежнюю профильную DB/repository-регрессию.
+Directory checker'ы проверяют `directories.css` всех тем. Organizational Structure checker проверяет публикацию `organization.css` всех трёх тем.
 
-Desktop-приёмка `asu-blue` и `asu-light-blue` завершена в стабильном baseline. Desktop/browser-приёмка `asu-evgeniya-rostova` ожидается. Mobile PASS для нового инкремента не заявляется.
+Для Organizational Structure v1 выполнены:
+
+```text
+asu-blue desktop acceptance: PASS
+asu-light-blue desktop acceptance: PASS
+asu-evgeniya-rostova desktop acceptance: PASS
+UI contract checks: 64 PASS / 0 FAIL
+```
+
+```text
+mobile testing: OUT OF SCOPE / NOT RUN
+mobile PASS: NOT CLAIMED
+```
