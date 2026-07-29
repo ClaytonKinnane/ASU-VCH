@@ -1,5 +1,53 @@
 # История изменений
 
+## 2026-07-29
+
+### Organizational Structure v1
+
+- PR #15 `feat(organization): add organizational structure v1` объединён в `main` методом merge commit;
+- merged main commit: `5aaf0a7aca51cae575b3765309b2bf3ad7d76d28`;
+- протестированный runtime HEAD: `238868950c5f7417ea3d1c283610f2d282d4395a`;
+- добавлена migration `009_organizational_structure_v1.sql`;
+- созданы 7 таблиц организационных структур и 16 DB triggers;
+- добавлены 6 permissions `organization.structures.*`, итоговое количество системных permissions — `25`;
+- реализованы создание, изменение, архивирование и восстановление структур;
+- реализован lifecycle версий `draft → approved → active`, отмена approved-версии и создание нового draft;
+- реализовано редактируемое дерево draft-версии: добавление, изменение, перемещение, упорядочивание и удаление узлов;
+- реализованы стабильные organizational elements и привязка к версии каталога типов;
+- добавлены metadata документов, связи документов с версиями, история изменений и сравнение версий;
+- добавлены транзакционные операции, revision checks, RBAC и CSRF-защита.
+
+### UI Polish 1–4
+
+- доработаны controls дерева, состояния раскрытия и поиск;
+- выровнена геометрия интерфейса во всех трёх темах;
+- унифицирована иконка изменения;
+- улучшена видимость level toggle;
+- сохранены keyboard navigation и focus-visible;
+- UI contract checker расширен до `64 PASS / 0 FAIL`.
+
+### Проверка
+
+- organization integration checker: `58 PASS / 0 FAIL`;
+- PHP lint проверенного deploy: `104` файла, `0` ошибок;
+- installer подтвердил 9 migrations и повторный запуск без новых migrations;
+- security, theme и directory regressions: PASS;
+- HTTP smoke: `/` 200, `/health.php` 200, `/admin/` 302;
+- автоматическое тестирование: PASS;
+- ручная desktop-приёмка: PASS;
+- Final Review: PASS, blocking findings: `0`;
+- mobile testing: `OUT OF SCOPE / NOT RUN`;
+- Mobile PASS не заявляется.
+
+### Repository audit и документация
+
+- проверены содержимое репозитория, living documentation и все 17 веток;
+- 16 non-main веток оценены как технически безопасные для удаления после отдельного явного разрешения;
+- для `docs/evgeniya-rostova-theme-v1-design` подтверждена побайтовая идентичность двух документов с `main`;
+- фактическое удаление веток не выполнялось;
+- начат documentation-only инкремент Post-Organizational-Structure v1 Baseline Refresh;
+- изменение legacy checker source вынесено в отдельный будущий технический инкремент.
+
 ## 2026-07-28
 
 ### Темы
@@ -104,4 +152,4 @@
 
 ## Документация
 
-Архитектура, спецификации, Formal Review, Approval и Test Report каждого инкремента хранятся в `docs/design`, `docs/decisions` и `docs/testing`. Эти документы являются историческими артефактами соответствующих этапов. Текущее состояние проекта фиксируется в `PROJECT-STATUS.md`.
+Архитектура, спецификации, Formal Review, Approval и Test Report каждого инкремента хранятся в `docs/architecture`, `docs/specifications`, `docs/reviews`, `docs/decisions`, `docs/implementation`, `docs/design` и `docs/testing`. Эти документы являются историческими артефактами соответствующих этапов. Текущее состояние проекта фиксируется в `PROJECT-STATUS.md`.
