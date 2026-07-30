@@ -2,7 +2,7 @@
 
 ## Стабильная контрольная точка
 
-Функциональные PR #1–#9, #12 и #15 завершены и объединены в `main`. Documentation-only PR #10, #11, #13, #14 и #16 также объединены и не изменяли runtime.
+Функциональные PR #1–#9, #12 и #15 завершены и объединены в `main`. До начала Post-PR16 Repository Reconciliation documentation-only PR #10, #11, #13, #14 и #16 также были объединены и не изменяли runtime.
 
 ```text
 current repository pointer: origin/main
