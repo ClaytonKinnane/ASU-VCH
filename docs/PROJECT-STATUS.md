@@ -137,7 +137,7 @@ active reconciliation branch: KEEP UNTIL OWN PR/MERGE AND POST-MERGE CLEANUP APP
 actual branch deletion: NOT PERFORMED
 ```
 
-После будущего merge reconciliation-инкремента требуется fresh read-only inventory всех существующих non-main веток. Только он может служить основанием для отдельного решения об удалении.
+После merge reconciliation-инкремента требуется fresh read-only inventory всех существующих non-main веток. Только он может служить основанием для отдельного решения об удалении.
 
 ## Не реализовано
 
@@ -151,6 +151,6 @@ actual branch deletion: NOT PERFORMED
 
 Metadata документов внутри Organization не означает реализацию общего Documents domain. В проект не включаются закрытые или фактические сведения без отдельного утверждения scope и модели защиты.
 
-## Следующий gate
+## Cleanup gate
 
-Текущий documentation-only инкремент проходит Implementation → Validation → Pull Request → Review → отдельное Merge Approval. Branch cleanup остаётся отдельной административной операцией и не разрешён данным инкрементом.
+Branch cleanup не входит в документационную реализацию и не разрешён текущими process-artifacts. После merge reconciliation-инкремента обязательны fresh fetch/prune, полный read-only inventory, повторная оценка active reconciliation branch и отдельное явное разрешение владельца проекта на точный список удаляемых refs.
