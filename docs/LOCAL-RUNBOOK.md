@@ -24,10 +24,25 @@ URL: https://asu-vch.local
 
 Секреты и содержимое `config/local.php` не выводятся и не передаются в GitHub.
 
-## 3. Текущий baseline
+## 3. Repository pointer и functional baseline
+
+Актуальный стабильный HEAD всегда определяется из GitHub:
+
+```powershell
+Set-Location -LiteralPath 'C:\Project\ASU-VCH'
+git fetch --prune origin
+git rev-parse origin/main
+```
+
+Living documentation не фиксирует точный SHA как постоянно актуальный `current main HEAD`, поскольку documentation-only merge немедленно сделал бы такое поле устаревшим.
+
+Устойчивые anchors:
 
 ```text
-merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+last completed documentation PR before reconciliation: #16
+last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+last functional PR: #15
+last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
 migrations: 001–009
 system roles: 4
@@ -35,7 +50,7 @@ system permissions: 25
 built-in themes: 3
 ```
 
-Merge commit не заявляется повторно runtime-протестированным. Проверенный runtime HEAD зафиксирован отдельно.
+PR #16 и Post-PR16 Repository Reconciliation являются documentation-only; merge commits этих инкрементов не заявляются runtime-протестированными.
 
 ## 4. Синхронизация стабильной версии
 
@@ -46,6 +61,7 @@ git fetch --prune origin
 git switch main
 git pull --ff-only origin main
 git rev-parse HEAD
+git rev-parse origin/main
 git rev-list --left-right --count HEAD...origin/main
 git status --short
 ```
@@ -54,17 +70,34 @@ git status --short
 
 - рабочее дерево до и после синхронизации чистое;
 - обновление выполняется только fast-forward;
+- локальный `HEAD` равен `origin/main` после pull;
 - divergence равен `0 0`;
 - локальные commit и push не выполняются;
-- для стабильной проверки используется `main`, а не завершённая feature-ветка.
+- для стабильной проверки используется `main`, а не завершённая feature/docs-ветка.
 
-## 5. Резервное копирование
+## 5. Read-only branch inventory
+
+Перед любым cleanup необходимо выполнить отдельную свежую проверку:
+
+```powershell
+Set-Location -LiteralPath 'C:\Project\ASU-VCH'
+git fetch --prune origin
+git for-each-ref --format='%(refname:short)' refs/remotes/origin
+```
+
+Для каждой non-main ветки проверяются ahead/behind и наличие уникального файлового содержимого. Датированный audit или классификация `SAFE TO DELETE` не заменяют отдельное явное разрешение владельца проекта.
+
+```text
+branch deletion without explicit approval: PROHIBITED
+```
+
+## 6. Резервное копирование
 
 Перед deploy сохраняются изменяемые deploy-файлы. Перед новой migration, меняющей schema или данные, дополнительно создаётся SQL backup и фиксируется его SHA-256.
 
 Содержимое `config/local.php` не выводится. До и после deploy сравнивается только SHA-256 файла.
 
-## 6. Полная локальная инициализация
+## 7. Полная локальная инициализация
 
 ```powershell
 Set-Location -LiteralPath 'C:\Project\ASU-VCH'
@@ -87,7 +120,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1' -SkipDeploy
 ```
 
-## 7. Installer
+## 8. Installer
 
 Ручной запуск:
 
@@ -95,7 +128,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 php C:\OSPanel\home\asu-vch.local\database\install.php
 ```
 
-Для текущего baseline ожидается:
+Для текущего functional baseline ожидается:
 
 ```text
 Применено миграций: 9
@@ -104,7 +137,7 @@ php C:\OSPanel\home\asu-vch.local\database\install.php
 
 Installer запускается повторно. Число пользователей и локальные данные не являются константой проекта.
 
-## 8. Local-only test owner
+## 9. Local-only test owner
 
 В изолированной локальной установке допускается:
 
@@ -114,9 +147,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Loca
 
 Seed разрешён только при `environment=local`. Учётные данные не фиксируются в проектной документации.
 
-## 9. Основной комплексный runner
+## 10. Основной комплексный runner
 
-Для текущего Organizational Structure v1 используется проверенный runner:
+Для Organizational Structure v1 используется проверенный runner:
 
 ```powershell
 Set-Location -LiteralPath 'C:\Project\ASU-VCH'
@@ -152,7 +185,7 @@ HTTP smoke: / 200, /health.php 200, /admin/ 302
 AUTOMATED_TESTING_STATUS=PASS
 ```
 
-## 10. Legacy checker technical debt
+## 11. Legacy checker technical debt
 
 Некоторые старые direct checker-файлы исходно содержат exact-count assertion `19` permissions. Комплексный Organizational Structure runner применяет `PermissionBaselineRegressionAdapter`, чтобы выполнить их как совместимые baseline regressions при 25 permissions.
 
@@ -163,9 +196,7 @@ AUTOMATED_TESTING_STATUS=PASS
 - source cleanup этих checker-файлов и решение по adapter выделены в отдельный будущий технический инкремент;
 - нельзя считать отказ отдельного legacy direct checker доказательством runtime-дефекта без анализа exact-count условия.
 
-## 11. HTTP smoke
-
-Отдельный smoke:
+## 12. HTTP smoke
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
@@ -179,7 +210,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 - `/health.php` — HTTP 200 и подключение к БД;
 - `/admin/` для анонимного пользователя — HTTP 302.
 
-## 12. Theme assets
+## 13. Theme assets
 
 Каждая из трёх тем должна публиковать:
 
@@ -196,7 +227,7 @@ css/operation-result-modal.css
 
 Тема `asu-evgeniya-rostova` дополнительно публикует четыре обязательных SVG.
 
-## 13. Desktop/browser-приёмка
+## 14. Desktop/browser-приёмка
 
 Для Organizational Structure v1 проверяются:
 
@@ -217,11 +248,11 @@ mobile testing: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
 ```
 
-## 14. Фиксация результата
+## 15. Фиксация результата
 
 Успешная проверка фиксирует:
 
-- branch и exact SHA;
+- branch и exact SHA на момент проверки;
 - local/remote divergence;
 - clean working tree;
 - backup path, size и SHA-256;
