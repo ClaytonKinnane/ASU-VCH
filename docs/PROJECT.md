@@ -15,6 +15,7 @@
 ## Основные требования
 
 - Репозиторий `ClaytonKinnane/ASU-VCH` является единственным источником истины.
+- Актуальный HEAD определяется через `origin/main`, а не хранится в living docs как самореферентный SHA.
 - Код и документация изменяются в отдельных ветках GitHub.
 - Локальный клон используется только для синхронизации, deploy и тестирования.
 - Рабочие данные приложения хранятся в MySQL; секреты и локальные параметры в Git не помещаются.
@@ -69,18 +70,37 @@ Organizational Structure v1 реализует:
 
 Реализованная модель предназначена для контролируемого ведения организационной структуры, но не разрешает размещение закрытых или фактических данных без отдельного утверждения.
 
-## Текущая контрольная точка
+## Контрольные точки
+
+Актуальный repository HEAD:
+
+```powershell
+git fetch --prune origin
+git rev-parse origin/main
+```
+
+Исторические anchors:
 
 ```text
-merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
-tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
+last completed documentation PR before reconciliation: #16
+last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
 last functional PR: #15
+last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
 migrations: 9
 system roles: 4
 system permissions: 25
 built-in themes: 3
 active functional increment: none
 ```
+
+PR #16 изменил только документацию и не создаёт нового functional/runtime baseline.
+
+## Repository governance
+
+Post-PR16 repository audit зафиксирован в `REPOSITORY-AUDIT-2026-07-30.md`. До создания reconciliation-ветки были проверены 17 non-main веток; все они технически безопасны для удаления после отдельного явного разрешения. Активная reconciliation-ветка должна оцениваться повторно после собственного merge.
+
+Фактическое удаление веток не выполнялось.
 
 ## Не реализовано
 
