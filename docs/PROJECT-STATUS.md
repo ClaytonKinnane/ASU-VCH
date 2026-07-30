@@ -67,7 +67,7 @@ mobile PASS: NOT CLAIMED
 | #12 | Evgeniya Rostova Theme v1 | MERGED |
 | #15 | Organizational Structure v1 | MERGED |
 
-Documentation-only PR #10, #11, #13, #14 и #16 объединены и не изменяли runtime.
+До начала Post-PR16 Repository Reconciliation documentation-only PR #10, #11, #13, #14 и #16 были объединены и не изменяли runtime. Статус самого reconciliation PR определяется в GitHub и его final PR review artifact.
 
 ## Реализованные возможности
 
@@ -127,7 +127,7 @@ manual desktop acceptance: PASS
 
 ## Repository audit
 
-Актуальный post-PR16 snapshot зафиксирован в [REPOSITORY-AUDIT-2026-07-30.md](REPOSITORY-AUDIT-2026-07-30.md). Исторический pre-refresh snapshot сохранён в [REPOSITORY-AUDIT-2026-07-29.md](REPOSITORY-AUDIT-2026-07-29.md).
+Датированный post-PR16 pre-reconciliation snapshot зафиксирован в [REPOSITORY-AUDIT-2026-07-30.md](REPOSITORY-AUDIT-2026-07-30.md). Исторический pre-refresh snapshot сохранён в [REPOSITORY-AUDIT-2026-07-29.md](REPOSITORY-AUDIT-2026-07-29.md).
 
 ```text
 pre-reconciliation snapshot: 18 branches / 17 non-main
