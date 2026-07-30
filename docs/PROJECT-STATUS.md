@@ -1,17 +1,28 @@
 # Текущее состояние проекта АСУ-ВЧ
 
-Дата актуализации: `2026-07-29`.
+Дата актуализации: `2026-07-30`.
 
-## Стабильный merged baseline
+## Репозиторий и контрольные точки
+
+Актуальный HEAD стабильной ветки определяется через `origin/main`:
+
+```powershell
+git fetch --prune origin
+git rev-parse origin/main
+git rev-list --left-right --count main...origin/main
+```
+
+Устойчивые исторические anchors:
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
-branch: main
-merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+default branch: main
+last completed documentation PR before reconciliation: #16
+last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+last functional PR: #15
+last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
 final feature documentation HEAD: dd2586dab7a3b3d8b3683d60e2c7eedce002eb54
-last functional PR: #15
-last completed documentation PR before this refresh: #14
 migrations: 001–009
 system roles: 4
 system permissions: 25
@@ -19,7 +30,7 @@ built-in themes: 3
 active functional increment: none
 ```
 
-`merged main commit` — результат merge PR #15. `tested runtime HEAD` — точный application commit, на котором завершены автоматические проверки и desktop-приёмка. Merge commit отдельно не заявляется повторно runtime-протестированным.
+PR #16 был documentation-only: изменены только `README.md` и `docs/**`; runtime, deploy и БД не изменялись. Поэтому последний функциональный tested baseline остаётся привязан к PR #15 и `tested runtime HEAD`.
 
 ## Последний функциональный инкремент
 
@@ -38,7 +49,9 @@ mobile testing: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
 ```
 
-## Завершённые функциональные Pull Request
+## Завершённые Pull Request
+
+Функциональные PR:
 
 | PR | Инкремент | Статус |
 |---:|---|---|
@@ -54,7 +67,7 @@ mobile PASS: NOT CLAIMED
 | #12 | Evgeniya Rostova Theme v1 | MERGED |
 | #15 | Organizational Structure v1 | MERGED |
 
-Documentation-only PR #10, #11, #13 и #14 объединены и не изменяли runtime.
+До начала Post-PR16 Repository Reconciliation documentation-only PR #10, #11, #13, #14 и #16 были объединены и не изменяли runtime. Статус самого reconciliation PR определяется в GitHub и его final PR review artifact.
 
 ## Реализованные возможности
 
@@ -89,7 +102,7 @@ Documentation-only PR #10, #11, #13 и #14 объединены и не изме
 - создание, изменение, архивирование и восстановление структур;
 - версии со статусами `draft`, `approved`, `active`, `cancelled`;
 - создание новой версии на основе действующей либо последней отменённой;
-- редактируемое дерево draft-версии: добавление, изменение, перемещение, упорядочивание и удаление узлов;
+- редактируемое дерево draft-версии;
 - стабильные organizational elements между версиями;
 - привязка типов к версии справочника;
 - metadata документов и связи документов с версиями;
@@ -97,9 +110,7 @@ Documentation-only PR #10, #11, #13 и #14 объединены и не изме
 - optimistic revision checks, транзакции, CSRF и RBAC;
 - 7 таблиц, 16 DB triggers и 6 permissions `organization.structures.*`.
 
-## Проверенный baseline
-
-Для Organizational Structure v1 подтверждены:
+## Проверенный functional baseline
 
 ```text
 source/deploy UI contract checks: 64 PASS / 0 FAIL
@@ -116,15 +127,17 @@ manual desktop acceptance: PASS
 
 ## Repository audit
 
-Полная проверка содержимого и веток зафиксирована в [REPOSITORY-AUDIT-2026-07-29.md](REPOSITORY-AUDIT-2026-07-29.md).
+Датированный post-PR16 pre-reconciliation snapshot зафиксирован в [REPOSITORY-AUDIT-2026-07-30.md](REPOSITORY-AUDIT-2026-07-30.md). Исторический pre-refresh snapshot сохранён в [REPOSITORY-AUDIT-2026-07-29.md](REPOSITORY-AUDIT-2026-07-29.md).
 
 ```text
-branches assessed: 17
-main: KEEP
-non-main branches assessed: 16
-cleanup assessment: SAFE TO DELETE AFTER SEPARATE EXPLICIT APPROVAL
+pre-reconciliation snapshot: 18 branches / 17 non-main
+pre-reconciliation non-main assessed: 17
+technically safe to delete after separate approval: 17
+active reconciliation branch: KEEP UNTIL OWN PR/MERGE AND POST-MERGE CLEANUP APPROVAL
 actual branch deletion: NOT PERFORMED
 ```
+
+После merge reconciliation-инкремента требуется fresh read-only inventory всех существующих non-main веток. Только он может служить основанием для отдельного решения об удалении.
 
 ## Не реализовано
 
@@ -138,6 +151,6 @@ actual branch deletion: NOT PERFORMED
 
 Metadata документов внутри Organization не означает реализацию общего Documents domain. В проект не включаются закрытые или фактические сведения без отдельного утверждения scope и модели защиты.
 
-## Следующий gate
+## Cleanup gate
 
-Следующий функциональный инкремент не выбран. Новая задача начинается с Research → Analysis → Architecture → Specification → Formal Review → Approval и отдельной ветки от актуального `main`.
+Branch cleanup не входит в документационную реализацию и не разрешён текущими process-artifacts. После merge reconciliation-инкремента обязательны fresh fetch/prune, полный read-only inventory, повторная оценка active reconciliation branch и отдельное явное разрешение владельца проекта на точный список удаляемых refs.

@@ -1,8 +1,33 @@
 # Текущее состояние базы данных
 
-Дата проверки: `2026-07-29`.
+Дата проверки functional baseline: `2026-07-29`.
+Дата документационной сверки: `2026-07-30`.
 
 Этот документ описывает фактически реализованный schema baseline. `DATABASE.md`, ERD и доменные migration specifications могут описывать более широкую целевую архитектуру.
+
+## Repository pointer и functional anchors
+
+Актуальный repository HEAD определяется динамически:
+
+```powershell
+git fetch --prune origin
+git rev-parse origin/main
+```
+
+Точный SHA текущего `main` не хранится здесь как самореферентное living-поле. Для schema/runtime используются устойчивые anchors:
+
+```text
+last completed documentation PR before reconciliation: #16
+last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+last functional PR: #15
+last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
+applied migrations: 9
+system roles: 4
+system permissions: 25
+```
+
+PR #16 и Post-PR16 Repository Reconciliation являются documentation-only и не создают нового schema/runtime baseline.
 
 ## Технологическая база
 
@@ -26,16 +51,6 @@ Credentials находятся только в deploy-файле `config/local.p
 3. `database/install.php`;
 4. профильные CLI integration checker'ы;
 5. post-migration проверки в целевой MySQL.
-
-## Текущий baseline
-
-```text
-merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
-tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
-applied migrations: 9
-system roles: 4
-system permissions: 25
-```
 
 Контрольный installer подтвердил 9 зарегистрированных migrations и повторный запуск без новых migrations.
 
@@ -126,19 +141,17 @@ organizational_structure_nodes
 organizational_structure_change_events
 ```
 
-### Назначение таблиц
+Назначение:
 
 - `organizational_structures` — aggregate roots и lifecycle active/archived;
-- `organizational_structure_elements` — стабильная identity организационных элементов между версиями;
-- `organizational_structure_versions` — версии структуры, основание версии, catalog binding, status и revision;
+- `organizational_structure_elements` — стабильная identity элементов между версиями;
+- `organizational_structure_versions` — версии, основание версии, catalog binding, status и revision;
 - `organizational_structure_documents` — metadata документов внутри Organization scope;
-- `organizational_structure_version_documents` — связи документов с версиями и роль документа;
+- `organizational_structure_version_documents` — связи документов с версиями;
 - `organizational_structure_nodes` — version-scoped дерево;
 - `organizational_structure_change_events` — immutable история изменений.
 
 ### Lifecycle и consistency
-
-Реализованы статусы версий:
 
 ```text
 draft
@@ -153,14 +166,7 @@ cancelled
 
 ### DB-level guards
 
-Migration 009 создаёт 16 triggers. Они защищают:
-
-- допустимые lifecycle-переходы;
-- immutable либо ограниченно изменяемые historical records;
-- запрет изменения дерева вне draft;
-- согласованность structure/version/catalog ownership;
-- запрет недопустимых UPDATE/DELETE;
-- сохранность change-event history.
+Migration 009 создаёт 16 triggers. Они защищают lifecycle-переходы, historical records, запрет изменения дерева вне draft, ownership consistency, недопустимые UPDATE/DELETE и сохранность change-event history.
 
 Application layer повторяет критические проверки для понятной ошибки пользователя, а DB остаётся финальной защитой invariant.
 
@@ -180,8 +186,6 @@ organization.structures.history
 Итоговое количество системных permissions: `25`. Новые permissions не назначаются автоматически ролям `administrator`, `operator` и `viewer`; owner сохраняет полный доступ через `system.*.*`.
 
 ### Проверка
-
-Профильный checker подтвердил:
 
 ```text
 organization checks: 58 PASS / 0 FAIL

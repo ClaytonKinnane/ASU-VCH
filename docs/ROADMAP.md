@@ -2,18 +2,23 @@
 
 ## Стабильная контрольная точка
 
-Функциональные PR #1–#9, #12 и #15 завершены и объединены в `main`. Documentation-only PR #10, #11, #13 и #14 также объединены и не изменяли runtime.
+Функциональные PR #1–#9, #12 и #15 завершены и объединены в `main`. До начала Post-PR16 Repository Reconciliation documentation-only PR #10, #11, #13, #14 и #16 также были объединены и не изменяли runtime.
 
 ```text
-merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+current repository pointer: origin/main
+last completed documentation PR before reconciliation: #16
+last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+last functional PR: #15
+last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
 completed functional pull requests: #1–#9, #12, #15
-last completed documentation pull request before baseline refresh: #14
 applied migrations: 001–009
 stable built-in themes: 3
 system roles: 4
 system permissions: 25
 ```
+
+Актуальный SHA `main` определяется командой `git rev-parse origin/main`; он не хранится здесь как самореферентное current-state поле.
 
 ## Завершённые этапы
 
@@ -30,16 +35,20 @@ system permissions: 25
 - [x] документационный аудит baseline 2026-07-27;
 - [x] третья встроенная тема `Евгения Ростова`;
 - [x] Organizational Structure v1;
-- [x] UI Polish 1: управление состояниями дерева и controls;
-- [x] UI Polish 2: уточнение геометрии и доступности;
-- [x] UI Polish 3: дополнительная визуальная доработка;
-- [x] UI Polish 4: выравнивание поиска, единая иконка изменения и заметный level toggle;
+- [x] UI Polish 1–4;
 - [x] автоматическое тестирование Organizational Structure v1;
 - [x] ручная desktop-приёмка Organizational Structure v1;
 - [x] PR #15, Final Review, отдельный merge approval и merge;
-- [x] repository/branch audit после PR #15.
+- [x] repository/branch audit после PR #15;
+- [x] Post-Organizational-Structure v1 Baseline Refresh;
+- [x] PR #16, Final Review, отдельный merge approval и merge;
+- [x] локальная fast-forward синхронизация `main` после PR #16;
+- [x] read-only аудит 17 post-PR16 non-main веток;
+- [x] Post-PR16 Repository Reconciliation documentation package;
+- [ ] fresh post-merge branch inventory;
+- [ ] отдельное решение владельца о branch cleanup.
 
-## Завершённый инкремент: Organizational Structure v1
+## Завершённый функциональный инкремент: Organizational Structure v1
 
 ```text
 feature branch: feature/organizational-structure-v1
@@ -55,9 +64,24 @@ mobile PASS: NOT CLAIMED
 
 Реализованы structures, version lifecycle, редактируемое дерево draft-версии, metadata документов, история и сравнение версий. Migration 009 добавила 7 таблиц, 16 triggers и 6 permissions; общее количество системных permissions стало 25.
 
-## Документационный инкремент baseline refresh
+## Завершённый документационный инкремент: Baseline Refresh
 
-`Post-Organizational-Structure v1 Baseline Refresh` предназначен для актуализации living documentation и фиксации repository audit после PR #15. Он не меняет runtime, БД, checker source, deploy или Git refs.
+```text
+increment: Post-Organizational-Structure v1 Baseline Refresh
+pull request: #16 MERGED
+merge method: merge
+merge commit: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+scope: README.md and docs/** only
+runtime/deploy/database changes: none
+```
+
+Baseline Refresh актуализировал living documentation после PR #15 и создал repository audit 2026-07-29.
+
+## Документационный инкремент: Repository Reconciliation
+
+`Post-PR16 Repository Reconciliation` устраняет post-merge self-reference, разделяет repository pointer и functional anchors, создаёт audit 2026-07-30 и формирует доказательную базу для отдельного cleanup gate. Само удаление веток в scope не входит.
+
+Статусы Architecture, Specification, Approval, Implementation, Validation, Pull Request и Merge фиксируются в process-artifacts и GitHub, а не как самоустаревающее current-state поле этого roadmap.
 
 ## Следующий функциональный инкремент
 
@@ -79,6 +103,7 @@ mobile PASS: NOT CLAIMED
 - Нельзя считать общий Documents domain реализованным только из-за metadata документов внутри Organization.
 - Нельзя считать мобильную версию проверенной без отдельной фактической приёмки.
 - Нельзя выполнять merge или удалять feature/docs-ветку без отдельного явного разрешения владельца проекта.
+- Техническая классификация `SAFE TO DELETE` не является разрешением на branch deletion.
 
 ## Обязательный workflow
 
