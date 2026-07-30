@@ -30,7 +30,7 @@ Living documentation не хранит самореферентный SHA как
 
 ## Repository audits
 
-- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — post-PR16 snapshot, текущая доказательная база для будущего cleanup gate;
+- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — датированный post-PR16 pre-reconciliation snapshot и доказательная база для подготовки cleanup gate;
 - [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md) — исторический pre-refresh snapshot;
 - [Documentation audit 2026-07-27](DOCUMENTATION-AUDIT-2026-07-27.md) — исторический аудит до Organizational Structure v1.
 
