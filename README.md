@@ -4,14 +4,23 @@
 
 ## Текущий baseline
 
-Стабильное объединённое состояние находится в ветке `main`.
+Стабильное объединённое состояние находится в ветке `main`. Актуальный HEAD репозитория определяется через `origin/main`, а не хранится в документации как самореферентный SHA.
+
+```powershell
+git fetch --prune origin
+git rev-parse origin/main
+```
+
+Устойчивые контрольные точки:
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
-branch: main
-merged main commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
-tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
+default branch: main
+last completed documentation PR before reconciliation: #16
+last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
 last functional PR: #15
+last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
+tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
 migrations: 001–009
 system roles: 4
 system permissions: 25
@@ -19,7 +28,7 @@ built-in themes: 3
 active functional increment: none
 ```
 
-`merged main commit` фиксирует merge PR #15. `tested runtime HEAD` — точный application commit, на котором выполнялись автоматические проверки и desktop-приёмка.
+Documentation-only PR #16 обновил только `README.md` и `docs/**`; runtime, deploy и БД не изменялись. Проверенный runtime HEAD остаётся отдельной функциональной контрольной точкой.
 
 ## Реализовано
 
@@ -64,7 +73,8 @@ Merge и удаление веток требуют отдельных явны�
 - [Текущее состояние проекта](docs/PROJECT-STATUS.md)
 - [Локальный runbook](docs/LOCAL-RUNBOOK.md)
 - [Текущее состояние базы данных](docs/DATABASE-CURRENT.md)
-- [Repository audit 2026-07-29](docs/REPOSITORY-AUDIT-2026-07-29.md)
+- [Repository audit 2026-07-30](docs/REPOSITORY-AUDIT-2026-07-30.md)
+- [Исторический repository audit 2026-07-29](docs/REPOSITORY-AUDIT-2026-07-29.md)
 
 ## Границы тестирования
 
