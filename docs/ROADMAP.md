@@ -44,7 +44,7 @@ system permissions: 25
 - [x] PR #16, Final Review, отдельный merge approval и merge;
 - [x] локальная fast-forward синхронизация `main` после PR #16;
 - [x] read-only аудит 17 post-PR16 non-main веток;
-- [ ] Post-PR16 Repository Reconciliation: implementation, validation, PR и merge;
+- [x] Post-PR16 Repository Reconciliation documentation package;
 - [ ] fresh post-merge branch inventory;
 - [ ] отдельное решение владельца о branch cleanup.
 
@@ -77,9 +77,11 @@ runtime/deploy/database changes: none
 
 Baseline Refresh актуализировал living documentation после PR #15 и создал repository audit 2026-07-29.
 
-## Текущий документационный инкремент
+## Документационный инкремент: Repository Reconciliation
 
-`Post-PR16 Repository Reconciliation` устраняет post-merge self-reference, разделяет repository pointer и functional anchors, создаёт новый audit 2026-07-30 и подготавливает доказательную базу для отдельного cleanup gate. Само удаление веток в scope не входит.
+`Post-PR16 Repository Reconciliation` устраняет post-merge self-reference, разделяет repository pointer и functional anchors, создаёт audit 2026-07-30 и формирует доказательную базу для отдельного cleanup gate. Само удаление веток в scope не входит.
+
+Статусы Architecture, Specification, Approval, Implementation, Validation, Pull Request и Merge фиксируются в process-artifacts и GitHub, а не как самоустаревающее current-state поле этого roadmap.
 
 ## Следующий функциональный инкремент
 
