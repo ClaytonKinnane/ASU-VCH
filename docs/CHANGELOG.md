@@ -1,5 +1,30 @@
 # История изменений
 
+## 2026-07-30
+
+### Post-Organizational-Structure v1 Baseline Refresh
+
+- PR #16 `docs: refresh post-organization project baseline` объединён в `main` методом merge;
+- merge commit: `72630757c1a72a6bd971cf819cff9bdd36c148bf`;
+- scope PR #16 ограничен `README.md` и `docs/**`;
+- runtime, deploy, database, migrations и checker source не изменялись;
+- обновлены 13 living documents и добавлен repository audit 2026-07-29;
+- локальный `main` синхронизирован fast-forward с `origin/main`;
+- локальная проверка завершена маркером `LOCAL_MAIN_SYNCHRONIZATION_STATUS=PASS`.
+
+### Post-PR16 Repository Reconciliation
+
+- выполнен новый read-only аудит всех веток после merge PR #16;
+- до создания reconciliation-ветки подтверждены 18 веток: `main` и 17 non-main;
+- 16 non-main веток имеют `ahead_by = 0` относительно audit `main`;
+- `docs/evgeniya-rostova-theme-v1-design` имеет два уникальных commit, но оба затронутых файла повторно подтверждены как Git-blob-identical с `main`;
+- все 17 pre-reconciliation non-main веток технически безопасны для удаления после отдельного явного разрешения;
+- создана активная ветка `docs/post-pr16-repository-reconciliation`, которая не входит в прежний cleanup-set и должна оцениваться повторно после собственного merge;
+- living documentation переведена на устойчивую модель: текущий HEAD определяется через `origin/main`, а точные SHA используются только как исторические anchors и audit snapshots;
+- создан `docs/REPOSITORY-AUDIT-2026-07-30.md`;
+- фактическое удаление веток не выполнялось и не разрешено;
+- runtime/deploy/database retesting и mobile testing не выполнялись, поскольку инкремент documentation-only.
+
 ## 2026-07-29
 
 ### Organizational Structure v1
@@ -127,7 +152,7 @@
 - добавлена migration 006 и хранение глобальной активной темы;
 - добавлена страница управления темами;
 - добавлена тема `asu-light-blue`;
-- добавлен безопасный fallback на `asu-blue`;
+- добавлен безопасный fallback `asu-blue`;
 - operation-result modal вынесен в общий JavaScript;
 - завершена desktop-приёмка обеих тем.
 
