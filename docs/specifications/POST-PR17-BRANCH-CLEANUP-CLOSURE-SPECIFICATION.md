@@ -1018,11 +1018,12 @@ Specification Review или последующая validation должны за�
 9. Verify historical audit immutability.
 10. Run Markdown link and secret validation.
 11. Create Validation Report.
-12. Perform Formal/Final Review.
-13. Request separate PR authorization.
+12. Confirm Documentation Validation PASS and zero open findings.
+13. Commit and push any final validation/process artifacts.
+14. Request separate Pull Request authorization.
 ```
 
-Эта последовательность не разрешает реализацию до owner Implementation Approval.
+Formal Review является отдельным pre-implementation gate и выполняется до owner Implementation Approval. Final PR Review выполняется только после создания Pull Request. Эта последовательность не разрешает реализацию до owner Implementation Approval.
 
 ## 13. Gate model
 
