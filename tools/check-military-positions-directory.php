@@ -105,8 +105,13 @@ try {
     mp_check($version['valid_to'] === null, 'published version valid_to is NULL');
     $versionId = (int) $version['id'];
 
+    $catalogVersionCount = $pdo->prepare(
+        'SELECT COUNT(*) FROM military_position_catalog_versions WHERE id = :version_id'
+    );
+    $catalogVersionCount->execute(['version_id' => $versionId]);
+    mp_check((int) $catalogVersionCount->fetchColumn() === 1, 'military_position_catalog_versions count 1');
+
     $counts = [
-        'military_position_catalog_versions' => 1,
         'military_position_catalog_version_sources' => 4,
         'military_position_source_entries' => 24,
         'military_position_source_entry_sources' => 28,
