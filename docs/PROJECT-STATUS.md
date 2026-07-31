@@ -1,6 +1,6 @@
 # Текущее состояние проекта АСУ-ВЧ
 
-Дата актуализации: `2026-07-30`.
+Дата актуализации: `2026-07-31`.
 
 ## Репозиторий и контрольные точки
 
@@ -17,8 +17,8 @@ git rev-list --left-right --count main...origin/main
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
-last completed documentation PR before reconciliation: #16
-last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+last completed documentation PR before cleanup closure: #17
+last completed documentation merge before cleanup closure: c67632674dce216bb23338de898bf0733a8e42c0
 last functional PR: #15
 last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
@@ -30,13 +30,13 @@ built-in themes: 3
 active functional increment: none
 ```
 
-PR #16 был documentation-only: изменены только `README.md` и `docs/**`; runtime, deploy и БД не изменялись. Поэтому последний функциональный tested baseline остаётся привязан к PR #15 и `tested runtime HEAD`.
+PR #16 и PR #17 были documentation-only: изменены только `README.md` и `docs/**`; runtime, deploy и БД не изменялись. Поэтому последний функциональный tested baseline остаётся привязан к PR #15 и `tested runtime HEAD`.
 
 ## Последний функциональный инкремент
 
 ```text
 increment: Organizational Structure v1
-feature branch: feature/organizational-structure-v1
+historical feature branch: feature/organizational-structure-v1
 pull request: #15 MERGED
 merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
@@ -67,7 +67,7 @@ mobile PASS: NOT CLAIMED
 | #12 | Evgeniya Rostova Theme v1 | MERGED |
 | #15 | Organizational Structure v1 | MERGED |
 
-До начала Post-PR16 Repository Reconciliation documentation-only PR #10, #11, #13, #14 и #16 были объединены и не изменяли runtime. Статус самого reconciliation PR определяется в GitHub и его final PR review artifact.
+Документационные PR #10, #11, #13, #14, #16 и #17 объединены и не изменяли runtime. PR #17 `docs: reconcile repository state after PR #16` объединён методом `merge`, merge commit — `c67632674dce216bb23338de898bf0733a8e42c0`.
 
 ## Реализованные возможности
 
@@ -125,19 +125,38 @@ automated testing: PASS
 manual desktop acceptance: PASS
 ```
 
-## Repository audit
+## Repository cleanup status
 
-Датированный post-PR16 pre-reconciliation snapshot зафиксирован в [REPOSITORY-AUDIT-2026-07-30.md](REPOSITORY-AUDIT-2026-07-30.md). Исторический pre-refresh snapshot сохранён в [REPOSITORY-AUDIT-2026-07-29.md](REPOSITORY-AUDIT-2026-07-29.md).
+Historical evidence:
+
+- [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md) — completed administrative outcome;
+- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — historical post-PR16 pre-reconciliation snapshot;
+- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md) — historical pre-refresh snapshot.
+
+Завершённая последовательность:
 
 ```text
-pre-reconciliation snapshot: 18 branches / 17 non-main
-pre-reconciliation non-main assessed: 17
-technically safe to delete after separate approval: 17
-active reconciliation branch: KEEP UNTIL OWN PR/MERGE AND POST-MERGE CLEANUP APPROVAL
-actual branch deletion: NOT PERFORMED
+PR #17: MERGED
+post-merge local synchronization: PASS
+fresh post-merge inventory: PASS
+corrected inventory before cleanup: 19 total / 18 non-main
+authorized cleanup batch: 18 remote non-main branches
+cleanup result: 18 / 18 DELETED
+terminal verification snapshot 2026-07-31: main only
+local branches: 12 before / 12 after / unchanged
+main HEAD during cleanup: unchanged
+divergence after cleanup: 0 0
+working tree after cleanup: clean
+REMOTE_BRANCH_CLEANUP_STATUS=PASS
 ```
 
-После merge reconciliation-инкремента требуется fresh read-only inventory всех существующих non-main веток. Только он может служить основанием для отдельного решения об удалении.
+`main only` описывает terminal verification snapshot, а не бессрочное текущее состояние. Позднее созданные branches имеют собственный lifecycle. Текущее количество remote branches определяется read-only командой:
+
+```powershell
+git ls-remote --heads origin
+```
+
+Любое последующее remote branch deletion требует отдельного явного owner approval. Удаление локальных branches требует отдельного scope и approval.
 
 ## Не реализовано
 
@@ -151,6 +170,16 @@ actual branch deletion: NOT PERFORMED
 
 Metadata документов внутри Organization не означает реализацию общего Documents domain. В проект не включаются закрытые или фактические сведения без отдельного утверждения scope и модели защиты.
 
-## Cleanup gate
+## Границы текущего документационного инкремента
 
-Branch cleanup не входит в документационную реализацию и не разрешён текущими process-artifacts. После merge reconciliation-инкремента обязательны fresh fetch/prune, полный read-only inventory, повторная оценка active reconciliation branch и отдельное явное разрешение владельца проекта на точный список удаляемых refs.
+Post-PR17 Branch Cleanup Closure является documentation-only:
+
+```text
+runtime/deploy/database changes: none
+runtime/database retest: NOT RUN / NOT REQUIRED
+HTTP/application browser testing: NOT RUN / NOT REQUIRED
+mobile testing: OUT OF SCOPE / NOT RUN
+mobile PASS: NOT CLAIMED
+```
+
+Microsoft Edge применялся только для GitHub authentication recovery перед cleanup, а не для application browser acceptance.
