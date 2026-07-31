@@ -63,6 +63,7 @@ git status --short
 git rev-parse HEAD
 git rev-parse origin/feature/military-positions-directory
 git rev-list --left-right --count origin/feature/military-positions-directory...HEAD
+git merge-base origin/main HEAD
 ```
 
 Ожидается:
@@ -71,6 +72,7 @@ git rev-list --left-right --count origin/feature/military-positions-directory...
 current branch: feature/military-positions-directory
 HEAD == origin/feature/military-positions-directory
 divergence: 0 0
+merge-base: 8cc604eec7e973c2917ea0b1f9b08b976b673f41
 working tree: clean
 ```
 
@@ -92,8 +94,8 @@ Runner самостоятельно:
 
 1. повторно делает `git fetch --prune origin`;
 2. проверяет branch, HEAD, merge-base, divergence и чистоту рабочего дерева;
-3. проверяет точный список из 29 implementation-путей относительно утверждённого baseline;
-4. собирает 13 частей canonical migration 010 и проверяет её SHA-256;
+3. проверяет точный список из 21 implementation-пути относительно утверждённого baseline;
+4. объединяет пять base64-частей, проверяет SHA-256 gzip-архива, распаковывает canonical migration 010 и проверяет SHA-256 SQL;
 5. проверяет `git diff --check`;
 6. фиксирует SHA-256 `config/local.php`;
 7. создаёт SQL backup через `tools\Backup-Database.ps1`;
@@ -108,6 +110,8 @@ Runner самостоятельно:
 16. выполняет HTTP smoke;
 17. подтверждает неизменность Git checkout и локального конфига.
 
+Runner не создаёт commit, push или PR.
+
 ## 6. Успешный финал
 
 В конце должны присутствовать маркеры:
@@ -118,6 +122,7 @@ SOURCE_DEPLOY_PARITY_STATUS=PASS
 AUTOMATED_TESTING_STATUS=PASS
 MANUAL_DESKTOP_ACCEPTANCE_STATUS=NOT_RUN
 MOBILE_TESTING_STATUS=OUT_OF_SCOPE_NOT_RUN
+COMMIT_PUSH_PR_STATUS=IMPLEMENTATION_COMMIT_ALREADY_ON_GITHUB_PR_NOT_CREATED
 ```
 
 ## 7. Что отправить в чат
