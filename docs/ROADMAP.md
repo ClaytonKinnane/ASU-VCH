@@ -2,12 +2,12 @@
 
 ## Стабильная контрольная точка
 
-Функциональные PR #1–#9, #12 и #15 завершены и объединены в `main`. До начала Post-PR16 Repository Reconciliation documentation-only PR #10, #11, #13, #14 и #16 также были объединены и не изменяли runtime.
+Функциональные PR #1–#9, #12 и #15 завершены и объединены в `main`. Documentation-only PR #10, #11, #13, #14, #16 и #17 также объединены и не изменяли runtime.
 
 ```text
 current repository pointer: origin/main
-last completed documentation PR before reconciliation: #16
-last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+last completed documentation PR before cleanup closure: #17
+last completed documentation merge before cleanup closure: c67632674dce216bb23338de898bf0733a8e42c0
 last functional PR: #15
 last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
@@ -45,13 +45,22 @@ system permissions: 25
 - [x] локальная fast-forward синхронизация `main` после PR #16;
 - [x] read-only аудит 17 post-PR16 non-main веток;
 - [x] Post-PR16 Repository Reconciliation documentation package;
-- [ ] fresh post-merge branch inventory;
-- [ ] отдельное решение владельца о branch cleanup.
+- [x] PR #17, Final Review, отдельный merge approval и merge;
+- [x] локальная fast-forward синхронизация `main` после PR #17;
+- [x] fresh post-merge branch inventory;
+- [x] corrected inventory `19 total / 18 non-main`;
+- [x] отдельное решение владельца о точном branch cleanup batch;
+- [x] GitHub write authentication recovery;
+- [x] удаление 18 / 18 утверждённых remote non-main branches;
+- [x] read-only terminal cleanup verification `main only` на snapshot 2026-07-31;
+- [x] сохранение локального branch set `12 / 12 unchanged`;
+- [x] Post-PR17 Branch Cleanup Closure Architecture / Specification / Formal Review / Approval package;
+- [x] completed cleanup evidence reconciled into six living documents and immutable closure record.
 
 ## Завершённый функциональный инкремент: Organizational Structure v1
 
 ```text
-feature branch: feature/organizational-structure-v1
+historical feature branch: feature/organizational-structure-v1
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
 final feature documentation HEAD: dd2586dab7a3b3d8b3683d60e2c7eedce002eb54
 pull request: #15 MERGED
@@ -77,11 +86,32 @@ runtime/deploy/database changes: none
 
 Baseline Refresh актуализировал living documentation после PR #15 и создал repository audit 2026-07-29.
 
-## Документационный инкремент: Repository Reconciliation
+## Завершённый документационный инкремент: Repository Reconciliation
 
-`Post-PR16 Repository Reconciliation` устраняет post-merge self-reference, разделяет repository pointer и functional anchors, создаёт audit 2026-07-30 и формирует доказательную базу для отдельного cleanup gate. Само удаление веток в scope не входит.
+```text
+increment: Post-PR16 Repository Reconciliation
+pull request: #17 MERGED
+merge method: merge
+merge commit: c67632674dce216bb23338de898bf0733a8e42c0
+scope: README.md and docs/** only
+runtime/deploy/database changes: none
+```
 
-Статусы Architecture, Specification, Approval, Implementation, Validation, Pull Request и Merge фиксируются в process-artifacts и GitHub, а не как самоустаревающее current-state поле этого roadmap.
+Repository Reconciliation устранил post-merge self-reference, разделил repository pointer и functional anchors, создал audit 2026-07-30 и подготовил доказательную базу для отдельного cleanup gate.
+
+## Post-PR17 Branch Cleanup Closure
+
+Завершённая административная операция зафиксирована в [REPOSITORY-CLEANUP-2026-07-31.md](REPOSITORY-CLEANUP-2026-07-31.md).
+
+```text
+authorized cleanup batch: 18 remote non-main branches
+cleanup result: 18 / 18 deleted
+terminal verification snapshot: main only
+local branches: 12 / 12 unchanged
+REMOTE_BRANCH_CLEANUP_STATUS=PASS
+```
+
+`main only` квалифицирован датой и verification event. Текущее количество branches определяется динамически. Позднее созданные branches требуют собственного workflow и отдельного deletion approval.
 
 ## Следующий функциональный инкремент
 
@@ -104,6 +134,7 @@ Baseline Refresh актуализировал living documentation после PR
 - Нельзя считать мобильную версию проверенной без отдельной фактической приёмки.
 - Нельзя выполнять merge или удалять feature/docs-ветку без отдельного явного разрешения владельца проекта.
 - Техническая классификация `SAFE TO DELETE` не является разрешением на branch deletion.
+- Completed cleanup snapshot не является автоматическим разрешением на удаление branches, созданных позднее.
 
 ## Обязательный workflow
 

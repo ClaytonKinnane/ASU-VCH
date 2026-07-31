@@ -1,5 +1,31 @@
 # История изменений
 
+## 2026-07-31
+
+### Post-PR17 Branch Cleanup Closure
+
+- PR #17 `docs: reconcile repository state after PR #16` объединён в `main` методом merge;
+- merge commit PR #17: `c67632674dce216bb23338de898bf0733a8e42c0`;
+- локальная post-merge синхронизация `main` завершена маркером `LOCAL_MAIN_POST_PR17_SYNCHRONIZATION_STATUS=PASS`;
+- corrected fresh inventory подтвердил `19` GitHub branches: `main` и `18` remote non-main branches;
+- локальная строка `origin` классифицирована как symbolic remote HEAD, а не отдельная GitHub branch;
+- 17 ordinary branches имели `ahead=0` и были полностью достижимы из `main`;
+- для `docs/evgeniya-rostova-theme-v1-design` повторно подтверждён точный blob/size proof двух файлов, `BYTEWISE_DOCUMENT_COMPARISON_STATUS=PASS`;
+- владелец проекта отдельно разрешил удалить точный cleanup batch из 18 remote non-main branches;
+- первая попытка завершилась HTTP `403` на первой branch до любого успешного удаления, deletion count остался `0`;
+- GitHub write authentication восстановлена через Git Credential Manager и GitHub device flow в Microsoft Edge InPrivate;
+- dry-run write probe прошёл, реальный probe ref не создан, `GITHUB_WRITE_AUTHENTICATION_STATUS=PASS`;
+- успешно удалены `18 / 18` утверждённых remote branches;
+- terminal read-only verification snapshot подтвердил одну оставшуюся branch — `main`;
+- локальный branch set сохранён: `12` до / `12` после / unchanged;
+- `main` остался на `c67632674dce216bb23338de898bf0733a8e42c0`, divergence — `0 0`, working tree — clean;
+- итоговый маркер: `REMOTE_BRANCH_CLEANUP_STATUS=PASS`;
+- ветка `docs/post-pr17-branch-cleanup-closure` создана после terminal snapshot и не входила в удалённый batch;
+- создан immutable evidence record `docs/REPOSITORY-CLEANUP-2026-07-31.md` и обновлены шесть living documents;
+- runtime, deploy, database, migrations и checker source не изменялись;
+- runtime/database retesting и application browser testing не выполнялись и не требовались;
+- mobile testing: `OUT OF SCOPE / NOT RUN`; Mobile PASS не заявляется.
+
 ## 2026-07-30
 
 ### Post-Organizational-Structure v1 Baseline Refresh

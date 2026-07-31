@@ -16,8 +16,8 @@ git rev-parse origin/main
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
-last completed documentation PR before reconciliation: #16
-last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+last completed documentation PR before cleanup closure: #17
+last completed documentation merge before cleanup closure: c67632674dce216bb23338de898bf0733a8e42c0
 last functional PR: #15
 last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
@@ -28,7 +28,9 @@ built-in themes: 3
 active functional increment: none
 ```
 
-Documentation-only PR #16 обновил только `README.md` и `docs/**`; runtime, deploy и БД не изменялись. Проверенный runtime HEAD остаётся отдельной функциональной контрольной точкой.
+Documentation-only PR #16 и PR #17 изменяли только `README.md` и `docs/**`; runtime, deploy и БД не изменялись. Проверенный runtime HEAD остаётся отдельной функциональной контрольной точкой.
+
+После merge PR #17 был выполнен fresh inventory и отдельно утверждённый cleanup batch из 18 remote non-main branches. На terminal verification snapshot 2026-07-31 оставалась только `main`; branches, созданные позднее, имеют собственный lifecycle и требуют отдельного deletion approval.
 
 ## Реализовано
 
@@ -73,7 +75,8 @@ Merge и удаление веток требуют отдельных явны�
 - [Текущее состояние проекта](docs/PROJECT-STATUS.md)
 - [Локальный runbook](docs/LOCAL-RUNBOOK.md)
 - [Текущее состояние базы данных](docs/DATABASE-CURRENT.md)
-- [Repository audit 2026-07-30](docs/REPOSITORY-AUDIT-2026-07-30.md)
+- [Repository cleanup closure 2026-07-31](docs/REPOSITORY-CLEANUP-2026-07-31.md)
+- [Исторический repository audit 2026-07-30](docs/REPOSITORY-AUDIT-2026-07-30.md)
 - [Исторический repository audit 2026-07-29](docs/REPOSITORY-AUDIT-2026-07-29.md)
 
 ## Границы тестирования

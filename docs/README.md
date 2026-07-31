@@ -15,7 +15,6 @@
 - [План разработки](ROADMAP.md)
 - [История изменений](CHANGELOG.md)
 - [Архитектурные паттерны](ARCHITECTURAL-PATTERNS.md)
-- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md)
 
 Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют `database/migrations/*.sql`, installer и профильные integration checker'ы.
 
@@ -26,15 +25,27 @@ git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Living documentation не хранит самореферентный SHA как постоянно актуальное значение `current main HEAD`. Точные SHA используются только как исторические merge/test anchors и в датированных audit snapshots.
+Living documentation не хранит самореферентный SHA как постоянно актуальное значение `current main HEAD`. Точные SHA используются только как исторические merge/test anchors и в датированных evidence snapshots.
 
-## Repository audits
+## Completed administrative evidence
 
-- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — датированный post-PR16 pre-reconciliation snapshot и доказательная база для подготовки cleanup gate;
-- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md) — исторический pre-refresh snapshot;
+- [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md) — завершённый outcome отдельно утверждённого cleanup batch из 18 remote non-main branches;
+- terminal verification snapshot 2026-07-31 зафиксировал `main` как единственную GitHub branch на момент проверки;
+- branches, созданные после этого snapshot, управляются собственным workflow и отдельными cleanup approvals.
+
+Текущее количество remote branches не хранится в living documentation. При необходимости оно определяется read-only командой:
+
+```powershell
+git ls-remote --heads origin
+```
+
+## Historical repository audits
+
+- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — historical post-PR16 pre-reconciliation snapshot и доказательная база для cleanup gate;
+- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md) — historical pre-refresh snapshot;
 - [Documentation audit 2026-07-27](DOCUMENTATION-AUDIT-2026-07-27.md) — исторический аудит до Organizational Structure v1.
 
-Техническая классификация веток как безопасных для удаления не является разрешением на фактическое удаление. Перед cleanup требуется fresh post-merge inventory и отдельное явное решение владельца проекта.
+Техническая классификация ветки как безопасной для удаления не является разрешением на фактическое удаление. Любой будущий cleanup требует fresh inventory и отдельного явного решения владельца проекта.
 
 ## Целевая архитектура
 
@@ -58,15 +69,16 @@ docs/design/            исторические объединённые design
 docs/testing/           Test Plan, Test Attempts, Test Reports и validation reports
 ```
 
-Эти файлы являются историческими process-artifacts. Формулировки `PENDING`, `Ready for review`, `Merge prohibited` или прежние baseline-значения внутри закрытого артефакта отражают соответствующий gate и не заменяют текущее состояние проекта.
+Эти файлы являются историческими process-artifacts. Формулировки `PENDING`, `Ready for review`, `Merge prohibited`, `NOT PERFORMED` или прежние baseline-значения внутри закрытого артефакта отражают соответствующий gate и не заменяют текущее состояние проекта.
 
 ## Правила актуальности
 
 1. GitHub-репозиторий является единственным источником истины.
 2. Текущий HEAD определяется через `origin/main`; exact SHA в living docs не используется как самореферентный current-state marker.
-3. Завершённая feature/docs-ветка может упоминаться только как историческая либо как объект датированного branch audit.
+3. Завершённая feature/docs-ветка может упоминаться только как историческая либо как объект датированного branch audit/closure record.
 4. Текущие возможности подтверждаются merged-кодом, migrations и результатами тестирования.
 5. Исторические спецификации и audits не переписываются задним числом; новое состояние оформляется addendum или новым документом.
 6. Секреты, реальные пароли и содержимое `config/local.php` не включаются в документацию.
 7. Мобильное тестирование не объявляется выполненным, если оно было исключено из scope.
 8. Merge и branch cleanup требуют отдельных явных разрешений.
+9. Terminal branch count всегда квалифицируется датой и verification event; future branches не считаются автоматически разрешёнными к удалению.
