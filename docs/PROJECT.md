@@ -82,8 +82,8 @@ git rev-parse origin/main
 Исторические anchors:
 
 ```text
-last completed documentation PR before reconciliation: #16
-last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
+last completed documentation PR before cleanup closure: #17
+last completed documentation merge before cleanup closure: c67632674dce216bb23338de898bf0733a8e42c0
 last functional PR: #15
 last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
 tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
@@ -94,13 +94,37 @@ built-in themes: 3
 active functional increment: none
 ```
 
-PR #16 изменил только документацию и не создаёт нового functional/runtime baseline.
+PR #16 и PR #17 изменили только документацию и не создали нового functional/runtime baseline.
 
 ## Repository governance
 
-Post-PR16 repository audit зафиксирован в `REPOSITORY-AUDIT-2026-07-30.md`. До создания reconciliation-ветки были проверены 17 non-main веток; все они технически безопасны для удаления после отдельного явного разрешения. Активная reconciliation-ветка должна оцениваться повторно после собственного merge.
+Завершённая административная операция зафиксирована в [Repository Cleanup Closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md).
 
-Фактическое удаление веток не выполнялось.
+```text
+PR #17 merge: PASS
+post-merge synchronization: PASS
+corrected inventory before cleanup: 19 branches / 18 non-main
+authorized cleanup batch: 18 remote non-main branches
+cleanup result: 18 / 18 deleted
+terminal cleanup verification snapshot: main only
+local branch set: 12 / 12 unchanged
+REMOTE_BRANCH_CLEANUP_STATUS=PASS
+```
+
+`main only` относится к terminal snapshot 2026-07-31. Позднее созданная `docs/post-pr17-branch-cleanup-closure` и любые будущие branches не входили в исторический batch и управляются отдельно.
+
+Historical evidence не переписывается:
+
+- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — post-PR16 pre-reconciliation snapshot;
+- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md) — pre-refresh snapshot.
+
+Текущее количество branches определяется динамически:
+
+```powershell
+git ls-remote --heads origin
+```
+
+Любой future remote cleanup требует fresh inventory и отдельного owner approval. Local branch deletion требует отдельного scope и approval.
 
 ## Не реализовано
 
@@ -118,7 +142,11 @@ Metadata документов внутри Organization не считается 
 
 Organizational Structure v1 прошёл автоматическое тестирование и ручную desktop-приёмку.
 
+Post-PR17 Branch Cleanup Closure является documentation-only и не изменяет runtime, deploy или database.
+
 ```text
+runtime/database retest: NOT RUN / NOT REQUIRED
+HTTP/application browser testing: NOT RUN / NOT REQUIRED
 mobile testing: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
 ```
