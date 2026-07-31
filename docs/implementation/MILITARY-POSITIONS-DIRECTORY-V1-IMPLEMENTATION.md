@@ -17,7 +17,7 @@ MERGE: NOT AUTHORIZED
 
 Подготовлены:
 
-- migration `010_military_positions_directory.sql`, собираемая compatibility layer из 13 текстовых частей с обязательной SHA-256 проверкой;
+- migration `010_military_positions_directory.sql`, загружаемая compatibility layer из пяти последовательных base64-частей gzip-архива с обязательной проверкой SHA-256 архива и canonical SQL;
 - 14 таблиц и 41 trigger;
 - whole-catalog lifecycle `building → published → superseded`;
 - блокировка INSERT/UPDATE/DELETE после публикации;
@@ -50,4 +50,4 @@ Implementation-кандидат хранится в GitHub feature-ветке. �
 
 ## Упаковка migration 010
 
-Из-за ограничения GitHub write-канала крупный canonical SQL хранится в 13 последовательных UTF-8 частях `010_military_positions_directory.sql.part01` … `part13`. Маркерная migration сохраняет утверждённое имя `010_military_positions_directory.sql`. `MilitaryPositionMigrationCompatibility.php` собирает части в исходном порядке и допускает выполнение только при SHA-256 `3ebb00dc2d89027eea7f3619deb29adfdcdea7b67b9a221b4ab0cd159d96ac78`. Installer по-прежнему регистрирует единственную migration 010.
+Из-за ограничения GitHub write-канала крупный canonical SQL хранится в пяти последовательных base64-частях gzip-архива `010_military_positions_directory.sql.gz.b64.part00` … `part04`. Маркерная migration сохраняет утверждённое имя `010_military_positions_directory.sql`. `MilitaryPositionMigrationCompatibility.php` проверяет SHA-256 gzip-архива `af617b754e4a8a5b453d6856f5c20540edb72d839fb162e61f9c160493c6fb82`, распаковывает canonical SQL и допускает выполнение только при SHA-256 `3ebb00dc2d89027eea7f3619deb29adfdcdea7b67b9a221b4ab0cd159d96ac78`. Installer по-прежнему регистрирует единственную migration 010.
