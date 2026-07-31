@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/MilitaryPositionMigrationCompatibility.php';
+
 function transform_organizational_structure_migration_sql(string $sql): string
 {
     $invalidConstraint = '/,\s*CONSTRAINT\s+chk_org_structure_nodes_self_parent\s+'
-        . 'CHECK\s*\(\s*parent_node_id\s+IS\s+NULL\s+OR\s+parent_node_id\s*<>\s*id\s*\)/i';
+        . 'CHECK\s*\(\s*parent_node_id\s+IS\s+NULL\s+OR\s*parent_node_id\s*<>\s*id\s*\)/i';
     $sql = preg_replace($invalidConstraint, '', $sql, 1, $constraintCount);
     if (!is_string($sql) || $constraintCount !== 1) {
         throw new RuntimeException(
@@ -54,6 +56,10 @@ function prepare_migration_sql_for_environment(
     string $migrationName,
     string $sql
 ): string {
+    if ($migrationName === '010_military_positions_directory.sql') {
+        return load_military_position_migration_sql(__DIR__ . '/migrations');
+    }
+
     if ($migrationName !== '009_organizational_structure_v1.sql') {
         return $sql;
     }
