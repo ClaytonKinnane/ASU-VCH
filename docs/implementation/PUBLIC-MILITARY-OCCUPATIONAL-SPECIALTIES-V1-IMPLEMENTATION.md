@@ -124,8 +124,8 @@ UI checker корректно подтвердил русификацию, от�
 Исправление:
 
 ```text
-COMMIT: 96019219cad02e42f40e5b384ded3e60adfd441a
-CHECKER THEME ROOT: source themes/ OR deployed public/themes/
+COMMIT: 09b032ba39c75d17f87aa003d1df13ddedcd5b2d
+CHECKER ASSET RESOLUTION: deployed public/themes/ first, source themes/ fallback
 ```
 
 Runtime page, CSS, migration, seed и база данных этим дефектом не затронуты.
