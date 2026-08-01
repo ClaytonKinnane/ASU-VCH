@@ -25,31 +25,61 @@ git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Living documentation не хранит самореферентный SHA как постоянно актуальное значение `current main HEAD`. Точные SHA используются только как исторические merge/test anchors и в датированных evidence snapshots.
+Living documentation не хранит самореферентный SHA как постоянно актуальный `current main HEAD`. Точные SHA используются как исторические merge/test/refresh anchors и в датированных evidence snapshots.
 
-## Completed administrative evidence
+## Текущий functional baseline
 
-- [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md) — завершённый outcome отдельно утверждённого cleanup batch из 18 remote non-main branches;
-- terminal verification snapshot 2026-07-31 зафиксировал `main` как единственную GitHub branch на момент проверки;
-- branches, созданные после этого snapshot, управляются собственным workflow и отдельными cleanup approvals.
+```text
+latest functional PR: #20
+PR #19: MERGED
+PR #20: MERGED
+migrations: 001–011
+system roles: 4
+system permissions: 25
+built-in themes: 3
+mobile testing: OUT OF SCOPE / NOT RUN
+```
 
-Текущее количество remote branches не хранится в living documentation. При необходимости оно определяется read-only командой:
+Последние функциональные инкременты:
+
+- PR #19 — owner-only read-only справочник типовых воинских должностей;
+- PR #20 — owner-only read-only справочник публичных сведений о ВУС.
+
+## Post-PR20 Baseline Refresh
+
+Документационный инкремент:
+
+- [Architecture](architecture/POST-PR20-BASELINE-REFRESH-ARCHITECTURE.md)
+- [Specification](specification/POST-PR20-BASELINE-REFRESH-SPECIFICATION.md)
+- [Formal Review](review/POST-PR20-BASELINE-REFRESH-FORMAL-REVIEW.md)
+- [Approval](decisions/POST-PR20-BASELINE-REFRESH-APPROVAL.md)
+- Implementation record и Documentation Validation добавляются в пределах утверждённого scope.
+
+## Исторические process artifacts
+
+Architecture, Specification, Review, Approval и датированные Test Evidence сохраняют состояние соответствующего gate. Формулировки `PENDING`, `NOT CREATED`, `NOT AUTHORIZED`, `RECHECK REQUIRED` или прежние baseline-значения внутри исторического артефакта не заменяют текущее состояние проекта и не переписываются задним числом.
+
+Increment-документы, которые одновременно служат текущим operational record, получают отдельный post-merge closure без удаления истории попыток.
+
+## Repository governance
+
+Исторические administrative evidence:
+
+- [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md)
+- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md)
+- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md)
+
+Текущее количество remote branches определяется read-only командой:
 
 ```powershell
 git ls-remote --heads origin
 ```
 
-## Historical repository audits
-
-- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — historical post-PR16 pre-reconciliation snapshot и доказательная база для cleanup gate;
-- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md) — historical pre-refresh snapshot;
-- [Documentation audit 2026-07-27](DOCUMENTATION-AUDIT-2026-07-27.md) — исторический аудит до Organizational Structure v1.
-
-Техническая классификация ветки как безопасной для удаления не является разрешением на фактическое удаление. Любой будущий cleanup требует fresh inventory и отдельного явного решения владельца проекта.
+Техническая классификация ветки как merged или safe-to-delete не является разрешением на удаление. Любой cleanup требует fresh inventory и отдельного явного решения владельца проекта.
 
 ## Целевая архитектура
 
-Документы этой группы описывают утверждённую или исследуемую целевую модель и могут быть шире реализованного runtime:
+Документы этой группы могут описывать более широкий целевой scope, чем фактически реализованный runtime:
 
 - [Целевая архитектура базы данных](DATABASE.md)
 - [Стартовая административная спецификация](STARTER-ADMIN-SPEC.md)
@@ -57,28 +87,12 @@ git ls-remote --heads origin
 - [ERD](erd/)
 - [Спецификации миграций](migrations/README.md)
 
-## Документы инкрементов
-
-```text
-docs/architecture/      Architecture
-docs/specifications/    Specification
-docs/reviews/           Formal Review
-docs/decisions/         Approval и зафиксированные решения
-docs/implementation/    Implementation records
-docs/design/            исторические объединённые design/review/addendum документы
-docs/testing/           Test Plan, Test Attempts, Test Reports и validation reports
-```
-
-Эти файлы являются историческими process-artifacts. Формулировки `PENDING`, `Ready for review`, `Merge prohibited`, `NOT PERFORMED` или прежние baseline-значения внутри закрытого артефакта отражают соответствующий gate и не заменяют текущее состояние проекта.
-
 ## Правила актуальности
 
-1. GitHub-репозиторий является единственным источником истины.
-2. Текущий HEAD определяется через `origin/main`; exact SHA в living docs не используется как самореферентный current-state marker.
-3. Завершённая feature/docs-ветка может упоминаться только как историческая либо как объект датированного branch audit/closure record.
-4. Текущие возможности подтверждаются merged-кодом, migrations и результатами тестирования.
-5. Исторические спецификации и audits не переписываются задним числом; новое состояние оформляется addendum или новым документом.
-6. Секреты, реальные пароли и содержимое `config/local.php` не включаются в документацию.
-7. Мобильное тестирование не объявляется выполненным, если оно было исключено из scope.
-8. Merge и branch cleanup требуют отдельных явных разрешений.
-9. Terminal branch count всегда квалифицируется датой и verification event; future branches не считаются автоматически разрешёнными к удалению.
+1. GitHub — единственный источник истины.
+2. Текущий HEAD определяется через `origin/main`.
+3. Living docs описывают merged baseline; historical artifacts сохраняют состояние своего gate.
+4. Текущие возможности подтверждаются merged code, migrations и результатами тестирования.
+5. Секреты и `config/local.php` не публикуются.
+6. Mobile PASS не заявляется без фактической мобильной приёмки.
+7. Merge и branch cleanup требуют отдельных явных разрешений.
