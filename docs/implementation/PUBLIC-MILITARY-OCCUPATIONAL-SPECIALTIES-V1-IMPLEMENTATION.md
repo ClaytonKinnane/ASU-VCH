@@ -157,7 +157,38 @@ EXACT SCOPE: database/check-theme-management.php included
 SOURCE/DEPLOY PARITY: theme regression checker included
 ```
 
-Runtime page, CSS, migration, seed и база данных этим тестовым дефектом не затронуты.
+## Automated Testing attempt 5
+
+```text
+DATE: 2026-08-01
+HEAD: c71a2959f30c7aa570ca5120115aff81f9054625
+RESULT: SOURCE/DEPLOY PARITY PATH DEFECT
+BACKUP: PASS
+DEPLOY: PASS
+PHP FILES LINTED: 113
+INSTALLER TWICE: PASS / NO NEW MIGRATIONS
+CORE VUS CHECKER: PASS
+UI CHECKER: PASS
+DIRECTORY REGRESSIONS: PASS
+SECURITY REGRESSIONS: PASS
+THEME REGRESSIONS: PASS
+ORGANIZATION REGRESSION: PASS / 58 OF 58
+SOURCE/DEPLOY PARITY: FAIL ON FIRST THEME ASSET PATH
+DATABASE CHANGES: NONE
+```
+
+Все функциональные, UI, security, theme и Organization-проверки прошли. Parity успешно сравнил обычные runtime-файлы, после чего искал исходный путь `themes/...` непосредственно в deploy-root. Фактический deploy-контракт размещает темы в `public/themes/...`.
+
+Исправление:
+
+```text
+COMMIT: e9d865990756a70fbbf8d85ee5074b8e518a5a24
+SOURCE PATH: themes/<slug>/assets/...
+DEPLOY PATH: public/themes/<slug>/assets/...
+OTHER PATHS: unchanged
+```
+
+Runner теперь преобразует только пути с префиксом `themes/` и выводит `deploy_path` в parity-журнале. Runtime page, CSS, migration, seed и база данных тестовым дефектом не затронуты.
 
 ## Следующий gate
 
