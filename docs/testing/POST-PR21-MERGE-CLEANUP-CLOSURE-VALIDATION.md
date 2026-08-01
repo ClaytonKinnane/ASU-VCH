@@ -1,38 +1,58 @@
 # Documentation Validation — Post-PR21 Merge and Cleanup Closure
 
-## Result
+## Repeat result after Final PR Review remediation
 
 ```text
 DATE: 2026-08-01
+VALIDATION_ATTEMPT: REPEAT / AFTER PR #22 FINAL REVIEW REMEDIATION
 DOCUMENTATION_VALIDATION_STATUS: PASS
 BASELINE: f5b53f2ee4453f293b58cbe486e0943ab602335b
 BRANCH: docs/post-pr21-merge-cleanup-closure
-VALIDATED_IMPLEMENTATION_HEAD: 14c4c5515a45ab557ba09b67260477524d1a6c53
-SUBSTANTIVE_IMPLEMENTATION_HEAD: fd3799bb856e6f6f7070928c5be66b5840f5da08
+TRACKING_PR: #22
+VALIDATED_IMPLEMENTATION_HEAD: 4f2182a0a5bd2efc7060440ba998826a317f9fbd
+INITIAL_SUBSTANTIVE_IMPLEMENTATION_HEAD: fd3799bb856e6f6f7070928c5be66b5840f5da08
+ANTI_RECURSION_REMEDIATION_CONTENT_HEAD: 5b53bf76d85e6bc31471fce6ae99f19a42b0d6db
 CLASSIFICATION: DOCUMENTATION ONLY
-FINAL_EXPECTED_PATH_COUNT: 16
-IMPLEMENTATION_HEAD_PATH_COUNT: 15
-VALIDATION_RECORD_ROLE: EVIDENCE-ONLY FINAL PATH 16
+EXPECTED_PATH_COUNT: 16
+ACTUAL_PATH_COUNT: 16
 COMMITS_BEHIND_BASELINE: 0
 MERGE_BASE_STATUS: EXACT
-PULL_REQUEST_STATUS: NOT CREATED
-MERGE_STATUS: NOT AUTHORIZED_NOT_PERFORMED
+PULL_REQUEST_STATUS: OPEN_NOT_MERGED
+MERGE_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 BRANCH_DELETION_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 ```
 
-Implementation head содержит 15 путей: все substantive/process files, кроме настоящего Validation record. Добавление этого evidence-only файла формирует exact final allowlist из 16 Markdown-путей.
+Настоящий Validation record является evidence-only commit после validated implementation head. Live PR state определяется в GitHub; exact state ниже является датированным validation snapshot.
+
+## Initial validation and Final PR Review attempt 1
+
+Initial Validation на head `14c4c5515a45ab557ba09b67260477524d1a6c53` заявила `ANTI_RECURSION_STATUS=PASS`. После создания PR #22 Final PR Review на head `f71746ea73724c0a7348d2b46f7df2c95ebeb498` выявил противоречие:
+
+```text
+REVIEW_ID: 4835622973
+RESULT: CHANGES REQUIRED
+BLOCKING_FINDINGS: 1
+MAJOR_FINDINGS: 1
+MINOR_FINDINGS: 0
+```
+
+Четыре living documents содержали transient ordinal `latest completed documentation PR: #21`. После merge PR #22 он стал бы ложным, поэтому initial anti-recursion verdict был преждевременным.
+
+GitHub не позволяет автору PR оформить `REQUEST_CHANGES` на собственный PR; обязательный verdict опубликован как review `COMMENT`, сохранив workflow gate `CHANGES REQUIRED`.
+
+Владелец отдельно разрешил remediation в существующем allowlist из 16 путей, обновление evidence/PR body, repeat Validation и repeat Final PR Review. Merge и branch deletion не разрешены.
 
 ## Repository and ancestry
 
-Compare `main...14c4c55...` подтвердил:
+Compare `main...4f2182a...` подтвердил:
 
 ```text
 base main: f5b53f2ee4453f293b58cbe486e0943ab602335b
 merge-base: f5b53f2ee4453f293b58cbe486e0943ab602335b
 status: ahead
-ahead commits: 15
+ahead commits: 21
 behind commits: 0
-changed paths before Validation record: 15
+changed paths: 16
 ```
 
 ```text
@@ -70,6 +90,23 @@ MARKDOWN_PATH_COUNT=16
 NON_MARKDOWN_DIFF=0
 RUNTIME_CONFIG_DATABASE_MIGRATION_THEME_TOOL_DIFF=0
 ```
+
+## PR #22 validation snapshot
+
+На validated implementation head:
+
+```text
+state: OPEN
+draft: NO
+merged: NO
+base: main
+base SHA: f5b53f2ee4453f293b58cbe486e0943ab602335b
+head: docs/post-pr21-merge-cleanup-closure
+head SHA: 4f2182a0a5bd2efc7060440ba998826a317f9fbd
+changed files: 16
+```
+
+PR body подлежит синхронизации после публикации repeat Validation evidence. Merge и branch deletion остаются отдельными gates.
 
 ## PR #21 facts
 
@@ -121,7 +158,7 @@ MAIN_INTEGRITY_STATUS=PASS
 TERMINAL_SNAPSHOT_BOUNDARY_STATUS=PASS
 ```
 
-## Living-document stale-state scan
+## Living-document stale-state and anti-recursion scan
 
 Шесть living documents больше не утверждают, что:
 
@@ -132,25 +169,40 @@ TERMINAL_SNAPSHOT_BOUNDARY_STATUS=PASS
 
 Удалённая branch упоминается только как historical name/evidence, а не current dependency.
 
-Current HEAD, branches, Pull Requests и Issues определяются динамически.
+В четырёх затронутых living documents отсутствует transient ordinal:
+
+```text
+latest completed documentation PR: #21
+```
+
+Вместо него используется устойчивый historical anchor:
+
+```text
+completed baseline refresh PR: #21
+```
+
+Проверенные пути:
+
+```text
+docs/PROJECT-STATUS.md
+docs/PROJECT.md
+docs/LOCAL-RUNBOOK.md
+docs/ROADMAP.md
+```
+
+Формулировка обозначает конкретный завершённый baseline-refresh workflow и остаётся истинной после merge PR #22. Current/latest PR state определяется динамически через GitHub.
+
+Living docs также не хранят:
+
+- branch настоящего closure increment как обязательную current dependency;
+- будущий или latest documentation PR number/state настоящего increment как постоянно актуальное поле;
+- обязательство создать следующий documentation closure после его merge.
 
 ```text
 STALE_PR21_CURRENT_STATE_SCAN_STATUS=PASS
 REMOVED_BRANCH_DEPENDENCY_SCAN_STATUS=PASS
 DYNAMIC_REPOSITORY_STATE_POLICY_STATUS=PASS
-```
-
-## Anti-recursion validation
-
-Living docs не хранят:
-
-- branch настоящего closure increment как обязательную current dependency;
-- его будущий PR number/state как постоянно актуальное поле;
-- обязательство создать следующий documentation closure после его merge.
-
-Process/evidence records могут содержать exact branch/head/status текущего gate, поскольку они являются historical snapshots.
-
-```text
+TRANSIENT_DOCUMENTATION_PR_ORDINAL_SCAN_STATUS=PASS
 ANTI_RECURSION_STATUS=PASS
 TRANSIENT_STATE_POLICY_STATUS=PASS
 ```
@@ -203,18 +255,6 @@ FUNCTIONAL_BASELINE_STATUS=PASS
 RUNTIME_RETEST_CLAIM_STATUS=PASS
 ```
 
-## GitHub snapshot before PR creation
-
-```text
-open Pull Requests: 0
-open Issues: 0
-remote branches:
-  - main
-  - docs/post-pr21-merge-cleanup-closure
-```
-
-Текущая closure branch создана после датированного post-PR21 `main only` snapshot и не противоречит ему. Branch не удалялась и refs не перемещались в Implementation.
-
 ## Test classification
 
 ```text
@@ -240,17 +280,18 @@ PR21_OPERATIONAL_CLOSURE_STATUS=PASS
 CLEANUP_FACT_CONSISTENCY_STATUS=PASS
 STALE_PR21_CURRENT_STATE_SCAN_STATUS=PASS
 REMOVED_BRANCH_DEPENDENCY_SCAN_STATUS=PASS
+TRANSIENT_DOCUMENTATION_PR_ORDINAL_SCAN_STATUS=PASS
 ANTI_RECURSION_STATUS=PASS
 MARKDOWN_LINK_VALIDATION_STATUS=PASS
 SECRET_REVIEW_STATUS=PASS
 HISTORICAL_EVIDENCE_PRESERVATION_STATUS=PASS
 FUNCTIONAL_BASELINE_STATUS=PASS
 MAIN_INTEGRITY_STATUS=PASS
-PULL_REQUEST_STATUS=NOT_CREATED
+PULL_REQUEST_STATUS=OPEN_NOT_MERGED
 MERGE_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
 BRANCH_DELETION_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
 ```
 
 ## Следующий gate
 
-После Validation PASS требуется отдельное owner approval на создание Pull Request. Настоящий Validation record не разрешает PR creation, merge или branch deletion.
+После repeat Validation PASS требуется повторный Final PR Review на exact final PR head. Merge и branch deletion остаются запрещёнными без отдельных approvals.
