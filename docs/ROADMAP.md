@@ -27,45 +27,45 @@ built-in themes: 3
 - [x] Organizational Structure v1;
 - [x] PR #19 — public military positions catalog;
 - [x] PR #19 Automated Testing и Manual Desktop Acceptance;
-- [x] PR #19 merge и post-merge state;
+- [x] PR #19 merge;
 - [x] PR #20 — public military occupational specialties catalog;
 - [x] PR #20 Automated Testing, Manual Desktop Acceptance и targeted recheck;
 - [x] PR #20 repeated Final PR Review PASS;
 - [x] PR #20 merge и post-merge Git verification.
 
-## Active documentation increment — Post-PR20 Baseline Refresh
+## Documentation baseline refresh
+
+Workflow reference: PR #21, branch `docs/post-pr20-baseline-refresh`.
 
 ```text
-branch: docs/post-pr20-baseline-refresh
-PR: #21 OPEN
 classification: documentation only
 initial allowlist: 22 Markdown paths
 final approved allowlist: 25 Markdown paths
-merge: NOT AUTHORIZED
-branch deletion: NOT AUTHORIZED
+runtime changes: none
 ```
 
-Progress:
+Завершённые milestones:
 
 - [x] Research и Analysis;
-- [x] Architecture, Specification и pre-implementation Formal Review;
+- [x] Architecture, Specification и pre-implementation Review;
 - [x] owner Approval;
-- [x] initial Documentation Implementation;
-- [x] initial Documentation Validation PASS;
+- [x] initial Documentation Implementation и Validation;
 - [x] PR #21 created;
 - [x] Final PR Review attempt 1 — CHANGES REQUIRED;
-- [x] owner approved remediation and scope expansion 22 → 25;
-- [x] PR #19 operational closure added;
-- [x] current-state markers synchronized with PR #21;
-- [ ] repeat Documentation Validation;
-- [ ] repeat Final PR Review;
-- [ ] separate merge approval;
-- [ ] merge PR #21;
-- [ ] post-merge verification;
-- [ ] fresh remote/local branch inventory;
-- [ ] exact cleanup approval;
-- [ ] remote-first and approved local branch cleanup;
-- [ ] terminal verification.
+- [x] owner-approved scope expansion 22 → 25;
+- [x] PR #19 operational closure;
+- [x] current-state remediation;
+- [x] repeat Documentation Validation PASS.
+
+Оставшиеся gates определяются live state PR #21 в GitHub и не хранятся здесь как изменчивый current status:
+
+1. repeat Final PR Review;
+2. separate merge approval;
+3. merge и post-merge verification;
+4. fresh remote/local branch inventory;
+5. exact cleanup approval;
+6. remote-first и approved local cleanup;
+7. terminal verification.
 
 ## Последние catalogs
 
@@ -108,7 +108,7 @@ mobile testing: OUT OF SCOPE / NOT RUN
 
 ## Постоянные ограничения
 
-- Публичные catalogs не являются кадровым или персональным воинским учётом.
+- Public catalogs не являются кадровым или персональным воинским учётом.
 - Mobile PASS не заявляется без фактической acceptance.
 - PR creation, merge и branch deletion требуют отдельных approvals.
 - `SAFE TO DELETE` не является deletion authorization.
