@@ -45,6 +45,28 @@ Loader проверяет archive SHA-256, распаковывает canonical 
 - checker static phase: PASS;
 - database/runtime tests: NOT RUN в среде пользователя.
 
+## Local Testing attempt 1
+
+```text
+DATE: 2026-08-01
+RESULT: PRE-EXECUTION PARSER FAILURE
+BACKUP: NOT STARTED
+DEPLOY: NOT STARTED
+INSTALLER: NOT STARTED
+DATABASE CHANGES: NONE
+```
+
+Windows PowerShell 5.1 прочитал UTF-8 без BOM в системной ANSI-кодировке. Кириллические строки runner были искажены до разбора и вызвали ParserError. Runtime implementation и migration не выполнялись.
+
+Исправление:
+
+```text
+COMMIT: fb28a8d071fb871c0a0f7bc39042bb7331b4771e
+RUNNER ENCODING POLICY: ASCII-ONLY
+```
+
+Runner не содержит non-ASCII символов и не зависит от BOM или локальной кодовой страницы Windows PowerShell 5.1.
+
 ## Следующий gate
 
-Локальная синхронизация, automated testing и manual desktop acceptance. Mobile testing остаётся OUT OF SCOPE / NOT RUN.
+Повторная локальная синхронизация, parser preflight, automated testing и manual desktop acceptance. Mobile testing остаётся OUT OF SCOPE / NOT RUN.
