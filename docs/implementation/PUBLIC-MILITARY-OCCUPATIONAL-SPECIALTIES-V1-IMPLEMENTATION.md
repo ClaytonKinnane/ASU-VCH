@@ -7,7 +7,7 @@ PHASE: UI REMEDIATION IMPLEMENTED / RE-TESTING REQUIRED
 BASELINE: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 BRANCH: feature/public-military-occupational-specialties-directory
 MIGRATION: 011_public_military_occupational_specialties_directory.sql
-IMPLEMENTATION_PATHS: 23
+IMPLEMENTATION_PATHS: 24
 PR: NOT CREATED
 MERGE: NOT AUTHORIZED
 ```
@@ -102,7 +102,7 @@ MOBILE: OUT OF SCOPE / NOT RUN
 - нижнее предупреждение стало компактным;
 - для каждой из трёх тем зарегистрирован отдельный VUS stylesheet;
 - добавлен `check-military-occupational-specialties-ui.php`;
-- testing runner расширен до exact scope из 23 путей и 13 runtime parity paths.
+- testing runner расширен до exact scope из 24 путей и 14 runtime parity paths.
 
 ## Automated Testing attempt 3
 
@@ -128,7 +128,36 @@ COMMIT: 09b032ba39c75d17f87aa003d1df13ddedcd5b2d
 CHECKER ASSET RESOLUTION: deployed public/themes/ first, source themes/ fallback
 ```
 
-Runtime page, CSS, migration, seed и база данных этим дефектом не затронуты.
+## Automated Testing attempt 4
+
+```text
+DATE: 2026-08-01
+HEAD: ed73780fc3f34aa0e19cc7d168d366832d5dae79
+RESULT: THEME REGRESSION EXPECTATION DEFECT
+BACKUP: PASS
+DEPLOY: PASS
+PHP FILES LINTED: 113
+INSTALLER TWICE: PASS / NO NEW MIGRATIONS
+CORE VUS CHECKER: PASS
+UI CHECKER: PASS
+DIRECTORY REGRESSIONS: PASS
+SECURITY REGRESSIONS BEFORE THEME CHECK: PASS
+THEME MANAGEMENT CHECK: FAIL ON EXACT REQUIRED-ASSET LIST
+DATABASE CHANGES: NONE
+```
+
+Существующий theme-management regression checker строго сравнивал прежний список ресурсов темы «Евгения Ростова» и не учитывал новый зарегистрированный `css/military-occupational-specialties.css`.
+
+Исправление:
+
+```text
+COMMIT: feaae262033468fc64459ae4b64d0f85be7e9040
+EXPECTED ASSETS: VUS stylesheet included
+EXACT SCOPE: database/check-theme-management.php included
+SOURCE/DEPLOY PARITY: theme regression checker included
+```
+
+Runtime page, CSS, migration, seed и база данных этим тестовым дефектом не затронуты.
 
 ## Следующий gate
 
