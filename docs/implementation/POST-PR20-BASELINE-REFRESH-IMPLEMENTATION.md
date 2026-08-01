@@ -1,14 +1,15 @@
 # Implementation — Post-PR20 Baseline Refresh
 
-## Статус
+## Финальный статус
 
 ```text
 DATE: 2026-08-01
-STATUS: IMPLEMENTED / VALIDATION IN PROGRESS
+STATUS: IMPLEMENTED / DOCUMENTATION VALIDATION PASS
 BASELINE: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 BRANCH: docs/post-pr20-baseline-refresh
 CLASSIFICATION: DOCUMENTATION ONLY
 APPROVED_PATH_COUNT: 22
+ACTUAL_PATH_COUNT: 22
 RUNTIME_CHANGE: NONE
 DATABASE_CHANGE: NONE
 GIT_REF_DELETION: NONE
@@ -117,11 +118,38 @@ Implementation разделяет:
 
 Exact current `main` определяется через `origin/main`. Exact SHA не используется как постоянно актуальное self-reference field. Documentation-only head не объявляется runtime-протестированным.
 
+## Validation outcome
+
+Финальная Documentation Validation подтвердила:
+
+```text
+changed paths: 22 / exact allowlist
+all changed paths: Markdown
+merge-base: exact baseline
+behind baseline: 0
+main integrity: PASS
+PR: absent
+remote branch inventory: unchanged
+runtime/config/database/theme/tool changes: 0
+branch deletions: 0
+```
+
+Подробный отчёт: `docs/testing/POST-PR20-BASELINE-REFRESH-VALIDATION.md`.
+
 ## Repository cleanup boundary
 
-На этапе implementation ветки не удалялись. Текущий remote set после создания docs-ветки должен проверяться заново перед cleanup. Cleanup остаётся отдельным post-refresh административным workflow с отдельным owner approval.
+На этапе Implementation и Validation ветки не удалялись. Cleanup остаётся отдельным post-refresh workflow:
 
-## Testing classification
+1. создать PR только после отдельного разрешения;
+2. выполнить Final PR Review;
+3. merge только после отдельного разрешения;
+4. выполнить post-merge verification;
+5. провести fresh remote/local inventory;
+6. получить отдельное approval на exact cleanup batch;
+7. удалить remote branches first и затем approved local branches;
+8. выполнить terminal verification.
+
+## Test classification
 
 ```text
 PHP lint: NOT REQUIRED
@@ -130,8 +158,17 @@ INSTALLER: NOT REQUIRED
 DATABASE TESTING: NOT REQUIRED
 HTTP/BROWSER TESTING: NOT REQUIRED
 RUNTIME RETEST: NOT RUN / NOT REQUIRED
-DOCUMENTATION VALIDATION: REQUIRED
+DOCUMENTATION VALIDATION: PASS
 MOBILE TESTING: OUT OF SCOPE / NOT RUN
 ```
 
 Основание: diff ограничен утверждёнными Markdown paths и не изменяет runtime/config/database/themes/tools/Git refs.
+
+## Следующий gate
+
+```text
+PULL_REQUEST_APPROVAL: REQUIRED
+PR_STATUS: NOT_CREATED
+MERGE_STATUS: NOT_AUTHORIZED
+BRANCH_DELETION_STATUS: NOT_AUTHORIZED
+```
