@@ -5,11 +5,12 @@
 ```text
 DATE: 2026-08-01
 BRANCH: feature/military-positions-directory
-PHASE: AUTOMATED TESTING PASSED / MANUAL DESKTOP ACCEPTANCE REQUIRED
+PHASE: TESTING COMPLETE / PR APPROVAL REQUIRED
 AUTOMATED WINDOWS/OPEN SERVER/MYSQL TESTING: PASS
-TESTED HEAD: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
+TESTED RUNTIME HEAD: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
 AUTOMATED TEST EVIDENCE: docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-AUTOMATED-TESTING-2026-08-01.md
-MANUAL DESKTOP ACCEPTANCE: NOT RUN
+MANUAL DESKTOP ACCEPTANCE: PASS
+MANUAL ACCEPTANCE EVIDENCE: docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-MANUAL-DESKTOP-ACCEPTANCE-2026-08-01.md
 MOBILE TESTING: OUT OF SCOPE / NOT RUN
 PR: NOT CREATED
 MERGE: NOT AUTHORIZED
@@ -42,13 +43,13 @@ MERGE: NOT AUTHORIZED
 
 ## Локальный процесс
 
-Implementation-кандидат хранится в GitHub feature-ветке. Локально допускаются только:
+Implementation-кандидат хранится в GitHub feature-ветке. Локально выполнялись только:
 
 1. clean synchronization ветки;
 2. запуск `tools\Test-MilitaryPositionsDirectory.ps1`;
 3. manual desktop acceptance после automated PASS.
 
-Локальные изменения исходников, commit, push и PR во время Testing не требуются.
+Локальные изменения исходников, commit, push и PR во время Testing не выполнялись.
 
 ## Упаковка migration 010
 
@@ -69,4 +70,23 @@ Implementation-кандидат хранится в GitHub feature-ветке. �
 - HTTP smoke: PASS;
 - post-test Git/config integrity: PASS.
 
-Следующий обязательный gate — ручная desktop-приёмка в темах `asu-blue`, `asu-light-blue` и `asu-evgeniya-rostova`. PR до её завершения и отдельного разрешения не создаётся.
+## Результат ручной desktop-приёмки
+
+Владелец подтвердил:
+
+- owner access и ordinary-role HTTP 403: PASS;
+- полный список из 34 типов: PASS;
+- поиск, все отдельные фильтры и комбинированные фильтры: PASS;
+- нормативные варианты и отсутствие ложной связи `департамент → отдел`: PASS;
+- официальные ссылки: PASS;
+- темы `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova`: PASS;
+- desktop 1920×1080 и 1366×768: PASS;
+- console errors: NONE;
+- asset/HTTP 404: NONE;
+- defects found: NONE.
+
+Mobile testing остаётся вне scope и Mobile PASS не заявляется.
+
+## Следующий gate
+
+Architecture, Specification, Formal Review, Implementation и Testing завершены. Для создания Pull Request требуется отдельное явное разрешение владельца. Merge и удаление ветки требуют последующих отдельных разрешений.
