@@ -1,92 +1,92 @@
-# Implementation: Справочник типов воинских должностей ВС РФ v1
+# Implementation — Military Positions Directory v1
 
-## Статус
+## Current status
 
 ```text
 DATE: 2026-08-01
-BRANCH: feature/military-positions-directory
-PHASE: TESTING COMPLETE / PR APPROVAL REQUIRED
-AUTOMATED WINDOWS/OPEN SERVER/MYSQL TESTING: PASS
-TESTED RUNTIME HEAD: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
-AUTOMATED TEST EVIDENCE: docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-AUTOMATED-TESTING-2026-08-01.md
-MANUAL DESKTOP ACCEPTANCE: PASS
-MANUAL ACCEPTANCE EVIDENCE: docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-MANUAL-DESKTOP-ACCEPTANCE-2026-08-01.md
-MOBILE TESTING: OUT OF SCOPE / NOT RUN
-PR: NOT CREATED
-MERGE: NOT AUTHORIZED
+INCREMENT_STATUS: IMPLEMENTED / TESTED / ACCEPTED / MERGED
+MIGRATION: 010_military_positions_directory.sql
+PR: #19 CLOSED / MERGED
+MERGE_COMMIT: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
+TESTED_RUNTIME_HEAD: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
+FINAL_FEATURE_HEAD: 5424cefe2f1a6bdc2fa706612040a3985c88f04f
+AUTOMATED_TESTING_STATUS: PASS
+MANUAL_DESKTOP_ACCEPTANCE_STATUS: PASS
+MOBILE_TESTING_STATUS: OUT_OF_SCOPE_NOT_RUN
+BRANCH_DELETION_STATUS: PENDING SEPARATE POST-REFRESH APPROVAL
 ```
+
+Current `main` определяется через `origin/main`. Merge commit и tested runtime head являются historical anchors. Documentation-only commits после tested runtime не объявляются runtime-tested.
 
 ## Реализованный scope
 
-Подготовлены:
-
-- migration `010_military_positions_directory.sql`, загружаемая compatibility layer из пяти последовательных base64-частей gzip-архива с обязательной проверкой SHA-256 архива и canonical SQL;
-- 14 таблиц и 41 trigger;
+- migration 010 с compatibility loader и SHA-256 verification canonical SQL/archive;
+- 14 tables и 41 DB trigger;
 - whole-catalog lifecycle `building → published → superseded`;
-- блокировка INSERT/UPDATE/DELETE после публикации;
-- 4 источника версии;
-- 24 source entries;
-- 28 source-entry evidence;
-- 4 функциональных семейства;
-- 34 канонических типа;
-- 35 нормативных вариантов;
-- 2 composition scope и 3 scope-member связи;
-- 34 type-scope relations и 35 evidence rows;
-- 29 organizational relations и 29 evidence rows;
-- отсутствие rank relation tables и автоматических соответствий званиям;
-- `MilitaryPositionCatalogRepository` с bulk loading;
+- immutable published data;
+- 4 version sources, 24 source entries и 28 evidence records;
+- 4 families;
+- 34 canonical types и 35 normative variants;
+- 2 composition scopes;
+- 29 organizational relations;
+- no automatic military-rank relation tables;
 - owner-only read-only route `/admin/directories/military-positions.php`;
-- плитка в общем разделе справочников;
-- integration checker с rejection tests;
-- PowerShell 5.1 runner для backup, deploy, migration, regressions, parity и HTTP smoke;
-- локальный runbook без patch workflow.
+- search и filters;
+- integration checker, regressions, source/deploy parity и PowerShell 5.1 runner.
 
-## Локальный процесс
+Каталог хранит публичные нормативные типы, а не штатные позиции, кадровые назначения или персональные данные.
 
-Implementation-кандидат хранится в GitHub feature-ветке. Локально выполнялись только:
+## Migration packaging
 
-1. clean synchronization ветки;
-2. запуск `tools\Test-MilitaryPositionsDirectory.ps1`;
-3. manual desktop acceptance после automated PASS.
+```text
+ARCHIVE_SHA256: af617b754e4a8a5b453d6856f5c20540edb72d839fb162e61f9c160493c6fb82
+CANONICAL_SQL_SHA256: 3ebb00dc2d89027eea7f3619deb29adfdcdea7b67b9a221b4ab0cd159d96ac78
+BASE64_PARTS: 5
+```
 
-Локальные изменения исходников, commit, push и PR во время Testing не выполнялись.
+Loader fail-closed проверяет parts, archive hash, decompression и canonical SQL hash до выполнения migration.
 
-## Упаковка migration 010
+## Testing outcome
 
-Из-за ограничения GitHub write-канала крупный canonical SQL хранится в пяти последовательных base64-частях gzip-архива `010_military_positions_directory.sql.gz.b64.part00` … `part04`. Маркерная migration сохраняет утверждённое имя `010_military_positions_directory.sql`. `MilitaryPositionMigrationCompatibility.php` проверяет SHA-256 gzip-архива `af617b754e4a8a5b453d6856f5c20540edb72d839fb162e61f9c160493c6fb82`, распаковывает canonical SQL и допускает выполнение только при SHA-256 `3ebb00dc2d89027eea7f3619deb29adfdcdea7b67b9a221b4ab0cd159d96ac78`. Installer по-прежнему регистрирует единственную migration 010.
+Automated Testing на `0455f012...` подтвердил:
 
-## Результат автоматизированного Testing
+```text
+implementation scope: PASS
+backup: PASS
+deploy/config preservation: PASS
+PHP lint: 108 files / 0 errors
+applied migrations: 10
+repeat installer: no new migrations
+military positions checker: PASS
+security/theme/directory regressions: PASS
+organization regression: 58 PASS / 0 FAIL
+source/deploy parity: PASS
+HTTP smoke: PASS
+working tree: clean
+```
 
-На локальной Windows/Open Server/MySQL среде подтверждено:
+Manual Desktop Acceptance подтвердил owner access, ordinary-role HTTP 403, default count 34, search/filters, normative variants, official links, three themes, desktop 1920×1080 и 1366×768, console errors 0 и asset/HTTP 404 0.
 
-- repository preflight и точный scope: PASS;
-- backup БД: PASS;
-- deploy с сохранением `config/local.php`: PASS;
-- PHP lint: 108 файлов / 0 ошибок;
-- migration 010 и repeated installer: PASS;
-- military positions integration checker: PASS;
-- directory, security, theme и Organization regressions: PASS;
-- source/deploy parity: PASS;
-- HTTP smoke: PASS;
-- post-test Git/config integrity: PASS.
+Подробные historical evidence:
 
-## Результат ручной desktop-приёмки
+- `docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-AUTOMATED-TESTING-2026-08-01.md`;
+- `docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-MANUAL-DESKTOP-ACCEPTANCE-2026-08-01.md`.
 
-Владелец подтвердил:
+Их pre-PR markers сохраняют состояние соответствующего момента и не заменяют current status выше.
 
-- owner access и ordinary-role HTTP 403: PASS;
-- полный список из 34 типов: PASS;
-- поиск, все отдельные фильтры и комбинированные фильтры: PASS;
-- нормативные варианты и отсутствие ложной связи `департамент → отдел`: PASS;
-- официальные ссылки: PASS;
-- темы `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova`: PASS;
-- desktop 1920×1080 и 1366×768: PASS;
-- console errors: NONE;
-- asset/HTTP 404: NONE;
-- defects found: NONE.
+## Post-merge closure
 
-Mobile testing остаётся вне scope и Mobile PASS не заявляется.
+```text
+PR_STATE: CLOSED
+MERGED: YES
+MERGE_METHOD: MERGE COMMIT
+MERGE_COMMIT: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
+FINAL_FEATURE_HEAD: 5424cefe2f1a6bdc2fa706612040a3985c88f04f
+RUNTIME_RETEST_ON_MERGE_COMMIT: NOT RUN / NOT CLAIMED
+```
 
-## Следующий gate
+PR #19 был объединён после отдельного merge approval. Merge не изменяет значение tested runtime head: им остаётся `0455f012...`.
 
-Architecture, Specification, Formal Review, Implementation и Testing завершены. Для создания Pull Request требуется отдельное явное разрешение владельца. Merge и удаление ветки требуют последующих отдельных разрешений.
+## Current next gate
+
+Feature-ветка сохраняется до завершения Post-PR20 Baseline Refresh, fresh inventory и отдельного owner approval exact cleanup batch.
