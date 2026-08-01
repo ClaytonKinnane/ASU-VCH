@@ -49,7 +49,7 @@ if ($status !== '' && !in_array($status, ['current', 'historical', 'unavailable'
 }
 
 $direct = ['items' => [], 'total' => 0];
-if ($recordType !== 'training-program') {
+if (MilitaryOccupationalSpecialtyCatalogRepository::shouldSearchPublicDisclosures($recordType, $organization)) {
     $direct = $repo->searchPublicDisclosures($versionId, $q, '', $identifierKind, $scope, '', $evidence, $status);
 }
 $programs = ['items' => [], 'total' => 0];
