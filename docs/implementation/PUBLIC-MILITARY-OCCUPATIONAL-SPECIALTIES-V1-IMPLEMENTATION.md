@@ -3,11 +3,11 @@
 ## Статус
 
 ```text
-PHASE: IMPLEMENTATION COMPLETE / LOCAL TESTING REQUIRED
+PHASE: UI REMEDIATION IMPLEMENTED / RE-TESTING REQUIRED
 BASELINE: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 BRANCH: feature/public-military-occupational-specialties-directory
 MIGRATION: 011_public_military_occupational_specialties_directory.sql
-IMPLEMENTATION_PATHS: 18
+IMPLEMENTATION_PATHS: 23
 PR: NOT CREATED
 MERGE: NOT AUTHORIZED
 ```
@@ -36,15 +36,6 @@ BASE64_PARTS: 2
 
 Loader проверяет archive SHA-256, распаковывает canonical SQL и проверяет SQL SHA-256 до передачи installer.
 
-## Проверено до локального Testing
-
-- PHP syntax: PASS для новых и изменённых PHP-файлов;
-- migration static structure: 9 tables / 26 triggers;
-- `DELIMITER`: absent;
-- migration loader reconstruction и оба SHA-256: PASS;
-- checker static phase: PASS;
-- database/runtime tests: NOT RUN в среде пользователя.
-
 ## Local Testing attempt 1
 
 ```text
@@ -56,7 +47,7 @@ INSTALLER: NOT STARTED
 DATABASE CHANGES: NONE
 ```
 
-Windows PowerShell 5.1 прочитал UTF-8 без BOM в системной ANSI-кодировке. Кириллические строки runner были искажены до разбора и вызвали ParserError. Runtime implementation и migration не выполнялись.
+Windows PowerShell 5.1 прочитал UTF-8 без BOM в системной ANSI-кодировке. Кириллические строки runner были искажены до разбора и вызвали ParserError.
 
 Исправление:
 
@@ -65,8 +56,56 @@ COMMIT: fb28a8d071fb871c0a0f7bc39042bb7331b4771e
 RUNNER ENCODING POLICY: ASCII-ONLY
 ```
 
-Runner не содержит non-ASCII символов и не зависит от BOM или локальной кодовой страницы Windows PowerShell 5.1.
+## Automated Testing attempt 2
+
+```text
+DATE: 2026-08-01
+HEAD: 289b6f1c4e77843e5d650b46c480cd44aa6c8eae
+RESULT: PASS
+MIGRATION 011: APPLIED
+REPEATED INSTALLER: PASS
+PHP FILES LINTED: 112
+SOURCE/DEPLOY PARITY: PASS
+HTTP SMOKE: PASS
+WORKING TREE: CLEAN
+```
+
+Automated testing подтвердил схему, exact seed, lifecycle, negative tests, permissions, все обязательные regressions и сохранность deploy-конфигурации.
+
+## Manual Desktop Acceptance attempt 1
+
+```text
+RESULT: FAIL / DEFECTS CONFIRMED
+MOBILE: OUT OF SCOPE / NOT RUN
+```
+
+Зафиксированы:
+
+1. неполная русификация пользовательских подписей;
+2. отсутствие визуальных интервалов между крупными секциями;
+3. непонятный технический текст и SHA-256 в пользовательском интерфейсе;
+4. неконсистентный подъём интерактивных и статичных карточек;
+5. чрезмерно узкая колонка источника;
+6. лишнее пустое пространство внизу блока записей.
+
+## UI remediation
+
+Реализовано без изменения схемы, seed и repository-контракта:
+
+- все видимые source-role, evidence и status labels переведены на русский язык;
+- evidence fingerprints сохранены в БД и checker, но удалены из пользовательского представления;
+- между крупными секциями добавлен единый вертикальный интервал;
+- подъём применяется только к карточкам с внешними ссылками;
+- статичные информационные карточки не используют dashboard hover behavior;
+- таблица ВУС получила пропорции колонок 26% / 22% / 24% / 28%;
+- перенос текста источника выполняется по словам, а не по отдельным буквам;
+- нижнее предупреждение стало компактным;
+- для каждой из трёх тем зарегистрирован отдельный VUS stylesheet;
+- добавлен `check-military-occupational-specialties-ui.php`;
+- testing runner расширен до exact scope из 23 путей и 13 runtime parity paths.
 
 ## Следующий gate
 
-Повторная локальная синхронизация, parser preflight, automated testing и manual desktop acceptance. Mobile testing остаётся OUT OF SCOPE / NOT RUN.
+Повторная локальная синхронизация, Automated Testing и повторная Manual Desktop Acceptance в трёх темах при 1920×1080 и 1366×768.
+
+PR не создаётся до PASS ручной desktop-приёмки. Mobile testing остаётся OUT OF SCOPE / NOT RUN.
