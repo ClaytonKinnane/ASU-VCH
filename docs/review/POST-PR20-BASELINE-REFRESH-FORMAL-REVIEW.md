@@ -1,145 +1,105 @@
 # Formal Review — Post-PR20 Baseline Refresh
 
-## Статус
+## Current status
 
 ```text
 DATE: 2026-08-01
-ARCHITECTURE: REVIEWED
-SPECIFICATION: 0.1 REVIEWED
-VERDICT: PASS
+ARCHITECTURE: APPROVED
+SPECIFICATION: 0.2 APPROVED
+INITIAL_PRE_IMPLEMENTATION_REVIEW: PASS
+PR: #21 OPEN
+FINAL_PR_REVIEW_ATTEMPT_1: CHANGES REQUIRED
+REMEDIATION_APPROVAL: GRANTED
+REMEDIATION_STATUS: IMPLEMENTED
+REPEAT_DOCUMENTATION_VALIDATION: REQUIRED
+REPEAT_FINAL_PR_REVIEW: REQUIRED
+MERGE: NOT AUTHORIZED
+BRANCH_DELETION: NOT AUTHORIZED
+```
+
+## Initial pre-implementation review
+
+Initial Architecture and Specification correctly established a documentation-only refresh, dynamic `origin/main` pointer, historical merge/test anchors, migrations 001–011, 4 roles, 25 permissions, 3 themes and separation of living documentation from historical evidence.
+
+Initial verdict:
+
+```text
 BLOCKING_FINDINGS: 0
 MAJOR_FINDINGS: 0
 MINOR_FINDINGS: 0
-IMPLEMENTATION_APPROVAL: REQUIRED
+VERDICT: PASS
 ```
 
-## Проверенный scope
+## Final PR Review attempt 1 — PR #21
 
-Review охватывает:
-
-- `docs/architecture/POST-PR20-BASELINE-REFRESH-ARCHITECTURE.md`;
-- `docs/specification/POST-PR20-BASELINE-REFRESH-SPECIFICATION.md`;
-- baseline `main @ 3082ec6ecbeddb92bd65e1398f05a9339abb199b`;
-- merged PR #19 и PR #20;
-- текущую living documentation;
-- профильные Automated Testing / Manual Desktop Acceptance / Final PR Review evidence;
-- remote branch inventory после создания docs-ветки;
-- пользовательский local merged-branch audit.
-
-## Findings review
-
-### 1. Current state и historical evidence
-
-Architecture и Specification корректно разделяют:
-
-- living documentation, которая обязана отражать текущий merged baseline;
-- датированные historical artifacts, которые сохраняют состояние соответствующего gate;
-- increment records с историей попыток и отдельным current-state framing.
-
-Это предотвращает две противоположные ошибки: сохранение устаревшего current status и переписывание истории задним числом.
-
-Результат: `PASS`.
-
-### 2. Repository anchors
-
-Использована устойчивая модель:
-
-- current HEAD определяется через `origin/main`;
-- exact SHA хранится как исторический merge/test/refresh anchor;
-- documentation-only head не объявляется runtime-протестированным.
-
-Подтверждены:
+Review выполнялся на PR head:
 
 ```text
-PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
-PR #20 merge: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
-PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
-PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
+060ba1e71d8791dac0a85fd9dd257d9b2cf21cfe
 ```
 
-Результат: `PASS`.
+### Blocking finding 1 — incomplete PR #19 operational closure
 
-### 3. Functional baseline accuracy
-
-Specification опирается на merged PR metadata и evidence:
-
-- migrations 010 и 011;
-- Military Positions: 14 tables, 41 triggers, 34 canonical types, 35 variants;
-- VUS: 9 tables, 26 triggers, 17 searchable records;
-- 4 roles, 25 permissions, 3 themes;
-- owner-only GET/read-only boundaries;
-- отсутствие prohibited automatic relations и personal data;
-- Mobile testing остаётся `OUT OF SCOPE / NOT RUN`.
-
-Результат: `PASS`.
-
-### 4. Exact scope control
-
-Финальный allowlist содержит ровно 22 Markdown path. Runtime, config, migrations, themes, tools и Git refs исключены. Дополнительный путь требует повторного Review и Approval.
-
-Результат: `PASS`.
-
-### 5. Validation completeness
-
-Validation requirements покрывают:
-
-- baseline/merge-base;
-- exact path set;
-- Markdown-only classification;
-- whitespace/diff integrity;
-- stale current-state scan;
-- PR/migration/count consistency;
-- link и secret checks;
-- historical evidence preservation;
-- branch deletion boundary;
-- отсутствие Mobile PASS claim.
-
-Runtime/deploy/database/browser retest обоснованно классифицирован как `NOT REQUIRED` для Markdown-only diff.
-
-Результат: `PASS`.
-
-### 6. Branch governance
-
-Architecture и Specification не смешивают documentation refresh и cleanup. Зафиксировано:
-
-- две merged feature-ветки технически безопасны для последующего удаления;
-- активная docs-ветка не входит в cleanup;
-- удаление требует fresh inventory и отдельного exact approval после merge документационного PR;
-- предпочтительный порядок: remote deletion → fetch/prune → local safe deletion.
-
-Результат: `PASS`.
-
-### 7. Architectural-pattern update boundary
-
-Дополнение `ARCHITECTURAL-PATTERNS.md` ограничено:
-
-- полным project workflow;
-- pattern source-centric immutable public catalogs;
-- compatibility packaging для крупных migrations.
-
-Запрещено превращать конкретные counts или VUS/position semantics в универсальные project-wide правила.
-
-Результат: `PASS`.
-
-## Риски и меры
-
-| Риск | Мера |
-|---|---|
-| Living docs сохранят старый PR #15 baseline | обязательный stale-marker scan |
-| Исторические evidence будут переписаны | изменяются только current framing/closure sections |
-| Documentation-only head будет назван tested runtime | отдельные merge/test/documentation anchors |
-| Branch cleanup будет выполнен преждевременно | cleanup исключён из allowlist и требует нового approval |
-| Counts migrations/themes будут расходиться | проверка против merged code и evidence |
-| Появится неподтверждённый Mobile PASS | обязательный negative assertion |
-
-## Verdict
+Initial allowlist из 22 путей включал operational closure PR #20, но не включал три current operational record PR #19:
 
 ```text
-ARCHITECTURE_REVIEW_STATUS=PASS
-SPECIFICATION_REVIEW_STATUS=PASS
-OPEN_FINDINGS=0
-IMPLEMENTATION_STATUS=NOT_STARTED
-BRANCH_DELETION_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
+docs/implementation/MILITARY-POSITIONS-DIRECTORY-V1-IMPLEMENTATION.md
+docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-LOCAL-RUNBOOK.md
+docs/review/MILITARY-POSITIONS-DIRECTORY-V1-FORMAL-REVIEW.md
 ```
 
-Architecture и Specification пригодны для отдельного owner Approval. Настоящий Formal Review не разрешает реализацию, создание Pull Request, merge или удаление веток.
+Implementation PR #19 продолжал показывать `PR NOT CREATED / MERGE NOT AUTHORIZED`, а increment runbook оставался pre-merge operational instruction без current stable closure.
+
+### Blocking finding 2 — stale post-PR current markers
+
+После создания PR #21 несколько current-state документов продолжали утверждать `PR not created` либо описывали Implementation/Validation как будущие:
+
+- `docs/PROJECT-STATUS.md`;
+- `docs/ROADMAP.md`;
+- `docs/README.md`;
+- `docs/CHANGELOG.md`;
+- `docs/LOCAL-RUNBOOK.md`;
+- current refresh Implementation/Validation records.
+
+### Minor finding — implementation head
+
+Implementation record не содержал фактический implementation/PR head и не отделял его от последующих evidence-only commits.
+
+### Attempt 1 verdict
+
+```text
+BLOCKING_FINDINGS: 2
+MAJOR_FINDINGS: 0
+MINOR_FINDINGS: 1
+VERDICT: CHANGES REQUIRED
+REVIEW_ID: 4835099195
+```
+
+## Remediation approval
+
+Владелец отдельно разрешил:
+
+- расширить allowlist с 22 до 25 Markdown-путей;
+- добавить три operational records PR #19;
+- синхронизировать current-state документы с PR #21;
+- обновить process records и PR body;
+- провести повторную Documentation Validation и Final PR Review.
+
+Merge и branch deletion не разрешены.
+
+## Remediation acceptance criteria
+
+- exact changed paths: 25;
+- Markdown-only diff;
+- PR #19 и PR #20 operational closure complete;
+- PR #21 current markers synchronized;
+- implementation head recorded without self-reference;
+- repeat Documentation Validation PASS;
+- PR open, non-draft, mergeable, not merged;
+- runtime/config/database/migrations/themes/tools/Git refs unchanged;
+- branch deletion not performed;
+- Mobile PASS not claimed.
+
+## Gate
+
+После remediation требуется повторный Final PR Review на точном актуальном head. Merge допускается только после его PASS и отдельного owner approval.
