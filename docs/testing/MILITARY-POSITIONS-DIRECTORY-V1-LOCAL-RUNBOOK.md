@@ -94,7 +94,7 @@ Runner самостоятельно:
 
 1. повторно делает `git fetch --prune origin`;
 2. проверяет branch, HEAD, merge-base, divergence и чистоту рабочего дерева;
-3. проверяет точный список из 21 implementation-пути относительно утверждённого baseline;
+3. проверяет точный список из 22 implementation-путей относительно утверждённого baseline;
 4. объединяет пять base64-частей, проверяет SHA-256 gzip-архива, распаковывает canonical migration 010 и проверяет SHA-256 SQL;
 5. проверяет `git diff --check`;
 6. фиксирует SHA-256 `config/local.php`;
