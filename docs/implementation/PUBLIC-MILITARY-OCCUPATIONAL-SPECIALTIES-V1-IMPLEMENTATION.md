@@ -3,7 +3,7 @@
 ## Статус
 
 ```text
-PHASE: UI REMEDIATION IMPLEMENTED / RE-TESTING REQUIRED
+PHASE: AUTOMATED TESTING PASS / MANUAL DESKTOP RE-ACCEPTANCE REQUIRED
 BASELINE: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 BRANCH: feature/public-military-occupational-specialties-directory
 MIGRATION: 011_public_military_occupational_specialties_directory.sql
@@ -190,8 +190,43 @@ OTHER PATHS: unchanged
 
 Runner теперь преобразует только пути с префиксом `themes/` и выводит `deploy_path` в parity-журнале. Runtime page, CSS, migration, seed и база данных тестовым дефектом не затронуты.
 
+## Automated Testing attempt 6
+
+```text
+DATE: 2026-08-01
+HEAD: e1bf5c85708cfa29d3a0356368938345eb2064e2
+RESULT: PASS
+IMPLEMENTATION PATHS: 24
+BACKUP: PASS
+BACKUP FILE: C:\OSPanel\backups\asu-vch\asu_vch-20260801-140604.sql
+BACKUP SIZE BYTES: 389877
+BACKUP SHA-256: 90C2368DB9C82F83C0A856D3238CD717D3F5591567D2BB967C6646588B534EA2
+DEPLOY: PASS
+PHP FILES LINTED: 113
+INSTALLER TWICE: PASS / NO NEW MIGRATIONS
+CORE VUS CHECKER: PASS
+UI CHECKER: PASS
+DIRECTORY REGRESSIONS: PASS
+SECURITY REGRESSIONS: PASS
+THEME REGRESSIONS: PASS
+ORGANIZATION REGRESSION: PASS / 58 OF 58
+SOURCE/DEPLOY PARITY: PASS / 14 PATHS
+HTTP SMOKE: PASS
+FINAL ORIGIN FEATURE DIVERGENCE: 0 0
+FINAL WORKING TREE: CLEAN
+```
+
+Финальные markers:
+
+```text
+AUTOMATED_TESTING_STATUS=PASS
+MANUAL_DESKTOP_ACCEPTANCE_STATUS=NOT_RUN
+MOBILE_TESTING_STATUS=OUT_OF_SCOPE_NOT_RUN
+PR_STATUS=NOT_CREATED
+```
+
 ## Следующий gate
 
-Повторная локальная синхронизация, Automated Testing и повторная Manual Desktop Acceptance в трёх темах при 1920×1080 и 1366×768.
+Повторная Manual Desktop Acceptance исправленного интерфейса в трёх темах при 1920×1080 и 1366×768.
 
 PR не создаётся до PASS ручной desktop-приёмки. Mobile testing остаётся OUT OF SCOPE / NOT RUN.
