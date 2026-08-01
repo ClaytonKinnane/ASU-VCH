@@ -9,6 +9,7 @@ if (PHP_SAPI !== 'cli') {
 
 $root = dirname(__DIR__);
 require_once $root . '/database/MilitaryOccupationalSpecialtyMigrationCompatibility.php';
+require_once $root . '/app/Directory/MilitaryOccupationalSpecialtyCatalogRepository.php';
 
 function mos_check(bool $condition, string $message): void
 {
@@ -45,6 +46,30 @@ try {
     mos_check(!str_contains($migration, 'military_occupational_specialty_person_relations'), 'person relation table absent');
     mos_check(!str_contains($migration, 'military_occupational_specialty_equipment_relations'), 'equipment relation table absent');
 
+    mos_check(
+        MilitaryOccupationalSpecialtyCatalogRepository::shouldSearchPublicDisclosures('all', ''),
+        'record_type all without organization includes direct disclosures'
+    );
+    mos_check(
+        MilitaryOccupationalSpecialtyCatalogRepository::shouldSearchPublicDisclosures('direct-disclosure', ''),
+        'direct-disclosure without organization includes direct disclosures'
+    );
+    mos_check(
+        !MilitaryOccupationalSpecialtyCatalogRepository::shouldSearchPublicDisclosures('training-program', ''),
+        'training-program excludes direct disclosures'
+    );
+    mos_check(
+        !MilitaryOccupationalSpecialtyCatalogRepository::shouldSearchPublicDisclosures('all', 'selected-organization'),
+        'record_type all with organization excludes direct disclosures'
+    );
+    mos_check(
+        !MilitaryOccupationalSpecialtyCatalogRepository::shouldSearchPublicDisclosures(
+            'direct-disclosure',
+            'selected-organization'
+        ),
+        'direct-disclosure with organization produces no direct-disclosure rows'
+    );
+
     $bootstrap = file_get_contents($root . '/app/bootstrap.php');
     mos_check(
         is_string($bootstrap)
@@ -59,6 +84,13 @@ try {
     $page = file_get_contents($root . '/public/admin/directories/military-occupational-specialties.php');
     mos_check(is_string($page) && str_contains($page, "require_permission('system.*.*')"), 'owner permission');
     mos_check(str_contains($page, 'military_occupational_specialty_catalog_repository()'), 'page repository factory');
+    mos_check(
+        str_contains(
+            $page,
+            'MilitaryOccupationalSpecialtyCatalogRepository::shouldSearchPublicDisclosures($recordType, $organization)'
+        ),
+        'page applies organization filter policy to direct disclosures'
+    );
     mos_check(!str_contains($page, '$_POST'), 'GET-only page');
     mos_check(str_contains($page, 'не является полным перечнем ВУС'), 'mandatory warning');
     mos_check(str_contains($page, 'rel="noopener noreferrer"'), 'safe external links');
@@ -110,6 +142,36 @@ try {
     mos_check($version['code'] === 'rf-public-vus-2026-08-01', 'published version code');
     mos_check($version['valid_to'] === null, 'published version valid_to NULL');
     $versionId = (int) $version['id'];
+
+    $catalogRepository = new MilitaryOccupationalSpecialtyCatalogRepository($pdo);
+    $firstOrganization = $pdo->prepare(
+        'SELECT code FROM military_occupational_specialty_training_organizations '
+        . 'WHERE catalog_version_id = :version_id ORDER BY sort_order, id LIMIT 1'
+    );
+    $firstOrganization->execute(['version_id' => $versionId]);
+    $firstOrganizationCode = (string) $firstOrganization->fetchColumn();
+    mos_check($firstOrganizationCode !== '', 'organization filter fixture available');
+    $expectedOrganizationPrograms = $pdo->prepare(
+        'SELECT COUNT(*) FROM military_occupational_specialty_training_programs p '
+        . 'JOIN military_occupational_specialty_training_organizations o '
+        . 'ON o.id = p.organization_id AND o.catalog_version_id = p.catalog_version_id '
+        . 'WHERE p.catalog_version_id = :version_id AND o.code = :organization'
+    );
+    $expectedOrganizationPrograms->execute([
+        'version_id' => $versionId,
+        'organization' => $firstOrganizationCode,
+    ]);
+    $organizationPrograms = $catalogRepository->searchTrainingPrograms(
+        $versionId,
+        '',
+        '',
+        '',
+        $firstOrganizationCode
+    );
+    mos_check(
+        (int) $organizationPrograms['total'] === (int) $expectedOrganizationPrograms->fetchColumn(),
+        'organization filter returns only matching training programs'
+    );
 
     $counts = [
         'military_occupational_specialty_catalog_version_legal_sources' => 5,
