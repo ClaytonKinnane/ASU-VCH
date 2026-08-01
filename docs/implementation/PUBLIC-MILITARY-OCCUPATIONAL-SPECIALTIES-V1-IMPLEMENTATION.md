@@ -7,6 +7,7 @@ PHASE: IMPLEMENTATION COMPLETE / LOCAL TESTING REQUIRED
 BASELINE: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 BRANCH: feature/public-military-occupational-specialties-directory
 MIGRATION: 011_public_military_occupational_specialties_directory.sql
+IMPLEMENTATION_PATHS: 18
 PR: NOT CREATED
 MERGE: NOT AUTHORIZED
 ```
@@ -20,6 +21,29 @@ MERGE: NOT AUTHORIZED
 - статический/интеграционный checker;
 - PowerShell 5.1 testing runner;
 - отсутствие position/rank/equipment/person relations.
+
+## Migration packaging
+
+Canonical SQL выполняется через compatibility loader из двух упорядоченных gzip/base64 частей.
+
+```text
+CANONICAL_SQL_BYTES: 88267
+CANONICAL_SQL_SHA256: 26039aedc4c700a883203eeaefd09194cc6a9a304b3c2db94a7479f8710b8fd9
+GZIP_ARCHIVE_BYTES: 9472
+GZIP_ARCHIVE_SHA256: 1c1af1e07e040452499e5882ce181b088c4017c936b0892d2552e8447996bc39
+BASE64_PARTS: 2
+```
+
+Loader проверяет archive SHA-256, распаковывает canonical SQL и проверяет SQL SHA-256 до передачи installer.
+
+## Проверено до локального Testing
+
+- PHP syntax: PASS для новых и изменённых PHP-файлов;
+- migration static structure: 9 tables / 26 triggers;
+- `DELIMITER`: absent;
+- migration loader reconstruction и оба SHA-256: PASS;
+- checker static phase: PASS;
+- database/runtime tests: NOT RUN в среде пользователя.
 
 ## Следующий gate
 
