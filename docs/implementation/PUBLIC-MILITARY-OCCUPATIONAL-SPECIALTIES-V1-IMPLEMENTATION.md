@@ -3,7 +3,7 @@
 ## Статус
 
 ```text
-PHASE: FINAL PR REVIEW REMEDIATION IMPLEMENTED / RE-TESTING REQUIRED
+PHASE: FINAL PR REVIEW REMEDIATION AUTOMATED TESTING PASS / TARGETED MANUAL RECHECK REQUIRED
 BASELINE: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 BRANCH: feature/public-military-occupational-specialties-directory
 MIGRATION: 011_public_military_occupational_specialties_directory.sql
@@ -281,9 +281,48 @@ BLOCKING FINDINGS: 2
 
 Migration, seed, schema, permissions и theme assets этим исправлением не изменены.
 
+## Automated Testing attempt 7 — Final PR Review remediation
+
+```text
+DATE: 2026-08-01
+HEAD: 9db06c4a26066ca25dc36c627c1236089a3c1238
+RESULT: PASS
+IMPLEMENTATION PATHS: 25
+BACKUP: PASS
+BACKUP FILE: C:\OSPanel\backups\asu-vch\asu_vch-20260801-153344.sql
+BACKUP SIZE BYTES: 389878
+BACKUP SHA-256: 8D757448B22CB66AC77EDF7E1B3A1E6EAFFCB2C41988BB3830967934582B386C
+DEPLOY: PASS / 153 FILES
+PHP FILES LINTED: 113 / 0 ERRORS
+INSTALLER TWICE: PASS / NO NEW MIGRATIONS
+CORE VUS CHECKER: PASS
+ORGANIZATION FILTER POLICY REGRESSIONS: PASS
+ORGANIZATION REPOSITORY FILTER: PASS
+UI CHECKER: PASS
+DIRECTORY REGRESSIONS: PASS
+SECURITY REGRESSIONS: PASS
+THEME REGRESSIONS: PASS
+ORGANIZATION REGRESSION: PASS / 58 OF 58
+SOURCE/DEPLOY PARITY: PASS / 14 PATHS
+HTTP SMOKE: PASS
+FINAL ORIGIN FEATURE DIVERGENCE: 0 0
+FINAL WORKING TREE: CLEAN
+```
+
+Финальные markers:
+
+```text
+AUTOMATED_TESTING_STATUS=PASS
+MANUAL_DESKTOP_ACCEPTANCE_STATUS=TARGETED_RECHECK_REQUIRED
+MOBILE_TESTING_STATUS=OUT_OF_SCOPE_NOT_RUN
+PR_STATUS=OPEN_20_NOT_MERGED
+```
+
+Runtime remediation и test-infrastructure remediation подтверждены полным локальным прогоном. Evidence-only commit настоящего раздела не требует повторного deploy или Automated Testing.
+
 ## Следующий gate
 
-Полный Automated Testing на актуальном PR head. После PASS требуется targeted Manual Desktop Recheck только для фильтра организации:
+Targeted Manual Desktop Recheck только для фильтра организации:
 
 - `record_type=all + организация` — только программы выбранной организации;
 - `record_type=direct-disclosure + организация` — пустое состояние;
