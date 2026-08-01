@@ -100,4 +100,45 @@ BRANCH_DELETION_STATUS: NOT_AUTHORIZED
 
 Оба blocking finding первого Final PR Review устранены и подтверждены автоматическими и ручными проверками. Новых blocking, major или minor findings не выявлено.
 
-PR #20 допускается к отдельному owner merge-approval gate. Настоящий review не разрешает merge и не разрешает удаление feature-ветки.
+PR #20 был допущен к отдельному owner merge-approval gate. Этот исторический review сам по себе не разрешал merge и branch deletion.
+
+## Post-merge closure
+
+```text
+DATE: 2026-08-01
+PR: #20
+PR_STATE: CLOSED
+MERGED: YES
+MERGE_METHOD: MERGE COMMIT
+MERGE_COMMIT: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+FINAL_FEATURE_HEAD: bea147505a85010b61fe938eb07ec474d76cdab5
+FINAL_PR_REVIEW_STATUS: PASS
+POST_MERGE_GIT_VERIFICATION_STATUS: PASS
+FEATURE_BRANCH_PRESERVED_AFTER_MERGE: YES
+```
+
+Отдельное owner merge approval было получено после Final PR Review PASS. Merge выполнен с expected-head guard. Post-merge verification подтвердила:
+
+- PR закрыт как merged;
+- `main` указывает на merge commit `3082ec6...`;
+- feature head `bea1475...` является родителем merge commit;
+- деревья feature head и merged `main` совпадают;
+- ключевой VUS runtime route присутствует в `main`;
+- feature-ветка не была удалена.
+
+Post-merge verification была Git/GitHub-проверкой. Новый локальный runtime/deploy retest на merge commit не выполнялся и не заявляется; проверенным runtime anchor остаётся `9db06c4a26066ca25dc36c627c1236089a3c1238`.
+
+## Current outcome
+
+```text
+INCREMENT_STATUS: IMPLEMENTED / TESTED / ACCEPTED / REVIEWED / MERGED
+AUTOMATED_TESTING_STATUS: PASS
+MANUAL_DESKTOP_ACCEPTANCE_STATUS: PASS
+TARGETED_MANUAL_DESKTOP_RECHECK_STATUS: PASS
+FINAL_PR_REVIEW_STATUS: PASS
+POST_MERGE_GIT_VERIFICATION_STATUS: PASS
+MOBILE_TESTING_STATUS: OUT_OF_SCOPE_NOT_RUN
+BRANCH_DELETION_STATUS: PENDING SEPARATE POST-REFRESH APPROVAL
+```
+
+Удаление feature-ветки не входит в Post-PR20 Baseline Refresh и требует fresh inventory и отдельного owner approval после завершения документационного цикла.

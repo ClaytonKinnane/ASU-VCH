@@ -14,125 +14,99 @@
 
 ## Основные требования
 
-- Репозиторий `ClaytonKinnane/ASU-VCH` является единственным источником истины.
+- GitHub-репозиторий `ClaytonKinnane/ASU-VCH` является единственным источником истины.
 - Актуальный HEAD определяется через `origin/main`, а не хранится в living docs как самореферентный SHA.
-- Код и документация изменяются в отдельных ветках GitHub.
-- Локальный клон используется только для синхронизации, deploy и тестирования.
+- Код и документация изменяются только в отдельных ветках.
+- Локальный клон используется для синхронизации, deploy и тестирования.
 - Рабочие данные приложения хранятся в MySQL; секреты и локальные параметры в Git не помещаются.
-- Материальные изменения проходят Architecture → Specification → Review → Approval до реализации.
-- Merge выполняется только после тестирования, review и отдельного явного разрешения владельца проекта.
-- Ветки не удаляются без отдельного явного разрешения.
+- Материальные изменения проходят Research → Analysis → Architecture → Specification → Review → Approval до реализации.
+- Merge выполняется после Testing, Final PR Review и отдельного разрешения владельца.
+- Удаление веток выполняется только после post-merge verification, fresh inventory и отдельного разрешения.
 
 ## Реализованное состояние
 
 ### Платформа и безопасность
 
-- установка приложения и последовательные migrations 001–009;
-- первичное создание единственного владельца системы;
-- отключение bootstrap-регистрации после создания владельца;
+- последовательные migrations 001–011;
+- bootstrap единственного первого владельца;
+- отключение публичной регистрации после создания владельца;
 - вход, выход, защищённые сессии и CSRF;
-- RBAC с четырьмя системными ролями и 25 системными permissions;
-- полный пользовательский lifecycle: создание, approval, activation, редактирование, роли, block/unblock, rejection, archive/restore;
+- RBAC с четырьмя системными ролями и 25 permissions;
+- полный пользовательский lifecycle;
 - обязательная смена временного пароля;
 - аудит критических пользовательских операций;
-- тематические страницы HTTP 403 и operation-result modal.
+- тематические HTTP 403 и operation-result modal.
 
 ### Темы
 
-- доверенный статический реестр тем;
-- глобальное хранение активной темы в БД;
+- trusted static registry;
+- глобальная active theme в БД;
 - безопасный default/fallback `asu-blue`;
 - три встроенные темы: `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova`;
-- восемь CSS-assets общего контракта, включая `organization.css`;
+- девять обязательных CSS-assets, включая профильный VUS stylesheet и `organization.css`;
 - локальные SVG-assets темы `Евгения Ростова`;
-- desktop-приёмка всех трёх тем в реализованных разделах.
+- desktop acceptance затронутых интерфейсов во всех трёх темах.
 
 ### Справочники
 
-- стартовая страница справочников;
-- read-only нормативный справочник составов военнослужащих и воинских званий;
-- read-only нормативно-методический справочник типов организационных элементов;
-- поиск, фильтры и профильные integration checker'ы.
+Реализованы owner-only read-only справочники:
 
-### Organization
+- составы военнослужащих и воинские звания;
+- типы организационных элементов;
+- типовые воинские должности;
+- публичные сведения о военно-учётных специальностях.
 
-Organizational Structure v1 реализует:
+Общие свойства:
 
-- создание и lifecycle организационных структур;
-- версии `draft`, `approved`, `active`, `cancelled`;
-- редактируемое дерево draft-версии;
-- стабильные элементы между версиями;
-- привязку типов к версии справочника;
-- metadata документов и связи с версиями;
-- историю изменений и сравнение версий;
-- транзакционные операции, revision checks, CSRF и RBAC;
-- 7 таблиц, 16 DB triggers и 6 permissions `organization.structures.*`.
+- GET-only пользовательские маршруты;
+- prepared statements и escaped output;
+- поиск и фильтры;
+- официальные источники и evidence metadata;
+- отсутствие runtime scraping/import;
+- отсутствие mutation UI.
 
-Реализованная модель предназначена для контролируемого ведения организационной структуры, но не разрешает размещение закрытых или фактических данных без отдельного утверждения.
+Каталог должностей не создаёт кадровые назначения и не связывает типы автоматически со званиями. Каталог ВУС не связывается с должностями, званиями, ВВСТ или персональными данными и не заявляется как полный воинский учёт.
+
+### Organizational Structure v1
+
+- lifecycle структур и версий;
+- редактируемое draft-дерево;
+- stable elements между версиями;
+- документы-основания;
+- история и сравнение;
+- транзакции, optimistic revisions, CSRF и RBAC;
+- 7 таблиц, 16 triggers и 6 permissions `organization.structures.*`.
 
 ## Контрольные точки
 
-Актуальный repository HEAD:
-
-```powershell
-git fetch --prune origin
-git rev-parse origin/main
-```
-
-Исторические anchors:
-
 ```text
-last completed documentation PR before cleanup closure: #17
-last completed documentation merge before cleanup closure: c67632674dce216bb23338de898bf0733a8e42c0
-last functional PR: #15
-last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
-tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
-migrations: 9
+latest functional PR: #20
+PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
+PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
+PR #20 merge / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
+migrations: 11
 system roles: 4
 system permissions: 25
 built-in themes: 3
 active functional increment: none
 ```
 
-PR #16 и PR #17 изменили только документацию и не создали нового functional/runtime baseline.
+Documentation-only commits после tested runtime не объявляются runtime-протестированными.
 
 ## Repository governance
 
-Завершённая административная операция зафиксирована в [Repository Cleanup Closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md).
+Исторический cleanup 2026-07-31 остаётся датированным evidence. Ветки, созданные позже, имеют собственный lifecycle.
 
-```text
-PR #17 merge: PASS
-post-merge synchronization: PASS
-corrected inventory before cleanup: 19 branches / 18 non-main
-authorized cleanup batch: 18 remote non-main branches
-cleanup result: 18 / 18 deleted
-terminal cleanup verification snapshot: main only
-local branch set: 12 / 12 unchanged
-REMOTE_BRANCH_CLEANUP_STATUS=PASS
-```
-
-`main only` относится к terminal snapshot 2026-07-31. Позднее созданная `docs/post-pr17-branch-cleanup-closure` и любые будущие branches не входили в исторический batch и управляются отдельно.
-
-Historical evidence не переписывается:
-
-- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — post-PR16 pre-reconciliation snapshot;
-- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md) — pre-refresh snapshot.
-
-Текущее количество branches определяется динамически:
-
-```powershell
-git ls-remote --heads origin
-```
-
-Любой future remote cleanup требует fresh inventory и отдельного owner approval. Local branch deletion требует отдельного scope и approval.
+На момент подготовки Post-PR20 Baseline Refresh remote inventory содержит `main`, две merged feature-ветки и активную docs-ветку. Их удаление не входит в настоящий implementation и требует отдельного approval после merge документационного refresh.
 
 ## Не реализовано
 
-- карточки военнослужащих;
-- должности, штатные расписания и кадровые назначения;
-- общий Documents domain, файлы, приказы и универсальный document workflow;
-- медицинский учёт, имущество, транспорт и обучение;
-- общий неизменяемый audit log всех доменов;
+- карточки военнослужащих и персональный воинский учёт;
+- штатные расписания и кадровые назначения;
+- общий Documents domain, файлы и универсальный workflow приказов;
+- медицинский учёт, имущество, транспорт и обучение как рабочие домены;
+- общий immutable audit log всех доменов;
 - production deployment и GitHub CI;
 - произвольная установка тем и browser-редактор CSS/JS.
 
@@ -140,13 +114,9 @@ Metadata документов внутри Organization не считается 
 
 ## Границы тестирования
 
-Organizational Structure v1 прошёл автоматическое тестирование и ручную desktop-приёмку.
-
-Post-PR17 Branch Cleanup Closure является documentation-only и не изменяет runtime, deploy или database.
+PR #19 и PR #20 прошли Automated Testing и Manual Desktop Acceptance. Mobile runtime testing было исключено из утверждённого scope.
 
 ```text
-runtime/database retest: NOT RUN / NOT REQUIRED
-HTTP/application browser testing: NOT RUN / NOT REQUIRED
 mobile testing: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
 ```

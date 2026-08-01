@@ -1,154 +1,114 @@
 # План разработки
 
-## Стабильная контрольная точка
+## Stable functional baseline
 
-Функциональные PR #1–#9, #12 и #15 завершены и объединены в `main`. Documentation-only PR #10, #11, #13, #14, #16 и #17 также объединены и не изменяли runtime.
+Функциональные PR #1–#9, #12, #15, #19 и #20 merged в `main`. Последний functional baseline — PR #20.
 
 ```text
-current repository pointer: origin/main
-last completed documentation PR before cleanup closure: #17
-last completed documentation merge before cleanup closure: c67632674dce216bb23338de898bf0733a8e42c0
-last functional PR: #15
-last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
-tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
-completed functional pull requests: #1–#9, #12, #15
-applied migrations: 001–009
-stable built-in themes: 3
+repository pointer: origin/main
+latest functional PR: #20
+PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
+PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
+PR #20 merge / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
+migrations: 001–011
 system roles: 4
 system permissions: 25
+built-in themes: 3
 ```
 
-Актуальный SHA `main` определяется командой `git rev-parse origin/main`; он не хранится здесь как самореферентное current-state поле.
+## Завершённые functional этапы
 
-## Завершённые этапы
-
-- [x] базовый сайт, установка, авторизация, сессии и CSRF;
-- [x] RBAC и управление пользователями;
-- [x] обязательная смена временного пароля;
-- [x] отклонение пользователя с аудитом;
-- [x] архивирование и восстановление пользователя;
-- [x] управление темами и светлая синяя тема;
-- [x] унификация геометрии и hover-эффектов тем;
-- [x] стартовая страница справочников;
-- [x] справочник составов военнослужащих и воинских званий;
-- [x] справочник типов организационных элементов;
-- [x] документационный аудит baseline 2026-07-27;
-- [x] третья встроенная тема `Евгения Ростова`;
+- [x] базовый сайт, authentication, sessions и CSRF;
+- [x] RBAC и user lifecycle;
+- [x] required password change, rejection audit и archive/restore;
+- [x] theme management и три built-in themes;
+- [x] directory landing, ranks и organizational element types;
 - [x] Organizational Structure v1;
-- [x] UI Polish 1–4;
-- [x] автоматическое тестирование Organizational Structure v1;
-- [x] ручная desktop-приёмка Organizational Structure v1;
-- [x] PR #15, Final Review, отдельный merge approval и merge;
-- [x] repository/branch audit после PR #15;
-- [x] Post-Organizational-Structure v1 Baseline Refresh;
-- [x] PR #16, Final Review, отдельный merge approval и merge;
-- [x] локальная fast-forward синхронизация `main` после PR #16;
-- [x] read-only аудит 17 post-PR16 non-main веток;
-- [x] Post-PR16 Repository Reconciliation documentation package;
-- [x] PR #17, Final Review, отдельный merge approval и merge;
-- [x] локальная fast-forward синхронизация `main` после PR #17;
-- [x] fresh post-merge branch inventory;
-- [x] corrected inventory `19 total / 18 non-main`;
-- [x] отдельное решение владельца о точном branch cleanup batch;
-- [x] GitHub write authentication recovery;
-- [x] удаление 18 / 18 утверждённых remote non-main branches;
-- [x] read-only terminal cleanup verification `main only` на snapshot 2026-07-31;
-- [x] сохранение локального branch set `12 / 12 unchanged`;
-- [x] Post-PR17 Branch Cleanup Closure Architecture / Specification / Formal Review / Approval package;
-- [x] completed cleanup evidence reconciled into six living documents and immutable closure record.
+- [x] PR #19 — public military positions catalog;
+- [x] PR #19 Automated Testing и Manual Desktop Acceptance;
+- [x] PR #19 merge;
+- [x] PR #20 — public military occupational specialties catalog;
+- [x] PR #20 Automated Testing, Manual Desktop Acceptance и targeted recheck;
+- [x] PR #20 repeated Final PR Review PASS;
+- [x] PR #20 merge и post-merge Git verification.
 
-## Завершённый функциональный инкремент: Organizational Structure v1
+## Documentation baseline refresh
+
+Workflow reference: PR #21, branch `docs/post-pr20-baseline-refresh`.
 
 ```text
-historical feature branch: feature/organizational-structure-v1
-tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
-final feature documentation HEAD: dd2586dab7a3b3d8b3683d60e2c7eedce002eb54
-pull request: #15 MERGED
-merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
-final review: PASS
-blocking findings: 0
+classification: documentation only
+initial allowlist: 22 Markdown paths
+final approved allowlist: 25 Markdown paths
+runtime changes: none
+```
+
+Завершённые milestones:
+
+- [x] Research и Analysis;
+- [x] Architecture, Specification и pre-implementation Review;
+- [x] owner Approval;
+- [x] initial Documentation Implementation и Validation;
+- [x] PR #21 created;
+- [x] Final PR Review attempt 1 — CHANGES REQUIRED;
+- [x] owner-approved scope expansion 22 → 25;
+- [x] PR #19 operational closure;
+- [x] current-state remediation;
+- [x] repeat Documentation Validation PASS.
+
+Оставшиеся gates определяются live state PR #21 в GitHub и не хранятся здесь как изменчивый current status:
+
+1. repeat Final PR Review;
+2. separate merge approval;
+3. merge и post-merge verification;
+4. fresh remote/local branch inventory;
+5. exact cleanup approval;
+6. remote-first и approved local cleanup;
+7. terminal verification.
+
+## Последние catalogs
+
+### Military Positions — migration 010
+
+```text
+tables: 14
+triggers: 41
+canonical types: 34
+variants: 35
+automated testing: PASS
+manual desktop acceptance: PASS
 mobile testing: OUT OF SCOPE / NOT RUN
-mobile PASS: NOT CLAIMED
 ```
 
-Реализованы structures, version lifecycle, редактируемое дерево draft-версии, metadata документов, история и сравнение версий. Migration 009 добавила 7 таблиц, 16 triggers и 6 permissions; общее количество системных permissions стало 25.
-
-## Завершённый документационный инкремент: Baseline Refresh
+### Public VUS — migration 011
 
 ```text
-increment: Post-Organizational-Structure v1 Baseline Refresh
-pull request: #16 MERGED
-merge method: merge
-merge commit: 72630757c1a72a6bd971cf819cff9bdd36c148bf
-scope: README.md and docs/** only
-runtime/deploy/database changes: none
+tables: 9
+triggers: 26
+searchable records: 17
+automated testing: PASS
+manual desktop acceptance: PASS
+targeted manual recheck: PASS
+final PR review: PASS
+post-merge verification: PASS
+mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-Baseline Refresh актуализировал living documentation после PR #15 и создал repository audit 2026-07-29.
+## Следующий functional increment
 
-## Завершённый документационный инкремент: Repository Reconciliation
-
-```text
-increment: Post-PR16 Repository Reconciliation
-pull request: #17 MERGED
-merge method: merge
-merge commit: c67632674dce216bb23338de898bf0733a8e42c0
-scope: README.md and docs/** only
-runtime/deploy/database changes: none
-```
-
-Repository Reconciliation устранил post-merge self-reference, разделил repository pointer и functional anchors, создал audit 2026-07-30 и подготовил доказательную базу для отдельного cleanup gate.
-
-## Post-PR17 Branch Cleanup Closure
-
-Завершённая административная операция зафиксирована в [REPOSITORY-CLEANUP-2026-07-31.md](REPOSITORY-CLEANUP-2026-07-31.md).
-
-```text
-authorized cleanup batch: 18 remote non-main branches
-cleanup result: 18 / 18 deleted
-terminal verification snapshot: main only
-local branches: 12 / 12 unchanged
-REMOTE_BRANCH_CLEANUP_STATUS=PASS
-```
-
-`main only` квалифицирован датой и verification event. Текущее количество branches определяется динамически. Позднее созданные branches требуют собственного workflow и отдельного deletion approval.
-
-## Следующий функциональный инкремент
-
-Не выбран и не утверждён. Возможные направления не являются задачами до отдельного Research / Analysis / Architecture / Approval:
+Не выбран и не утверждён. Возможные направления требуют отдельного Research → Approval cycle:
 
 - карточка военнослужащего;
-- должности, штатные структуры и кадровые назначения;
-- развитие нормативных справочников;
-- общий Documents domain, документы и приказы;
-- общий audit domain;
-- production/CI-инфраструктура;
-- отдельный инкремент мобильной проверки и доработки.
-
-Отдельным техническим инкрементом должен быть устранён exact-count debt legacy checker-файлов для текущего baseline 25 permissions.
+- штатные структуры и кадровые назначения;
+- общий Documents domain;
+- общий Audit domain;
+- production/CI infrastructure;
+- отдельный mobile verification increment.
 
 ## Постоянные ограничения
 
-- Нельзя включать закрытые, ограниченные или фактические сведения без отдельного утверждения scope, модели данных и защиты.
-- Нельзя считать общий Documents domain реализованным только из-за metadata документов внутри Organization.
-- Нельзя считать мобильную версию проверенной без отдельной фактической приёмки.
-- Нельзя выполнять merge или удалять feature/docs-ветку без отдельного явного разрешения владельца проекта.
-- Техническая классификация `SAFE TO DELETE` не является разрешением на branch deletion.
-- Completed cleanup snapshot не является автоматическим разрешением на удаление branches, созданных позднее.
-
-## Обязательный workflow
-
-```text
-Research
-→ Analysis
-→ Architecture
-→ Specification
-→ Review
-→ Approval
-→ Implementation
-→ Testing
-→ Commit
-→ Push
-→ Pull Request
-→ Merge
-```
+- Public catalogs не являются кадровым или персональным воинским учётом.
+- Mobile PASS не заявляется без фактической acceptance.
+- PR creation, merge и branch deletion требуют отдельных approvals.
+- `SAFE TO DELETE` не является deletion authorization.

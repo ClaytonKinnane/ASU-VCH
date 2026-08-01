@@ -14,10 +14,12 @@ Priority when documents conflict:
 
 ## Documentation First
 
-Every material feature follows:
+Every material change follows:
 
 ```text
-Architecture
+Research
+→ Analysis
+→ Architecture
 → Specification
 → Review
 → Approval
@@ -26,294 +28,236 @@ Architecture
 → Commit
 → Push
 → Pull Request
+→ Final PR Review
+→ separate merge approval
 → Merge
+→ post-merge verification
+→ separate branch deletion approval
 ```
 
-No database or business implementation begins before the relevant architecture and migration specification are approved.
+No material database, runtime, documentation-baseline or repository-cleanup implementation begins before the relevant scope is reviewed and approved.
 
-## Domain ownership
+## Current state versus historical evidence
 
-Each business concept has exactly one owning domain.
+Documentation belongs to one of three classes:
 
-The owning domain:
-
-- defines invariants;
-- owns writes;
-- owns lifecycle rules;
-- publishes domain events;
-- exposes explicit application contracts.
-
-Other domains reference the owner but do not duplicate or mutate its data model.
-
-## Aggregate pattern
-
-An aggregate has one aggregate root.
+1. **Living documentation** — describes the current merged baseline and must be refreshed after material merges.
+2. **Historical process artifacts** — Architecture, Specification, Review, Approval and dated Test Evidence preserving the state of their gate.
+3. **Operational increment records** — may contain both attempt history and a current-status section; post-merge closure updates current framing without deleting history.
 
 Rules:
 
-- external commands target the root;
-- child entities cannot be modified independently;
-- invariants spanning child entities are enforced inside the aggregate transaction;
-- repository contracts are expressed primarily around the aggregate root;
-- direct table access must not bypass aggregate rules.
+- current repository HEAD is resolved dynamically through `origin/main`;
+- exact SHA values are stored as historical merge/test/refresh anchors;
+- documentation-only commits are never presented as runtime-tested heads;
+- stale current-state fields must not remain in living documentation;
+- historical `NOT AUTHORIZED`, `NOT CREATED` or `RECHECK REQUIRED` markers are preserved when they accurately describe the recorded moment.
+
+## Domain ownership
+
+Each business concept has one owning domain. The owner defines invariants, owns writes and lifecycle rules, publishes events and exposes explicit contracts. Other domains do not duplicate or mutate its model.
+
+## Aggregate pattern
+
+An aggregate has one root. External commands target the root; child entities are not modified independently; cross-child invariants are enforced in the aggregate transaction; direct table access must not bypass aggregate rules.
 
 ## Immutable historical entities
 
-Historical facts should be append-only when correction must preserve the original state.
+Historical facts should be append-only when correction must preserve original state. Typical examples include audit records, published catalog versions, source snapshots, document versions and assignment history.
 
-Typical examples:
+Immutable tables normally omit `updated_at` and `deleted_at`. UPDATE/DELETE should be rejected by triggers or permissions where practical. Corrections create a new record or explicit compensating event.
 
-- audit records;
-- document versions;
-- document files;
-- assignment and revocation history.
+## Versioned public catalog
 
-Immutable tables normally omit:
+Public normative/reference catalogs use version roots and immutable published children.
 
-- `updated_at`;
-- `deleted_at`.
+Approved patterns:
 
-Where database-level protection is practical, UPDATE and DELETE are rejected by triggers or permissions.
+### Whole-catalog versioning
 
-Corrections create new records or explicit compensating events.
+Used when one coherent normative set is published as a unit.
+
+- one current published version;
+- child rows belong to exactly one version;
+- publication freezes all child rows;
+- lifecycle transitions are explicit and forward-only;
+- evidence rows cannot cross versions.
+
+Example: military position types catalog.
+
+### Source-centric catalog
+
+Used when public disclosures from heterogeneous official sources must remain distinguishable.
+
+- catalog version defines the public release boundary;
+- legal sources and official snapshots are first-class records;
+- each disclosed record retains source/evidence context;
+- semantic normalization does not exceed what the source supports;
+- incomplete public coverage is stated explicitly;
+- published records are immutable.
+
+Example: public military occupational specialties catalog.
+
+For both patterns:
+
+- runtime scraping/import is not implied;
+- no completeness claim without evidence;
+- no automatic cross-domain relation merely because identifiers look similar;
+- source URLs are validated and output escaped;
+- owner-only read-only UI may reuse `system.*.*` without adding permissions.
+
+## Evidence-bounded identifiers
+
+An identifier is decomposed only when an authoritative source supports the decomposition.
+
+Rules:
+
+- raw identifiers are preserved;
+- parsed components may be nullable;
+- identifiers from different source regimes are not forced into one semantic format;
+- unknown structure is represented explicitly rather than guessed;
+- UI labels distinguish normative examples, complete codes and official program identifiers.
+
+## Filter composition policy
+
+When a filter applies only to one record subtype, result composition must be explicit and testable.
+
+Example pattern:
+
+- organization applies to training programs;
+- selecting organization excludes unrelated direct-disclosure records;
+- selecting an incompatible record type and organization yields a valid empty state;
+- policy is implemented in a testable repository/application function and covered by integration plus manual checks.
 
 ## Soft deletion
 
 Soft deletion is used only for mutable aggregate roots where removal from active use is required without destroying history.
 
-Standard column:
-
 ```text
 deleted_at DATETIME(6) NULL
 ```
 
-Rules:
-
-- soft deletion does not imply identifier reuse;
-- historical child entities are not independently soft-deleted;
-- registered or legally significant records should use lifecycle statuses instead of deletion;
-- FK behavior remains RESTRICT;
-- restoration is an explicit domain operation and must preserve invariants.
+Historical child entities are not independently soft-deleted. Registered or legally significant records use lifecycle statuses. FK behavior defaults to RESTRICT. Restoration is explicit.
 
 ## Reference data
 
-Reusable classifications belong to the Reference domain unless they are true internal constants with no administrative or reporting value.
-
-Reference rules:
+Reusable classifications belong to the Reference domain unless they are true internal constants.
 
 - no MySQL ENUM;
 - lowercase immutable codes;
-- group membership validated by domain logic and, for critical constraints, database triggers;
-- foreign keys point to `reference_values(id)`;
-- a reference value from the wrong group is invalid even if the FK exists;
+- group membership validated by domain logic and critical DB guards;
 - system values cannot have machine codes changed or be deleted.
 
 ## Identity pattern
 
-Internal relational identity uses:
+Internal relational identity:
 
 ```text
 id BIGINT UNSIGNED AUTO_INCREMENT
 ```
 
-Externally exposed aggregates may additionally use an immutable public identifier, normally UUID stored as `BINARY(16)`.
-
-Rules:
-
-- internal IDs are not stable integration contracts;
-- public IDs never change;
-- business identifiers remain separate from technical identifiers;
-- historical business identifiers are not reused unless a domain specification explicitly allows it.
+Externally exposed aggregates may additionally use immutable UUIDs. Business identifiers remain separate from technical identifiers and are not reused without explicit specification.
 
 ## Foreign keys
 
-Default FK policy:
+Default policy:
 
 ```text
 ON DELETE RESTRICT
 ON UPDATE RESTRICT
 ```
 
-Cascade deletion is prohibited unless approved by a dedicated architectural decision.
-
-A nullable FK is permitted only when the domain meaning of absence is explicitly documented.
+Cascade deletion requires a dedicated approved decision. Nullable FK requires documented absence semantics.
 
 ## Domain events and Audit
 
-Domains publish past-tense events describing completed facts.
-
-Convention:
-
-```text
-<Aggregate><PastTenseVerb>
-```
-
-Examples:
-
-- `DocumentRegistered`
-- `UserBlocked`
-- `RoleAssigned`
-
-Rules:
-
-- events are emitted only after successful commit;
-- domains do not call Audit persistence directly;
-- Audit consumes events through infrastructure contracts;
-- event payloads contain stable identifiers and sufficient historical context;
-- secrets and sensitive raw content are excluded.
+Domains publish past-tense facts after successful commit. Event payloads contain stable identifiers and sufficient historical context but no secrets or unnecessary sensitive content. Audit consumes events through infrastructure contracts.
 
 ## Actor references
 
-A domain may store `created_by_user_id`, `assigned_by_user_id`, or equivalent technical actor references without acquiring a business dependency on Security.
-
-Rules:
-
-- Security services are not called from domain entities;
-- FK usage is allowed where approved;
-- system or installation events may use nullable actors only when documented;
-- Audit retains actor snapshots independently.
+Domains may store technical actor references without acquiring business ownership of Security. Nullable actors are allowed only when documented. Audit retains independent actor snapshots where required.
 
 ## Transactions and concurrency
 
-Commands that modify an aggregate execute in a database transaction.
-
-Use row locking when deriving sequential or exclusive state:
-
-```sql
-SELECT ... FOR UPDATE
-```
-
-Examples:
-
-- document version numbering;
-- active assignment replacement;
-- ownership transfer.
-
-Database constraints remain the final protection against races; application checks alone are insufficient for critical uniqueness rules.
+Commands modifying an aggregate run in a database transaction. Use `SELECT ... FOR UPDATE` for sequential or exclusive state. Database constraints remain final race protection.
 
 ## External resource coordination
 
-A database transaction cannot atomically include filesystem, network, or external-service changes.
-
-Approved pattern:
-
-1. prepare or stage external data;
-2. validate it;
-3. begin the database transaction;
-4. persist metadata;
-5. finalize the external operation;
-6. commit;
-7. execute compensation if either side fails;
-8. publish events after commit.
-
-Systems using this pattern must include reconciliation for failed compensation and orphaned resources.
+Database transactions cannot atomically include filesystem/network operations. Approved sequence: stage, validate, begin transaction, persist metadata, finalize external operation, commit, compensate on failure, publish events after commit. Reconciliation is required for failed compensation.
 
 ## Generated columns and uniqueness
 
-Generated nullable columns may enforce conditional uniqueness in MySQL.
-
-Approved use cases include:
-
-- one active default per Reference group;
-- one active role assignment;
-- one primary file per document version.
-
-The expression must depend only on data available in the same row. Semantics requiring another table must be materialized and protected by triggers or redesigned.
+Generated nullable columns may enforce conditional uniqueness when the expression depends only on the same row. Cross-table semantics must be materialized, trigger-protected or redesigned.
 
 ## Database triggers
 
-Triggers are appropriate for invariants that must hold regardless of application entry point, including:
+Triggers are appropriate for invariants that must hold regardless of application entry point:
 
-- Reference-group membership;
-- immutable table protection;
-- cross-row ownership checks;
+- reference-group membership;
+- immutable published data;
 - lifecycle restrictions;
+- cross-version relation guards;
 - conditional uniqueness support.
 
-Trigger rules:
-
-- logic must be documented in migration specifications;
-- errors must be deterministic and testable;
-- triggers must not hide core business workflows from the application layer;
-- the same invariant should be validated in domain code for clear user feedback.
+Trigger errors must be deterministic and tested. Application code should also validate for clear user feedback.
 
 ## Status lifecycles
 
-Status transitions are explicit domain rules, not arbitrary updates.
-
-Each domain must document:
-
-- initial status;
-- allowed forward transitions;
-- prohibited reverse transitions;
-- required data for each transition;
-- terminal states;
-- restoration or cancellation semantics.
-
-Reference stores the status values; the owning domain defines transition logic.
+Each domain documents initial status, allowed transitions, prohibited reverse transitions, required data, terminal states and restoration/cancellation semantics.
 
 ## Security boundaries
 
-Permissions authorize actions but never bypass:
+Permissions never bypass validation, CSRF, domain invariants, audit, transactions or secret handling. Infrastructure resources are not exposed directly when application authorization is required.
 
-- domain invariants;
-- validation;
-- CSRF protection;
-- audit requirements;
-- transactional consistency;
-- secret-handling rules.
+## Migration packaging and compatibility
 
-Infrastructure resources such as files must not be exposed directly when application authorization is required.
+When transport/parser constraints prevent storing one executable canonical SQL file directly:
+
+- keep a small marker migration;
+- package canonical SQL deterministically;
+- split only at transport layer, not semantic SQL boundaries;
+- verify archive hash, canonical SQL hash, part order and byte count before execution;
+- fail closed on mismatch;
+- test repeat installer and source/deploy parity.
+
+Packaging is a compatibility mechanism, not a second schema source of truth.
 
 ## Migration specifications
 
-Every domain schema requires a migration specification before executable migrations.
-
-The specification defines:
-
-- migration order;
-- tables and columns;
-- data types;
-- keys and indexes;
-- FK actions;
-- generated columns;
-- triggers;
-- seed data;
-- rollback policy;
-- verification tests;
-- implementation gate.
-
-Executable migrations must not introduce undocumented schema decisions.
+Every domain schema requires an approved migration specification covering order, tables, columns, keys, FK actions, triggers, seed, packaging, rollback policy and verification tests. Executable migrations must not introduce undocumented decisions.
 
 ## Testing obligations
 
-Critical invariants require integration tests against MySQL, not only unit tests.
+Critical invariants require integration tests against MySQL. Tests should cover FK actions, unique constraints, trigger rejection, lifecycle, cross-version guards, transaction rollback, immutable records, source/deploy parity and security regressions.
 
-Tests should cover:
+Manual acceptance is required for user-visible behavior defined by Specification. Mobile PASS is not claimed without actual mobile acceptance.
 
-- FK actions;
-- unique constraints;
-- trigger rejection paths;
-- soft-delete behavior;
-- concurrent writes;
-- transaction rollback;
-- Reference-group validation;
-- immutable-record protection;
-- compensation behavior for external resources.
+## Repository cleanup pattern
+
+Branch cleanup is a separate administrative operation after merge.
+
+Required sequence:
+
+1. post-merge verification;
+2. documentation baseline refresh when current docs are stale;
+3. fresh remote and local inventory;
+4. reachability/unique-commit checks against current `origin/main`;
+5. exact cleanup batch;
+6. separate owner approval;
+7. remote deletion first when possible;
+8. local deletion only within approved scope;
+9. final inventory and `main` integrity verification.
+
+`SAFE TO DELETE` is a technical classification, never an authorization.
 
 ## Change control
 
-A recurring pattern may be changed only when:
-
-- the limitation is documented;
-- affected domains are identified;
-- migration and compatibility effects are evaluated;
-- an ADR is created for project-wide changes;
-- frozen domain approvals are updated where necessary.
+A recurring pattern changes only when the limitation, affected domains, migration/compatibility effects and required ADR updates are documented and approved.
 
 ## Status
 
 ```text
 ARCHITECTURAL PATTERNS: APPROVED
 APPLICABILITY: PROJECT-WIDE
+CURRENT BASELINE COVERAGE: THROUGH PR #20 / MIGRATION 011
 ```

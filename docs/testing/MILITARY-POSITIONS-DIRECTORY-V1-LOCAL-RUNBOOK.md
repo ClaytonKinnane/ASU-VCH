@@ -1,16 +1,29 @@
-# Local Runbook: Справочник типов воинских должностей ВС РФ v1
+# Historical Local Runbook — Military Positions Directory v1
 
-## 1. Назначение
+## Current classification
 
-Все implementation-файлы хранятся в удалённой ветке:
+```text
+INCREMENT: Military Positions Directory v1
+PR: #19 CLOSED / MERGED
+MERGE_COMMIT: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
+TESTED_RUNTIME_HEAD: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
+AUTOMATED_TESTING_STATUS: PASS
+MANUAL_DESKTOP_ACCEPTANCE_STATUS: PASS
+MOBILE_TESTING_STATUS: OUT_OF_SCOPE_NOT_RUN
+DOCUMENT_CLASS: HISTORICAL INCREMENT RUNBOOK
+```
+
+Этот документ больше не является основным stable runbook. Для текущего `main` используется `docs/LOCAL-RUNBOOK.md`.
+
+## Historical pre-merge workflow
+
+Во время реализации тестировалась ветка:
 
 ```text
 feature/military-positions-directory
 ```
 
-Локально не применяются patch-файлы и не создаются исходники вручную. Оператор выполняет только безопасную синхронизацию полного клона, затем запускает единый PowerShell 5.1 test runner.
-
-## 2. Обязательные пути
+Локальный клон:
 
 ```text
 repository: C:\Project\ASU-VCH
@@ -18,69 +31,20 @@ deploy root: C:\OSPanel\home\asu-vch.local
 URL: https://asu-vch.local
 ```
 
-## 3. Перед началом
-
-- Open Server Panel запущен;
-- Apache, PHP 8.5 и MySQL 8.4 доступны;
-- `C:\Project\ASU-VCH` является полным Git-клоном;
-- `C:\OSPanel\home\asu-vch.local\config\local.php` существует и содержит рабочие локальные параметры;
-- рабочее дерево Git чистое;
-- незакоммиченные локальные изменения отсутствуют.
-
-Содержимое `config/local.php`, пароли, cookies и session identifiers не публикуются в логах.
-
-## 4. Синхронизация ветки
-
-Открыть **Windows PowerShell 5.1** и выполнить команды по одной:
+Historical synchronization:
 
 ```powershell
 Set-Location -LiteralPath 'C:\Project\ASU-VCH'
-
 git status --short
 git fetch --prune origin
-
-git branch --show-current
-git branch --list 'feature/military-positions-directory'
-```
-
-Если локальная feature-ветка отсутствует:
-
-```powershell
-git switch --track -c feature/military-positions-directory origin/feature/military-positions-directory
-```
-
-Если локальная feature-ветка уже существует:
-
-```powershell
 git switch feature/military-positions-directory
 git pull --ff-only origin feature/military-positions-directory
-```
-
-После переключения обязательно выполнить:
-
-```powershell
-git status --short
 git rev-parse HEAD
-git rev-parse origin/feature/military-positions-directory
-git rev-list --left-right --count origin/feature/military-positions-directory...HEAD
 git merge-base origin/main HEAD
+git status --short
 ```
 
-Ожидается:
-
-```text
-current branch: feature/military-positions-directory
-HEAD == origin/feature/military-positions-directory
-divergence: 0 0
-merge-base: 8cc604eec7e973c2917ea0b1f9b08b976b673f41
-working tree: clean
-```
-
-Если `git status --short` выводит хотя бы одну строку, Testing не запускать. Сначала сохранить или удалить локальные изменения отдельным осознанным решением.
-
-## 5. Запуск автоматизированного Testing
-
-Из `C:\Project\ASU-VCH` выполнить:
+Historical runner:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
@@ -88,74 +52,48 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
     -AllowInvalidCertificate
 ```
 
-`-AllowInvalidCertificate` разрешён только для локального self-signed сертификата `asu-vch.local`.
+Runner выполнял:
 
-Runner самостоятельно:
+- exact implementation scope verification;
+- 5-part migration package reconstruction and SHA-256 checks;
+- SQL backup;
+- controlled deploy с сохранением `config/local.php`;
+- PHP lint;
+- installer twice;
+- military positions integration checker;
+- directory, security, theme и Organization regressions;
+- source/deploy parity;
+- HTTP smoke;
+- final Git/config integrity.
 
-1. повторно делает `git fetch --prune origin`;
-2. проверяет branch, HEAD, merge-base, divergence и чистоту рабочего дерева;
-3. проверяет точный список из 23 implementation-путей относительно утверждённого baseline;
-4. объединяет пять base64-частей, проверяет SHA-256 gzip-архива, распаковывает canonical migration 010 и проверяет SHA-256 SQL;
-5. проверяет `git diff --check`;
-6. фиксирует SHA-256 `config/local.php`;
-7. создаёт SQL backup через `tools\Backup-Database.ps1`;
-8. выполняет deploy через `deploy\Deploy-Local.ps1`;
-9. восстанавливает и проверяет `config/local.php`;
-10. публикует test tools в deploy-копию;
-11. запускает PHP lint;
-12. запускает installer два раза;
-13. проверяет migration 010 и справочник;
-14. запускает directory, security, theme и Organization regressions;
-15. проверяет source/deploy parity;
-16. выполняет HTTP smoke;
-17. подтверждает неизменность Git checkout и локального конфига.
-
-Runner не создаёт commit, push или PR.
-
-## 6. Успешный финал автоматизированного Testing
-
-В конце должны присутствовать маркеры:
+## Historical successful result
 
 ```text
-IMPLEMENTATION_SCOPE_STATUS=PASS
+TESTED_RUNTIME_HEAD=0455f0120c881bb9ba6e9df8f80ea0af89819be9
+PHP_FILES_LINTED=108
+PHP_LINT_ERRORS=0
+APPLIED_MIGRATIONS=10
+MILITARY_POSITIONS_DIRECTORY_CHECK=PASS
+ORGANIZATION_REGRESSION=58_PASS_0_FAIL
 SOURCE_DEPLOY_PARITY_STATUS=PASS
+HTTP_SMOKE_STATUS=PASS
 AUTOMATED_TESTING_STATUS=PASS
-MANUAL_DESKTOP_ACCEPTANCE_STATUS=PASS_RECORDED_IN_GITHUB
+MANUAL_DESKTOP_ACCEPTANCE_STATUS=PASS
 MOBILE_TESTING_STATUS=OUT_OF_SCOPE_NOT_RUN
-COMMIT_PUSH_PR_STATUS=IMPLEMENTATION_COMMIT_ALREADY_ON_GITHUB_PR_NOT_CREATED
 ```
 
-Manual desktop acceptance хранится отдельно в:
+## Post-merge note
+
+PR #19 merged в `main` commit `99f9f283...`. Повторный local runtime test именно на merge commit не выполнялся и не заявляется. Tested runtime anchor остаётся `0455f012...`.
+
+Feature-ветка не удаляется в рамках Post-PR20 Baseline Refresh. Cleanup требует fresh inventory и отдельного owner approval.
+
+## Stable operations
+
+Для stable baseline выполнять инструкции из:
 
 ```text
-docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-MANUAL-DESKTOP-ACCEPTANCE-2026-08-01.md
+docs/LOCAL-RUNBOOK.md
 ```
 
-## 7. Что отправлять в чат при повторном Testing
-
-Скопировать полный безопасный вывод PowerShell начиная со строки:
-
-```text
-=== Repository preflight and remote verification ===
-```
-
-и заканчивая итоговыми статусами.
-
-Не отправлять:
-
-- содержимое `config/local.php`;
-- пароль БД;
-- cookies;
-- session identifiers;
-- приватные ключи и токены.
-
-## 8. Текущее состояние gate
-
-Automated Testing и manual desktop acceptance завершены со статусом PASS. PR, merge и удаление ветки не выполняются без отдельных явных разрешений владельца.
-
-```text
-manual desktop acceptance: PASS
-mobile testing: OUT OF SCOPE / NOT RUN
-mobile PASS: NOT CLAIMED
-next gate: explicit Pull Request creation approval
-```
+Не следует восстанавливать pre-merge workflow этого historical runbook как текущий процесс после удаления feature-ветки.

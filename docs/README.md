@@ -2,7 +2,7 @@
 
 ## Актуальные документы
 
-Эти документы описывают текущий merged baseline и обновляются при изменении состояния проекта:
+Living documentation описывает текущий merged functional baseline:
 
 - [Текущее состояние проекта](PROJECT-STATUS.md)
 - [О проекте](PROJECT.md)
@@ -16,40 +16,79 @@
 - [История изменений](CHANGELOG.md)
 - [Архитектурные паттерны](ARCHITECTURAL-PATTERNS.md)
 
-Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют `database/migrations/*.sql`, installer и профильные integration checker'ы.
+Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют migrations, installer и профильные checker'ы.
 
-Актуальный repository HEAD определяется через `origin/main`:
+Current HEAD определяется через `origin/main`:
 
 ```powershell
 git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Living documentation не хранит самореферентный SHA как постоянно актуальное значение `current main HEAD`. Точные SHA используются только как исторические merge/test anchors и в датированных evidence snapshots.
+Living docs не хранят самореферентный current-main SHA или изменчивое состояние активного PR как постоянно актуальное поле. Exact states фиксируются в датированных evidence snapshots; live PR state определяется в GitHub.
 
-## Completed administrative evidence
+## Functional baseline
 
-- [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md) — завершённый outcome отдельно утверждённого cleanup batch из 18 remote non-main branches;
-- terminal verification snapshot 2026-07-31 зафиксировал `main` как единственную GitHub branch на момент проверки;
-- branches, созданные после этого snapshot, управляются собственным workflow и отдельными cleanup approvals.
+```text
+latest functional PR: #20
+PR #19: MERGED
+PR #20: MERGED
+migrations: 001–011
+system roles: 4
+system permissions: 25
+built-in themes: 3
+mobile testing: OUT OF SCOPE / NOT RUN
+```
 
-Текущее количество remote branches не хранится в living documentation. При необходимости оно определяется read-only командой:
+## Post-PR20 Baseline Refresh
+
+Workflow reference: **PR #21**, branch `docs/post-pr20-baseline-refresh`.
+
+```text
+classification: Markdown only
+final approved changed-path count: 25
+merge requires separate owner approval
+branch deletion requires separate post-merge approval
+```
+
+Live state PR #21 определяется в GitHub. Датированный pre-merge snapshot и exact heads находятся в Implementation и Documentation Validation records.
+
+Process records:
+
+- [Architecture](architecture/POST-PR20-BASELINE-REFRESH-ARCHITECTURE.md)
+- [Specification](specification/POST-PR20-BASELINE-REFRESH-SPECIFICATION.md)
+- [Formal Review](review/POST-PR20-BASELINE-REFRESH-FORMAL-REVIEW.md)
+- [Approval](decisions/POST-PR20-BASELINE-REFRESH-APPROVAL.md)
+- [Implementation](implementation/POST-PR20-BASELINE-REFRESH-IMPLEMENTATION.md)
+- [Documentation Validation](testing/POST-PR20-BASELINE-REFRESH-VALIDATION.md)
+
+Первый Final PR Review PR #21 выявил incomplete operational closure PR #19 и stale post-PR markers. Scope отдельно расширен с 22 до 25 Markdown-путей; remediation не меняет runtime.
+
+## Классы документации
+
+1. **Living documentation** — merged functional baseline.
+2. **Historical process/test artifacts** — состояние конкретного gate или попытки.
+3. **Operational increment records** — current outcome плюс сохранённая история; после merge получают closure section.
+
+Historical `NOT CREATED`, `NOT AUTHORIZED` и `RECHECK REQUIRED` не переписываются задним числом, но не используются как living current assertions.
+
+## Repository governance
+
+Historical evidence:
+
+- [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md)
+- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md)
+- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md)
+
+Текущий remote inventory определяется динамически:
 
 ```powershell
 git ls-remote --heads origin
 ```
 
-## Historical repository audits
-
-- [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md) — historical post-PR16 pre-reconciliation snapshot и доказательная база для cleanup gate;
-- [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md) — historical pre-refresh snapshot;
-- [Documentation audit 2026-07-27](DOCUMENTATION-AUDIT-2026-07-27.md) — исторический аудит до Organizational Structure v1.
-
-Техническая классификация ветки как безопасной для удаления не является разрешением на фактическое удаление. Любой будущий cleanup требует fresh inventory и отдельного явного решения владельца проекта.
+`SAFE TO DELETE` не является разрешением. Cleanup требует post-merge verification, fresh inventory, exact batch и отдельное owner approval.
 
 ## Целевая архитектура
-
-Документы этой группы описывают утверждённую или исследуемую целевую модель и могут быть шире реализованного runtime:
 
 - [Целевая архитектура базы данных](DATABASE.md)
 - [Стартовая административная спецификация](STARTER-ADMIN-SPEC.md)
@@ -57,28 +96,10 @@ git ls-remote --heads origin
 - [ERD](erd/)
 - [Спецификации миграций](migrations/README.md)
 
-## Документы инкрементов
-
-```text
-docs/architecture/      Architecture
-docs/specifications/    Specification
-docs/reviews/           Formal Review
-docs/decisions/         Approval и зафиксированные решения
-docs/implementation/    Implementation records
-docs/design/            исторические объединённые design/review/addendum документы
-docs/testing/           Test Plan, Test Attempts, Test Reports и validation reports
-```
-
-Эти файлы являются историческими process-artifacts. Формулировки `PENDING`, `Ready for review`, `Merge prohibited`, `NOT PERFORMED` или прежние baseline-значения внутри закрытого артефакта отражают соответствующий gate и не заменяют текущее состояние проекта.
-
 ## Правила актуальности
 
-1. GitHub-репозиторий является единственным источником истины.
-2. Текущий HEAD определяется через `origin/main`; exact SHA в living docs не используется как самореферентный current-state marker.
-3. Завершённая feature/docs-ветка может упоминаться только как историческая либо как объект датированного branch audit/closure record.
-4. Текущие возможности подтверждаются merged-кодом, migrations и результатами тестирования.
-5. Исторические спецификации и audits не переписываются задним числом; новое состояние оформляется addendum или новым документом.
-6. Секреты, реальные пароли и содержимое `config/local.php` не включаются в документацию.
-7. Мобильное тестирование не объявляется выполненным, если оно было исключено из scope.
-8. Merge и branch cleanup требуют отдельных явных разрешений.
-9. Terminal branch count всегда квалифицируется датой и verification event; future branches не считаются автоматически разрешёнными к удалению.
+- GitHub — единственный источник истины.
+- Current HEAD и live PR state определяются динамически.
+- Documentation-only head не объявляется runtime-tested.
+- Mobile PASS не заявляется без фактической acceptance.
+- Merge и branch cleanup имеют отдельные approval gates.

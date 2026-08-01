@@ -6,19 +6,15 @@
 
 ## Реестр
 
-Установленные темы перечислены в `config/themes.php`. Реестр является статическим allow-list и не формируется из HTTP-параметров или сканирования каталогов.
+Темы перечислены в статическом allowlist `config/themes.php`:
 
-В стабильном `main` зарегистрированы три встроенные темы:
+- **АСУ Синяя** — `asu-blue`, тёмная сине-бирюзовая тема и safe fallback;
+- **АСУ Светлая синяя** — `asu-light-blue`, светлая минималистичная тема;
+- **Евгения Ростова** — `asu-evgeniya-rostova`, светлая розово-лиловая тема.
 
-- **АСУ Синяя** — `asu-blue`, тёмная сине-бирюзовая тема и безопасный fallback;
-- **АСУ Светлая синяя** — `asu-light-blue`, светлая минималистичная тема с синими контурами;
-- **Евгения Ростова** — `asu-evgeniya-rostova`, светлая розово-лиловая тема с сердечками, воздушными шариками и мягкими игрушками.
-
-Все три темы объединены, доступны в реестре и прошли desktop-приёмку затронутых интерфейсов. Default/fallback остаётся `asu-blue`.
+Все три темы merged, доступны в registry и прошли desktop acceptance затронутых интерфейсов. Default/fallback — `asu-blue`.
 
 ## Управление
-
-Страница управления:
 
 ```text
 /admin/settings/themes.php
@@ -26,17 +22,11 @@
 
 Просмотр требует `system.settings.view`, активация — `system.settings.update`.
 
-После migration 006 активная тема хранится в:
-
-```text
-system_settings.ui.active_theme
-```
-
-`config/app.php['theme']` используется как bootstrap/pre-install fallback.
+Активная тема хранится в `system_settings.ui.active_theme`; `config/app.php['theme']` используется как bootstrap/pre-install fallback.
 
 ## Обязательный CSS contract
 
-Все темы реализуют единый class contract и содержат восемь обязательных CSS-assets:
+Каждая тема содержит девять обязательных CSS-assets:
 
 ```text
 themes/{slug}/assets/css/theme.css
@@ -45,15 +35,21 @@ themes/{slug}/assets/css/account.css
 themes/{slug}/assets/css/users.css
 themes/{slug}/assets/css/theme-management.css
 themes/{slug}/assets/css/directories.css
+themes/{slug}/assets/css/military-occupational-specialties.css
 themes/{slug}/assets/css/organization.css
 themes/{slug}/assets/css/operation-result-modal.css
 ```
 
-`organization.css` оформляет страницы Organizational Structure v1: список, карточку, версии, дерево, документы, историю и сравнение.
+Назначение профильных assets:
+
+- `directories.css` — landing и общие directory components;
+- `military-occupational-specialties.css` — VUS-specific filters, cards, table proportions и boundary note;
+- `organization.css` — Organizational Structure v1;
+- `operation-result-modal.css` — themed result modal.
+
+Справочник типовых воинских должностей использует общий directory contract. VUS использует общий contract и отдельный обязательный stylesheet.
 
 ## Дополнительные assets темы «Евгения Ростова»
-
-Для `asu-evgeniya-rostova` обязательны:
 
 ```text
 themes/asu-evgeniya-rostova/assets/img/hearts-pattern.svg
@@ -62,63 +58,65 @@ themes/asu-evgeniya-rostova/assets/img/teddy-bear.svg
 themes/asu-evgeniya-rostova/assets/img/plush-bunny.svg
 ```
 
-Все четыре SVG перечислены в `required_assets`. Отсутствие любого из них делает тему недоступной для активации.
+Отсутствие любого required asset делает тему недоступной для активации.
 
-Общее поведение operation-result modal находится в:
+## JavaScript
+
+Общее поведение:
 
 ```text
 public/assets/js/operation-result-modal.js
-```
-
-Общее поведение дерева Organizational Structure находится в:
-
-```text
 public/assets/js/organization-tree.js
 public/assets/js/organization-ui-controls.js
 ```
 
-Отдельный theme-specific JavaScript отсутствует.
+Theme-specific JavaScript отсутствует.
 
 ## Публикация
 
-Исходные темы находятся в корневом каталоге `themes`. Apache обслуживает только `public`, поэтому deploy публикует темы в:
+Исходные темы находятся в `themes`. Deploy публикует их в:
 
 ```text
 C:\OSPanel\home\asu-vch.local\public\themes\{slug}
 ```
 
-`ThemeRegistry` проверяет регистрацию slug, наличие обязательных файлов и строит URL только для доступных assets.
+`ThemeRegistry` проверяет slug, required assets и строит URL только для доступных файлов.
 
 ## Безопасность
 
-- slug должен присутствовать в `config/themes.php`;
-- обязательные assets проверяются до активации;
-- неизвестное или повреждённое значение приводит к fallback `asu-blue`;
-- path traversal, абсолютные пути, URL-схемы, NUL и backslash в имени asset отклоняются;
-- query-, cookie- и GET-preview темы не поддерживаются;
-- активация выполняется POST-only с permission, CSRF и PRG;
-- загрузка ZIP, произвольного CSS/JS, удаление темы и browser-редактор отсутствуют;
-- SVG новой темы локальны и не содержат script, event handlers, embedded HTML или external resources;
-- theme-specific JavaScript отсутствует.
+- slug принимается только из static allowlist;
+- required assets проверяются до activation;
+- unknown/unavailable theme приводит к fallback `asu-blue`;
+- traversal, absolute paths, URL schemes, NUL и backslash отклоняются;
+- GET/cookie theme preview отсутствует;
+- activation — POST-only, permission + CSRF + PRG;
+- ZIP upload, arbitrary CSS/JS, theme deletion и browser editor отсутствуют;
+- SVG локальны и не содержат executable/external content.
 
 ## Проверка
 
-`database/check-theme-management.php` проверяет реестр трёх тем, metadata, required assets, безопасные URL, SVG/CSS safety, persistence, audit и rollback.
+`database/check-theme-management.php` проверяет:
 
-`database/check-theme-asset-failure.php` подтверждает в sandbox, что отсутствие обязательного SVG делает `asu-evgeniya-rostova` недоступной.
+- registry трёх тем;
+- metadata и required assets;
+- safe URLs;
+- CSS/SVG safety;
+- persistence, audit и rollback;
+- наличие `military-occupational-specialties.css` во всех темах.
 
-Directory checker'ы проверяют `directories.css` всех тем. Organizational Structure checker проверяет публикацию `organization.css` всех трёх тем.
+`database/check-theme-asset-failure.php` подтверждает отказ activation при missing required asset.
 
-Для Organizational Structure v1 выполнены:
+Профильные directory/UI checker'ы проверяют publication и behavior CSS.
+
+Последние результаты:
 
 ```text
 asu-blue desktop acceptance: PASS
 asu-light-blue desktop acceptance: PASS
 asu-evgeniya-rostova desktop acceptance: PASS
-UI contract checks: 64 PASS / 0 FAIL
-```
-
-```text
+VUS UI checker: PASS
+console errors: 0
+asset/HTTP 404: 0
 mobile testing: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
 ```

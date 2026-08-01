@@ -2,7 +2,7 @@
 
 ## 1. Назначение
 
-Документ описывает воспроизводимую синхронизацию, deploy и проверку текущего стабильного baseline АСУ-ВЧ в Open Server Panel без локальной разработки исходников.
+Runbook описывает синхронизацию, deploy и проверку stable baseline АСУ-ВЧ, а также read-only validation documentation-only changes.
 
 ```text
 repository: C:\Project\ASU-VCH
@@ -11,48 +11,23 @@ web root: C:\OSPanel\home\asu-vch.local\public
 URL: https://asu-vch.local
 ```
 
-## 2. Поддерживаемая среда
-
-- Windows 10/11;
-- Open Server Panel 6.5.1;
-- Apache;
-- PHP 8.5.4;
-- MySQL 8.4.x;
-- Windows PowerShell 5.1;
-- полный Git-клон проекта;
-- настроенный deploy-only `C:\OSPanel\home\asu-vch.local\config\local.php`.
-
-Секреты и содержимое `config/local.php` не выводятся и не передаются в GitHub.
-
-## 3. Repository pointer и functional baseline
-
-Актуальный стабильный HEAD всегда определяется из GitHub:
-
-```powershell
-Set-Location -LiteralPath 'C:\Project\ASU-VCH'
-git fetch --prune origin
-git rev-parse origin/main
-```
-
-Living documentation не фиксирует точный SHA как постоянно актуальный `current main HEAD`, поскольку documentation-only merge немедленно сделал бы такое поле устаревшим.
-
-Устойчивые anchors:
+## 2. Functional anchors
 
 ```text
-last completed documentation PR before reconciliation: #16
-last completed documentation merge before reconciliation: 72630757c1a72a6bd971cf819cff9bdd36c148bf
-last functional PR: #15
-last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
-tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
-migrations: 001–009
+latest functional PR: #20
+PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
+PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
+PR #20 merge / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
+migrations: 001–011
 system roles: 4
 system permissions: 25
 built-in themes: 3
 ```
 
-PR #16 и Post-PR16 Repository Reconciliation являются documentation-only; merge commits этих инкрементов не заявляются runtime-протестированными.
+Current stable HEAD определяется через `origin/main`; documentation-only heads не считаются runtime-tested.
 
-## 4. Синхронизация стабильной версии
+## 3. Stable synchronization
 
 ```powershell
 Set-Location -LiteralPath 'C:\Project\ASU-VCH'
@@ -66,201 +41,105 @@ git rev-list --left-right --count HEAD...origin/main
 git status --short
 ```
 
-Требования:
+Требования: clean working tree, fast-forward only, local HEAD = `origin/main`, divergence `0 0`.
 
-- рабочее дерево до и после синхронизации чистое;
-- обновление выполняется только fast-forward;
-- локальный `HEAD` равен `origin/main` после pull;
-- divergence равен `0 0`;
-- локальные commit и push не выполняются;
-- для стабильной проверки используется `main`, а не завершённая feature/docs-ветка.
-
-## 5. Read-only branch inventory
-
-Перед любым cleanup необходимо выполнить отдельную свежую проверку:
+## 4. Runtime initialization
 
 ```powershell
-Set-Location -LiteralPath 'C:\Project\ASU-VCH'
-git fetch --prune origin
-git for-each-ref --format='%(refname:short)' refs/remotes/origin
-```
-
-Для каждой non-main ветки проверяются ahead/behind и наличие уникального файлового содержимого. Датированный audit или классификация `SAFE TO DELETE` не заменяют отдельное явное разрешение владельца проекта.
-
-```text
-branch deletion without explicit approval: PROHIBITED
-```
-
-## 6. Резервное копирование
-
-Перед deploy сохраняются изменяемые deploy-файлы. Перед новой migration, меняющей schema или данные, дополнительно создаётся SQL backup и фиксируется его SHA-256.
-
-Содержимое `config/local.php` не выводится. До и после deploy сравнивается только SHA-256 файла.
-
-## 7. Полная локальная инициализация
-
-```powershell
-Set-Location -LiteralPath 'C:\Project\ASU-VCH'
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1'
 ```
 
-Сценарий:
-
-1. определяет `php.exe`;
-2. выполняет PHP lint;
-3. запускает `deploy\Deploy-Local.ps1`;
-4. сохраняет существующий `config/local.php`;
-5. копирует runtime-каталоги и публикует темы в `public/themes`;
-6. восстанавливает `config/local.php`;
-7. запускает installer.
-
-Для повторной проверки installer без deploy:
+Repeat installer:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1' -SkipDeploy
 ```
 
-## 8. Installer
-
-Ручной запуск:
-
-```powershell
-php C:\OSPanel\home\asu-vch.local\database\install.php
-```
-
-Для текущего functional baseline ожидается:
+Ожидается:
 
 ```text
-Применено миграций: 9
+Применено миграций: 11
 Новых миграций нет.
 ```
 
-Installer запускается повторно. Число пользователей и локальные данные не являются константой проекта.
+## 5. Профильные runtime runners
 
-## 9. Local-only test owner
-
-В изолированной локальной установке допускается:
+Military Positions:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1' -SeedLocalOwner
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File '.\tools\Test-MilitaryPositionsDirectory.ps1' `
+  -DeployRoot 'C:\OSPanel\home\asu-vch.local' `
+  -AllowInvalidCertificate
 ```
 
-Seed разрешён только при `environment=local`. Учётные данные не фиксируются в проектной документации.
+Public VUS:
 
-## 10. Основной комплексный runner
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File '.\tools\Test-MilitaryOccupationalSpecialtiesDirectory.ps1' `
+  -DeployRoot 'C:\OSPanel\home\asu-vch.local' `
+  -AllowInvalidCertificate
+```
 
-Для Organizational Structure v1 используется проверенный runner:
+## 6. Documentation-only validation
+
+Post-PR20 Baseline Refresh отслеживается PR #21 и веткой `docs/post-pr20-baseline-refresh`. Live PR state определяется в GitHub; stable runbook не хранит `OPEN/MERGED` как постоянно актуальное поле.
+
+Approved validation contract:
+
+```text
+base / merge-base: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+final changed-path allowlist: 25 Markdown paths
+runtime/config/database/migrations/theme/tool changes: none
+```
+
+Read-only validation:
 
 ```powershell
 Set-Location -LiteralPath 'C:\Project\ASU-VCH'
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File '.\tools\Test-OrganizationalStructureV1.ps1' `
-    -AllowInvalidCertificate
-```
-
-`-AllowInvalidCertificate` допустим только для локального self-signed HTTPS.
-
-Runner выполняет:
-
-- source/deploy UI contract checks;
-- PHP lint;
-- controlled deploy с сохранением `config/local.php`;
-- migration compatibility check;
-- installer и repeat installer;
-- Organizational Structure schema/scenario checks;
-- theme, directory и security regressions;
-- HTTP smoke;
-- backup и контрольные SHA-256.
-
-Ожидаемые ключевые результаты проверенного baseline:
-
-```text
-UI contract checks: 64 PASS / 0 FAIL
-organization checks: 58 PASS / 0 FAIL
-PHP lint: 104 files / 0 errors
-applied migrations: 9
-system roles: 4
-system permissions: 25
-HTTP smoke: / 200, /health.php 200, /admin/ 302
-AUTOMATED_TESTING_STATUS=PASS
-```
-
-## 11. Legacy checker technical debt
-
-Некоторые старые direct checker-файлы исходно содержат exact-count assertion `19` permissions. Комплексный Organizational Structure runner применяет `PermissionBaselineRegressionAdapter`, чтобы выполнить их как совместимые baseline regressions при 25 permissions.
-
-Следствия:
-
-- основной воспроизводимый способ проверки — `Test-OrganizationalStructureV1.ps1`;
-- прямой запуск отдельных legacy checker-файлов может быть несовместим с текущими 25 permissions;
-- source cleanup этих checker-файлов и решение по adapter выделены в отдельный будущий технический инкремент;
-- нельзя считать отказ отдельного legacy direct checker доказательством runtime-дефекта без анализа exact-count условия.
-
-## 12. HTTP smoke
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File '.\tools\Test-LocalSmoke.ps1' `
-    -AllowInvalidCertificate
+git status --short
+git fetch --prune origin
+git switch docs/post-pr20-baseline-refresh
+git pull --ff-only origin docs/post-pr20-baseline-refresh
+git rev-parse HEAD
+git merge-base origin/main HEAD
+git rev-list --left-right --count origin/main...HEAD
+git diff --name-only origin/main...HEAD
+git diff --check origin/main...HEAD
+git status --short
 ```
 
 Проверяются:
 
-- `/` — HTTP 200;
-- `/health.php` — HTTP 200 и подключение к БД;
-- `/admin/` для анонимного пользователя — HTTP 302.
+- exact changed-path count = 25;
+- все changed paths имеют расширение `.md`;
+- branch behind `origin/main` = 0;
+- PR #19 и PR #20 operational closures;
+- migrations 001–011, roles 4, permissions 25, themes 3;
+- relative links и secret scan;
+- no non-Markdown diff;
+- no Mobile PASS claim;
+- live PR state соответствует GitHub;
+- merge и branch deletion выполняются только после отдельных approvals.
 
-## 13. Theme assets
+Датированный Validation evidence фиксирует exact head и PR state на момент проверки.
 
-Каждая из трёх тем должна публиковать:
+## 7. Branch inventory and cleanup gate
 
-```text
-css/theme.css
-css/auth.css
-css/account.css
-css/users.css
-css/theme-management.css
-css/directories.css
-css/organization.css
-css/operation-result-modal.css
+До cleanup:
+
+```powershell
+git fetch --prune origin
+git ls-remote --heads origin
+git branch -vv
+git branch --merged origin/main
 ```
 
-Тема `asu-evgeniya-rostova` дополнительно публикует четыре обязательных SVG.
+Для каждой ветки проверяются tip, reachability, unique commits и связанный merged PR. `SAFE TO DELETE` не является разрешением.
 
-## 14. Desktop/browser-приёмка
+После завершения PR #21 требуется post-merge verification, новая inventory и отдельное owner approval exact batch. Remote deletion выполняется первой; затем `fetch --prune` и approved local deletion через `git branch -d`.
 
-Для Organizational Structure v1 проверяются:
+## 8. Security boundaries
 
-- список и карточка структуры;
-- создание и изменение структуры;
-- версии и lifecycle actions;
-- дерево, поиск, expand/collapse и node controls;
-- документы, история и сравнение;
-- permission-denied behavior;
-- operation-result messages;
-- keyboard navigation и focus-visible;
-- отсутствие console errors и asset 404;
-- `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova`.
-
-```text
-manual desktop acceptance: PASS
-mobile testing: OUT OF SCOPE / NOT RUN
-mobile PASS: NOT CLAIMED
-```
-
-## 15. Фиксация результата
-
-Успешная проверка фиксирует:
-
-- branch и exact SHA на момент проверки;
-- local/remote divergence;
-- clean working tree;
-- backup path, size и SHA-256;
-- `config/local.php` SHA preservation;
-- migration count;
-- checker totals;
-- HTTP statuses;
-- desktop acceptance result;
-- явное отсутствие mobile PASS claim.
-
-При ошибке сохраняются точная команда и полный безопасный вывод без credentials, session data и содержимого `config/local.php`.
+Не публикуются credentials, session data, temporary passwords и содержимое `config/local.php`. Mobile testing для PR #19/#20: `OUT OF SCOPE / NOT RUN`.

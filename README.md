@@ -2,43 +2,46 @@
 
 Автоматизированная система учёта военнослужащих «Войсковая часть».
 
-## Текущий baseline
+## Текущий merged baseline
 
-Стабильное объединённое состояние находится в ветке `main`. Актуальный HEAD репозитория определяется через `origin/main`, а не хранится в документации как самореферентный SHA.
+Стабильное состояние находится в `main`. Актуальный HEAD определяется через `origin/main`:
 
 ```powershell
 git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Устойчивые контрольные точки:
+Исторические anchors последнего функционального baseline:
 
 ```text
-repository: ClaytonKinnane/ASU-VCH
-default branch: main
-last completed documentation PR before cleanup closure: #17
-last completed documentation merge before cleanup closure: c67632674dce216bb23338de898bf0733a8e42c0
-last functional PR: #15
-last functional merge commit: 5aaf0a7aca51cae575b3765309b2bf3ad7d76d28
-tested runtime HEAD: 238868950c5f7417ea3d1c283610f2d282d4395a
-migrations: 001–009
+latest functional PR: #20
+PR #19 merge commit: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
+PR #19 tested runtime HEAD: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
+PR #20 merge commit / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+PR #20 tested runtime HEAD: 9db06c4a26066ca25dc36c627c1236089a3c1238
+migrations: 001–011
 system roles: 4
 system permissions: 25
 built-in themes: 3
 active functional increment: none
 ```
 
-Documentation-only PR #16 и PR #17 изменяли только `README.md` и `docs/**`; runtime, deploy и БД не изменялись. Проверенный runtime HEAD остаётся отдельной функциональной контрольной точкой.
-
-После merge PR #17 был выполнен fresh inventory и отдельно утверждённый cleanup batch из 18 remote non-main branches. На terminal verification snapshot 2026-07-31 оставалась только `main`; branches, созданные позднее, имеют собственный lifecycle и требуют отдельного deletion approval.
+Точный SHA текущего `main` не хранится как самореферентное постоянно актуальное поле. Указанные SHA являются историческими merge/test anchors.
 
 ## Реализовано
 
 - установка, аутентификация, защищённые сессии и CSRF;
 - RBAC и полный пользовательский lifecycle;
+- обязательная смена временного пароля;
 - три встроенные доверенные темы;
-- справочники воинских званий и типов организационных элементов;
-- Organizational Structure v1: структуры, версии, дерево черновика, связи с документами, история и сравнение версий.
+- owner-only read-only справочники:
+  - составы военнослужащих и воинские звания;
+  - типы организационных элементов;
+  - типовые воинские должности;
+  - публичные сведения о военно-учётных специальностях;
+- Organizational Structure v1: структуры, версии, draft-дерево, документы-основания, история и сравнение версий.
+
+Справочники воинских должностей и ВУС основаны только на утверждённом публичном scope. Они не создают кадровых назначений, не связываются автоматически с персональными данными и не заявляются как полный воинский учёт.
 
 ## Локальная среда
 
@@ -49,11 +52,9 @@ Apache
 PHP 8.5.4
 MySQL 8.4.x
 Windows PowerShell 5.1
-```
 
-```text
-репозиторий: C:\Project\ASU-VCH
-развёртывание: C:\OSPanel\home\asu-vch.local
+repository: C:\Project\ASU-VCH
+deploy root: C:\OSPanel\home\asu-vch.local
 web root: C:\OSPanel\home\asu-vch.local\public
 URL: https://asu-vch.local
 ```
@@ -64,7 +65,9 @@ GitHub является единственным источником истин
 
 ```text
 Research → Analysis → Architecture → Specification → Review → Approval
-→ Implementation → Testing → Commit → Push → Pull Request → Merge
+→ Implementation → Testing → Commit → Push → Pull Request
+→ Final PR Review → separate merge approval → Merge
+→ post-merge verification → separate branch deletion approval
 ```
 
 Merge и удаление веток требуют отдельных явных разрешений владельца проекта.
@@ -73,15 +76,15 @@ Merge и удаление веток требуют отдельных явны�
 
 - [Индекс документации](docs/README.md)
 - [Текущее состояние проекта](docs/PROJECT-STATUS.md)
+- [О проекте](docs/PROJECT.md)
 - [Локальный runbook](docs/LOCAL-RUNBOOK.md)
 - [Текущее состояние базы данных](docs/DATABASE-CURRENT.md)
-- [Repository cleanup closure 2026-07-31](docs/REPOSITORY-CLEANUP-2026-07-31.md)
-- [Исторический repository audit 2026-07-30](docs/REPOSITORY-AUDIT-2026-07-30.md)
-- [Исторический repository audit 2026-07-29](docs/REPOSITORY-AUDIT-2026-07-29.md)
+- [План разработки](docs/ROADMAP.md)
+- [История изменений](docs/CHANGELOG.md)
 
 ## Границы тестирования
 
-Organizational Structure v1 прошёл автоматические проверки и ручную desktop-приёмку во всех трёх темах.
+PR #19 и PR #20 прошли Automated Testing и Manual Desktop Acceptance. Для PR #20 также завершены targeted manual recheck, Final PR Review и post-merge Git verification.
 
 ```text
 mobile testing: OUT OF SCOPE / NOT RUN
