@@ -14,7 +14,14 @@ git rev-list --left-right --count origin/feature/public-military-occupational-sp
 git status --short
 ```
 
-До запуска Testing дерево должно быть чистым, divergence — `0 0`.
+До запуска Testing:
+
+```text
+CURRENT_BRANCH=feature/public-military-occupational-specialties-directory
+ORIGIN_FEATURE_DIVERGENCE=0 0
+IMPLEMENTATION_FILE_COUNT=18
+WORKING TREE=CLEAN
+```
 
 ## Automated Testing
 
@@ -25,6 +32,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -AllowInvalidCertificate
 ```
 
+Runner выполняет backup, deploy, PHP lint, installer дважды, integration checker, regressions, source/deploy parity и HTTP smoke.
+
 Ожидаемый финал:
 
 ```text
@@ -34,4 +43,12 @@ MOBILE_TESTING_STATUS=OUT_OF_SCOPE_NOT_RUN
 PR_STATUS=NOT_CREATED
 ```
 
-После PASS выполняется отдельная ручная desktop-приёмка. PR не создаётся без отдельного разрешения.
+Migration loader дополнительно обязан подтвердить:
+
+```text
+archive SHA-256: 1c1af1e07e040452499e5882ce181b088c4017c936b0892d2552e8447996bc39
+SQL SHA-256:     26039aedc4c700a883203eeaefd09194cc6a9a304b3c2db94a7479f8710b8fd9
+parts:           2
+```
+
+После automated PASS выполняется отдельная ручная desktop-приёмка. PR не создаётся без отдельного разрешения.
