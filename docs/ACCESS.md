@@ -2,8 +2,6 @@
 
 ## Текущее состояние
 
-Модель доступа реализована и используется приложением.
-
 ```text
 system roles: 4
 system permissions: 25
@@ -15,49 +13,48 @@ owner wildcard: system.*.*
 - `system_owner` — владелец установки с абсолютным доступом через wildcard;
 - `administrator` — административные операции в пределах назначенных permissions;
 - `operator` — ограниченные рабочие операции;
-- `viewer` — ограниченный просмотр с защитой чувствительного аудита.
+- `viewer` — ограниченный просмотр с privacy-защитой.
 
 ## Первый владелец
 
-Первый пользователь новой пустой установки создаётся через bootstrap-регистрацию и в одной транзакции получает роль `system_owner`. После успешной фиксации владельца публичная регистрация отключается.
+Первый пользователь пустой установки создаётся через bootstrap-регистрацию и транзакционно получает `system_owner`. После успешного создания владельца публичная регистрация отключается.
 
-Защищены инварианты:
+Инварианты:
 
-- одновременно допускается только один активный владелец;
-- последнего активного владельца нельзя заблокировать, архивировать или лишить критического доступа;
-- последующие пользователи не получают роль владельца автоматически;
-- назначение роли владельца не выполняется через обычную форму управления ролями.
+- допускается только один active owner;
+- последнего active owner нельзя заблокировать, архивировать или лишить критического доступа;
+- обычное управление ролями не назначает `system_owner`;
+- последующие пользователи не получают owner автоматически.
 
 ## Авторизация
 
-Permission даёт право на действие, но не отменяет:
+Permission не отменяет:
 
-- проверку аутентификации и статуса пользователя;
-- обязательную смену временного пароля;
-- CSRF-защиту POST-операций;
-- серверную валидацию;
-- транзакционные и DB-инварианты;
-- optimistic revision checks;
-- аудит;
-- запрет операций над последним активным владельцем.
+- authentication и user status checks;
+- required password change;
+- CSRF для POST;
+- server validation;
+- transaction/DB invariants;
+- optimistic revisions;
+- audit и privacy;
+- last-owner protection.
 
-Прямой доступ без требуемого permission возвращает тематическую страницу HTTP 403. Анонимный доступ к административной панели перенаправляется на форму входа.
+Прямой доступ без permission возвращает themed HTTP 403. Anonymous access к admin перенаправляется на login.
 
-## Жизненный цикл пользователя
+## Пользовательский lifecycle
 
 Реализованы:
 
-- создание пользователя в состоянии `pending`;
-- обязательное основание создания;
-- подтверждение и активация;
-- отклонение с основанием и аудитом;
-- блокировка и разблокировка;
-- архивирование и восстановление с аудитом;
-- обязательная смена временного пароля;
-- немедленный запрет входа для неактивной, отклонённой или архивированной записи;
-- privacy-ограничения на отображение чувствительных данных аудита.
+- `pending` creation с обязательным основанием;
+- approval и activation;
+- rejection с основанием и audit;
+- block/unblock;
+- archive/restore с audit;
+- required temporary-password change;
+- login prohibition для inactive/rejected/archived records;
+- privacy restrictions для чувствительного audit.
 
-Восстановление архивированной записи не активирует пользователя автоматически.
+Restore не активирует пользователя автоматически.
 
 ## Organizational Structure permissions
 
@@ -72,45 +69,57 @@ organization.structures.archive
 organization.structures.history
 ```
 
-Назначение:
+Они не назначаются автоматически ordinary system roles. `system_owner` получает доступ через `system.*.*`.
 
-| Permission | Разрешённая область |
-|---|---|
-| `organization.structures.view` | список, карточка, версии и дерево структуры |
-| `organization.structures.create` | создание новой структуры и первой draft-версии |
-| `organization.structures.update` | изменение карточки, draft-дерева и metadata документов |
-| `organization.structures.publish` | approval, activation и cancellation версий |
-| `organization.structures.archive` | archive и restore структуры |
-| `organization.structures.history` | история событий и сравнение версий |
+## Owner-only directories
 
-Эти permissions не назначаются автоматически ролям `administrator`, `operator` и `viewer`. Доступ им появляется только через отдельное явное назначение. `system_owner` сохраняет абсолютный доступ через `system.*.*`.
+Следующие read-only routes защищены существующим wildcard `system.*.*`:
 
-В приложении нет отдельной встроенной role model Organization: используются общие системные роли и permissions.
+```text
+/admin/directories/military-ranks.php
+/admin/directories/organizational-elements.php
+/admin/directories/military-positions.php
+/admin/directories/military-occupational-specialties.php
+```
+
+Migrations 010 и 011 не добавляют permissions. Общее количество остаётся 25.
+
+Для этих каталогов:
+
+- owner получает доступ;
+- ordinary role без wildcard получает themed HTTP 403;
+- пользовательские routes — GET-only;
+- mutation controls и mutation endpoints отсутствуют;
+- filters/search используют prepared statements;
+- output escaped;
+- official external links проходят safe URL validation.
+
+Каталог должностей не предоставляет кадровые назначения. Каталог ВУС не предоставляет персональный воинский учёт и не связан с users/personnel.
 
 ## Безопасность изменяющих операций
 
-Изменяющие операции:
+Изменяющие операции других доменов:
 
-- используют POST;
-- требуют соответствующий permission;
-- требуют CSRF-token;
-- проверяют валидность identifiers и принадлежность aggregate;
-- повторно проверяют lifecycle и DB-инварианты в сервисе;
-- используют expected revision там, где это предусмотрено;
-- выполняются транзакционно;
-- используют prepared statements;
-- записывают change events;
-- возвращают результат через серверный белый список сообщений.
+- POST-only;
+- permission protected;
+- CSRF protected;
+- identifiers и aggregate ownership validated;
+- lifecycle и DB invariants повторно проверяются в service layer;
+- expected revision применяется, где предусмотрено;
+- transactions + prepared statements;
+- change events и safe result messages.
 
-## Проверка
-
-RBAC и пользовательские lifecycle-сценарии имеют CLI integration checker'ы. Organizational Structure checker дополнительно подтвердил:
+## Последняя проверка
 
 ```text
 system roles: 4
 system permissions: 25
 organization permissions: 6
-ordinary system-role automatic assignments: 0
+ordinary automatic organization assignments: 0
+owner access to PR #19/#20 directories: PASS
+ordinary-role HTTP 403: PASS
+read-only boundary: PASS
+security regressions: PASS
 ```
 
-Секреты, временные пароли и содержимое `config/local.php` не включаются в документацию и журналы проекта.
+Секреты, временные пароли и `config/local.php` не включаются в документацию и logs.
