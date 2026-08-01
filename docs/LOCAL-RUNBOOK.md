@@ -15,7 +15,7 @@ URL: https://asu-vch.local
 
 ```text
 latest functional PR: #20
-latest completed documentation PR: #21
+completed baseline refresh PR: #21
 PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
 PR #20 merge / functional refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
