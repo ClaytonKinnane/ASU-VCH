@@ -1,72 +1,42 @@
 # Documentation Validation — Post-PR20 Baseline Refresh
 
-## Статус
+## Финальный статус
 
 ```text
 DATE: 2026-08-01
-STATUS: PASS PENDING FINAL SELF-INCLUSION CHECK
+DOCUMENTATION_VALIDATION_STATUS: PASS
 BASELINE: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 BRANCH: docs/post-pr20-baseline-refresh
 CLASSIFICATION: DOCUMENTATION ONLY
 EXPECTED_PATH_COUNT: 22
-PR: NOT CREATED
-MERGE: NOT AUTHORIZED
-BRANCH_DELETION: NOT PERFORMED
+ACTUAL_PATH_COUNT: 22
+COMMITS_BEHIND_BASELINE: 0
+MERGE_BASE_STATUS: EXACT
+MAIN_INTEGRITY_STATUS: PASS
+PR_STATUS: NOT_CREATED
+MERGE_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
+BRANCH_DELETION_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 ```
 
-## 1. Pre-validation repository state
+## Repository и scope
 
-До добавления настоящего validation report compare подтвердил:
+Финальный compare branch к baseline подтвердил:
 
 ```text
 base: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 merge-base: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 branch status: ahead
-commits ahead: 21
 commits behind: 0
-changed paths before validation report: 21
+changed paths: 22
 ```
 
-Все 21 path входили в approved allowlist и имели расширение `.md`.
+Все 22 changed paths:
 
-## 2. Main integrity
+- входят в утверждённый exact allowlist;
+- являются Markdown-файлами;
+- не затрагивают runtime, config, database, migrations, themes, tools или Git refs.
 
-Сравнение expected baseline с `main`:
-
-```text
-base: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
-head: main
-status: identical
-ahead: 0
-behind: 0
-```
-
-`main` во время Implementation не изменён.
-
-## 3. Pull Request state
-
-Search по head `docs/post-pr20-baseline-refresh` вернул 0 PR.
-
-```text
-PR_STATUS=NOT_CREATED
-```
-
-## 4. Branch inventory
-
-Fresh GitHub inventory до финальной self-inclusion check:
-
-```text
-docs/post-pr20-baseline-refresh
-feature/military-positions-directory
-feature/public-military-occupational-specialties-directory
-main
-```
-
-Ни одна branch не удалена и не перемещена настоящим implementation.
-
-## 5. Scope validation
-
-Approved final allowlist:
+Allowlist:
 
 ```text
 README.md
@@ -93,9 +63,34 @@ docs/testing/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-LOCAL-RUNBOOK.md
 docs/review/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-FORMAL-REVIEW.md
 ```
 
-Настоящий файл является 22-м approved path. Финальная compare-проверка выполняется после его создания.
+## Main integrity
 
-## 6. Baseline fact validation
+Сравнение baseline с `main` завершилось:
+
+```text
+status: identical
+ahead: 0
+behind: 0
+```
+
+`main` не изменён настоящим инкрементом.
+
+## Pull Request и branch inventory
+
+Search по head `docs/post-pr20-baseline-refresh` вернул 0 Pull Request.
+
+Fresh GitHub inventory:
+
+```text
+docs/post-pr20-baseline-refresh
+feature/military-positions-directory
+feature/public-military-occupational-specialties-directory
+main
+```
+
+Удаление, перемещение или force-update refs не выполнялись.
+
+## Baseline facts
 
 Living documentation согласованно отражает:
 
@@ -115,9 +110,9 @@ system permissions: 25
 built-in themes: 3
 ```
 
-## 7. Functional documentation validation
+## Functional facts
 
-Military Positions facts:
+Military Positions:
 
 ```text
 migration: 010
@@ -130,7 +125,7 @@ Automated Testing: PASS
 Manual Desktop Acceptance: PASS
 ```
 
-VUS facts:
+Public Military Occupational Specialties:
 
 ```text
 migration: 011
@@ -148,57 +143,54 @@ Final PR Review: PASS
 Post-merge Git verification: PASS
 ```
 
-## 8. Current-state / historical-artifact validation
+## Current-state и historical evidence
 
 Подтверждено:
 
 - living docs описывают merged baseline после PR #20;
-- exact current HEAD определяется через `origin/main`;
-- exact SHA используются как historical anchors;
-- documentation-only commits не названы runtime-tested;
-- VUS implementation/review/runbook получили post-merge closure;
-- historical attempt markers сохранены и явно отделены от current status;
+- current HEAD определяется через `origin/main`;
+- exact SHA используются как historical merge/test/refresh anchors;
+- documentation-only head не назван runtime-tested;
+- VUS implementation, review и runbook содержат post-merge closure;
+- historical attempt markers отделены от current status;
 - датированные test evidence PR #19/#20 не переписывались.
 
-## 9. Theme/access/environment validation
+## Theme, access и environment
 
 Подтверждено:
 
 - theme CSS contract содержит 9 assets;
-- `military-occupational-specialties.css` указан для всех themes;
-- owner-only directory routes используют `system.*.*`;
-- migrations 010/011 не добавляют permissions;
+- `military-occupational-specialties.css` указан для всех трёх themes;
+- новые owner-only routes используют `system.*.*`;
+- migrations 010 и 011 не добавили permissions;
 - installer baseline — 11 migrations;
-- mobile testing остаётся `OUT OF SCOPE / NOT RUN`.
+- Mobile testing остаётся `OUT OF SCOPE / NOT RUN`.
 
-## 10. Safety validation
-
-```text
-RUNTIME_PATHS_CHANGED=0
-CONFIG_PATHS_CHANGED=0
-DATABASE_PATHS_CHANGED=0
-THEME_ASSET_PATHS_CHANGED=0
-TOOL_PATHS_CHANGED=0
-GIT_REFS_DELETED=0
-PR_CREATED=0
-MERGE_PERFORMED=0
-```
-
-Runtime/deploy/database retest не выполнялся и не требовался из-за documentation-only classification.
-
-## 11. Final self-inclusion check
-
-После создания настоящего файла требуется повторно подтвердить:
+## Test classification
 
 ```text
-changed paths: 22
-all paths match exact allowlist
-all changed paths are Markdown
-merge-base: exact baseline
-behind: 0
-main: unchanged
-PR: absent
-branches: unchanged
+PHP_LINT=NOT_REQUIRED
+DEPLOY=NOT_REQUIRED
+INSTALLER=NOT_REQUIRED
+DATABASE_TESTING=NOT_REQUIRED
+HTTP_BROWSER_TESTING=NOT_REQUIRED
+RUNTIME_RETEST=NOT_RUN_NOT_REQUIRED
+MOBILE_TESTING=OUT_OF_SCOPE_NOT_RUN
 ```
 
-После этой проверки status обновляется до final `PASS`.
+Причина: diff строго documentation-only.
+
+## Итоговые markers
+
+```text
+DOCUMENTATION_IMPLEMENTATION_STATUS=PASS
+DOCUMENTATION_VALIDATION_STATUS=PASS
+CHANGED_PATH_ALLOWLIST_STATUS=PASS
+MARKDOWN_ONLY_STATUS=PASS
+BASELINE_FACTS_STATUS=PASS
+HISTORICAL_EVIDENCE_PRESERVATION_STATUS=PASS
+MAIN_INTEGRITY_STATUS=PASS
+PR_STATUS=NOT_CREATED
+MERGE_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
+BRANCH_DELETION_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
+```
