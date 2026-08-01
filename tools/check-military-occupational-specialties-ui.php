@@ -42,8 +42,13 @@ try {
     $themes = $config['themes'] ?? [];
     mos_ui_check(is_array($themes) && count($themes) === 3, 'three registered themes available');
 
+    $sourceThemeRoot = $root . '/themes';
+    $deployedThemeRoot = $root . '/public/themes';
+    $themeRoot = is_dir($sourceThemeRoot) ? $sourceThemeRoot : $deployedThemeRoot;
+    mos_ui_check(is_dir($themeRoot), 'theme asset root available');
+
     foreach (array_keys($themes) as $slug) {
-        $asset = $root . "/themes/{$slug}/assets/css/military-occupational-specialties.css";
+        $asset = $themeRoot . "/{$slug}/assets/css/military-occupational-specialties.css";
         $css = file_get_contents($asset);
         mos_ui_check(is_string($css) && $css !== '', "{$slug} VUS stylesheet readable");
         mos_ui_check(
