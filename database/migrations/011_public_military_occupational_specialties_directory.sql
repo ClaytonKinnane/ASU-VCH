@@ -1,0 +1,2 @@
+-- Canonical SQL is loaded by database/MilitaryOccupationalSpecialtyMigrationCompatibility.php
+-- from two ordered gzip/base64 parts with archive and SQL SHA-256 verification.
