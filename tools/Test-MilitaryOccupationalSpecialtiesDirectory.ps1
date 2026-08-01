@@ -55,8 +55,13 @@ function Assert-SourceDeployParity {
     )
 
     foreach ($RelativePath in $RelativePaths) {
+        $DeployRelativePath = if ($RelativePath.StartsWith('themes/')) {
+            'public/' + $RelativePath
+        } else {
+            $RelativePath
+        }
         $Source = Join-Path $RepositoryRoot ($RelativePath -replace '/', '\')
-        $Target = Join-Path $DeployRoot ($RelativePath -replace '/', '\')
+        $Target = Join-Path $DeployRoot ($DeployRelativePath -replace '/', '\')
         if (-not (Test-Path -LiteralPath $Source -PathType Leaf)) {
             throw "Source file was not found: $Source"
         }
@@ -66,7 +71,7 @@ function Assert-SourceDeployParity {
 
         $SourceHash = (Get-FileHash -LiteralPath $Source -Algorithm SHA256).Hash
         $TargetHash = (Get-FileHash -LiteralPath $Target -Algorithm SHA256).Hash
-        Write-Host "PARITY $RelativePath source=$SourceHash deploy=$TargetHash"
+        Write-Host "PARITY $RelativePath deploy_path=$DeployRelativePath source=$SourceHash deploy=$TargetHash"
         if ($SourceHash -ne $TargetHash) {
             throw "Source/deploy parity failed: $RelativePath"
         }
