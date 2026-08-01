@@ -7,30 +7,25 @@ DATE: 2026-08-01
 STATUS: IMPLEMENTED / PR REVIEW REMEDIATED
 BASELINE: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 BRANCH: docs/post-pr20-baseline-refresh
-PR: #21 OPEN
+TRACKING_PR: #21
 CLASSIFICATION: DOCUMENTATION ONLY
 INITIAL_APPROVED_PATH_COUNT: 22
 FINAL_APPROVED_PATH_COUNT: 25
 ACTUAL_PATH_COUNT: 25
 PR_CREATION_HEAD: 060ba1e71d8791dac0a85fd9dd257d9b2cf21cfe
-REMEDIATION_CONTENT_HEAD: 454a4371461a79f7ef82b41ea6d964d9d4bff4d6
+INITIAL_REMEDIATION_CONTENT_HEAD: 454a4371461a79f7ef82b41ea6d964d9d4bff4d6
+FINAL_REMEDIATION_CONTENT_HEAD: 7b7f9d4c945d4f2abb70b36b1b437908cef5ed17
 RUNTIME_CHANGE: NONE
 DATABASE_CHANGE: NONE
 GIT_REF_DELETION: NONE
 MERGE: NOT AUTHORIZED
 ```
 
-`REMEDIATION_CONTENT_HEAD` фиксирует последний commit с содержательными исправлениями. Этот Implementation record и последующий Validation record являются evidence-only commits и не создают самореферентного implementation SHA.
+`FINAL_REMEDIATION_CONTENT_HEAD` фиксирует последний substantive documentation commit. Этот Implementation record и последующий Validation record являются evidence-only commits; live PR state определяется в GitHub.
 
 ## Initial implementation
 
-Initial scope содержал 22 Markdown-пути:
-
-- 13 living documents;
-- 6 process/evidence records refresh;
-- 3 VUS operational records.
-
-Initial Documentation Validation завершилась PASS, после чего был создан PR #21 на head `060ba1e...`.
+Initial scope содержал 22 Markdown-пути: 13 living documents, 6 process/evidence records и 3 VUS operational records. Initial Documentation Validation завершилась PASS, после чего был создан PR #21 на head `060ba1e...`.
 
 ## Final PR Review attempt 1
 
@@ -57,9 +52,9 @@ docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-LOCAL-RUNBOOK.md
 docs/review/MILITARY-POSITIONS-DIRECTORY-V1-FORMAL-REVIEW.md
 ```
 
-Разрешены синхронизация current-state документов, update process records/PR body, repeat Documentation Validation и repeat Final PR Review. Merge и branch deletion не разрешены.
+Также разрешены current-state synchronization, process/PR metadata updates, repeat Validation и repeat Final PR Review. Merge и branch deletion не разрешены.
 
-## Final changed-path scope
+## Final scope
 
 ```text
 README.md
@@ -89,7 +84,7 @@ docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-LOCAL-RUNBOOK.md
 docs/review/MILITARY-POSITIONS-DIRECTORY-V1-FORMAL-REVIEW.md
 ```
 
-## Baseline facts documented
+## Baseline facts
 
 ```text
 latest functional PR: #20
@@ -106,9 +101,13 @@ built-in themes: 3
 mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-## Operational closure
+## Remediation outcome
 
-PR #19 и PR #20 operational records теперь разделяют current merged status и historical pre-merge evidence. Increment runbooks помечены как historical; stable operations направлены в `docs/LOCAL-RUNBOOK.md`.
+- PR #19 и PR #20 operational records имеют post-merge closures;
+- increment runbooks отделены от stable runbook;
+- living docs ссылаются на PR #21 как workflow record, но live state определяют динамически;
+- exact PR states и heads остаются в датированных evidence records;
+- runtime/config/database/migrations/theme/tool/Git ref changes отсутствуют.
 
 ## Test classification
 
@@ -125,9 +124,4 @@ MOBILE_TESTING: OUT_OF_SCOPE_NOT_RUN
 
 ## Next gate
 
-```text
-REPEAT_DOCUMENTATION_VALIDATION: REQUIRED
-REPEAT_FINAL_PR_REVIEW: REQUIRED
-MERGE_STATUS: NOT_AUTHORIZED
-BRANCH_DELETION_STATUS: NOT_AUTHORIZED
-```
+Repeat Documentation Validation выполняется на evidence head этого Implementation record. После Validation PASS требуется repeat Final PR Review и отдельное owner merge approval. Branch deletion остаётся отдельным post-merge gate.
