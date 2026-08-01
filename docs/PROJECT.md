@@ -81,24 +81,51 @@
 
 ```text
 latest functional PR: #20
+latest completed documentation PR: #21
 PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
-PR #20 merge / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+PR #20 merge / functional refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
+PR #21 merge: f5b53f2ee4453f293b58cbe486e0943ab602335b
 migrations: 11
 system roles: 4
 system permissions: 25
 built-in themes: 3
 active functional increment: none
+active documentation increment after closure: none
 ```
 
 Documentation-only commits после tested runtime не объявляются runtime-протестированными.
 
 ## Repository governance
 
-Исторический cleanup 2026-07-31 остаётся датированным evidence. Ветки, созданные позже, имеют собственный lifecycle.
+PR #21 завершил documentation baseline refresh после PR #19/#20. Repeat Documentation Validation и Final PR Review прошли, merge выполнен отдельным разрешением владельца, post-merge Git verification завершён PASS.
 
-На момент подготовки Post-PR20 Baseline Refresh remote inventory содержит `main`, две merged feature-ветки и активную docs-ветку. Их удаление не входит в настоящий implementation и требует отдельного approval после merge документационного refresh.
+После отдельного cleanup approval удалены три remote branches и 13 merged local feature branches. Terminal verification 2026-08-01 зафиксировала:
+
+```text
+remote branches: main only
+local branches: main only
+local main = origin/main = f5b53f2ee4453f293b58cbe486e0943ab602335b
+working tree: clean
+force deletion used: no
+```
+
+Это immutable датированный snapshot. Позднее созданные утверждённые branches имеют собственный lifecycle и не противоречат этому evidence.
+
+Текущее состояние определяется динамически:
+
+```powershell
+git fetch --prune origin
+git rev-parse origin/main
+git ls-remote --heads origin
+git branch -vv
+git status --short
+```
+
+Open Pull Requests и Issues проверяются в GitHub. Living docs не зависят от transient branch/PR state текущего документационного workflow.
+
+Evidence: [Post-PR21 Merge and Cleanup Closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md).
 
 ## Не реализовано
 
