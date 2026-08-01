@@ -1,36 +1,41 @@
 # Documentation Validation — Post-PR20 Baseline Refresh
 
-## Финальный статус
+## Current result
 
 ```text
 DATE: 2026-08-01
+VALIDATION_ATTEMPT: 2 / AFTER FINAL PR REVIEW REMEDIATION
 DOCUMENTATION_VALIDATION_STATUS: PASS
 BASELINE: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 BRANCH: docs/post-pr20-baseline-refresh
+PR: #21 OPEN
+VALIDATED_IMPLEMENTATION_HEAD: 8950dbe606b75498f33dc1b1f091d7f2cf713ab9
+REMEDIATION_CONTENT_HEAD: 454a4371461a79f7ef82b41ea6d964d9d4bff4d6
 CLASSIFICATION: DOCUMENTATION ONLY
-EXPECTED_PATH_COUNT: 22
-ACTUAL_PATH_COUNT: 22
+EXPECTED_PATH_COUNT: 25
+ACTUAL_PATH_COUNT: 25
 COMMITS_BEHIND_BASELINE: 0
 MERGE_BASE_STATUS: EXACT
 MAIN_INTEGRITY_STATUS: PASS
-PR_STATUS: NOT_CREATED
 MERGE_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 BRANCH_DELETION_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 ```
 
-## Repository и exact scope
+Этот Validation record является evidence-only commit после validated implementation head и не создаёт новый runtime или substantive documentation implementation anchor.
 
-Финальный compare branch к baseline подтвердил:
+## Repository and exact scope
+
+Compare `main...8950dbe...` подтвердил:
 
 ```text
-base: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+base main: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 merge-base: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
-branch status: ahead
-commits behind: 0
-changed paths: 22
+status: ahead
+behind: 0
+changed paths: 25
 ```
 
-Все 22 changed paths входят в утверждённый allowlist, имеют расширение `.md` и не затрагивают runtime, config, database, migrations, themes, tools или Git refs.
+Все changed paths входят в owner-approved allowlist и имеют расширение `.md`:
 
 ```text
 README.md
@@ -55,34 +60,36 @@ docs/testing/POST-PR20-BASELINE-REFRESH-VALIDATION.md
 docs/implementation/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-IMPLEMENTATION.md
 docs/testing/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-LOCAL-RUNBOOK.md
 docs/review/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-FORMAL-REVIEW.md
+docs/implementation/MILITARY-POSITIONS-DIRECTORY-V1-IMPLEMENTATION.md
+docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-LOCAL-RUNBOOK.md
+docs/review/MILITARY-POSITIONS-DIRECTORY-V1-FORMAL-REVIEW.md
 ```
-
-## Main, PR и branches
-
-Сравнение baseline с `main`:
 
 ```text
-status: identical
-ahead: 0
-behind: 0
+CHANGED_PATH_ALLOWLIST_STATUS=PASS
+MARKDOWN_ONLY_STATUS=PASS
+NON_MARKDOWN_DIFF=0
+RUNTIME_CONFIG_DATABASE_MIGRATION_THEME_TOOL_DIFF=0
 ```
 
-Search по head `docs/post-pr20-baseline-refresh` вернул 0 Pull Request.
+## PR metadata
 
-Fresh GitHub branch inventory:
+На validated head PR #21:
 
 ```text
-docs/post-pr20-baseline-refresh
-feature/military-positions-directory
-feature/public-military-occupational-specialties-directory
-main
+state: OPEN
+draft: NO
+merged: NO
+base: main
+base SHA: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+head: docs/post-pr20-baseline-refresh
+head SHA: 8950dbe606b75498f33dc1b1f091d7f2cf713ab9
+changed files: 25
 ```
 
-Удаление, перемещение или force-update refs не выполнялись.
+PR body обновлён и отражает allowlist 25, remediation findings, exact implementation heads и запрет merge/branch deletion.
 
 ## Baseline facts
-
-Living documentation согласованно отражает:
 
 ```text
 latest functional PR: #20
@@ -100,78 +107,58 @@ system permissions: 25
 built-in themes: 3
 ```
 
-## Functional facts
+## Closure validation
 
-Military Positions:
-
-```text
-migration: 010
-tables: 14
-triggers: 41
-canonical types: 34
-variants: 35
-rank relation tables: 0
-Automated Testing: PASS
-Manual Desktop Acceptance: PASS
-```
-
-Public Military Occupational Specialties:
+PR #19 operational records теперь подтверждают:
 
 ```text
-migration: 011
-tables: 9
-triggers: 26
-legal sources: 5
-official snapshots: 4
-training organizations: 4
-training programs: 15
-searchable records: 17
-Automated Testing: PASS
-Manual Desktop Acceptance: PASS
-Targeted Manual Desktop Recheck: PASS
-Final PR Review: PASS
-Post-merge Git verification: PASS
+PR #19 CLOSED / MERGED
+merge commit: 99f9f283...
+tested runtime: 0455f012...
+Implementation current status: merged
+increment runbook: historical
+Formal Review: original verdict preserved + post-merge closure
 ```
 
-## Current-state и historical evidence
+PR #20 operational records сохраняют merged/post-merge verified current status и historical attempts.
 
-Подтверждено:
+```text
+PR19_OPERATIONAL_CLOSURE_STATUS=PASS
+PR20_OPERATIONAL_CLOSURE_STATUS=PASS
+HISTORICAL_EVIDENCE_PRESERVATION_STATUS=PASS
+```
 
-- living docs описывают merged baseline после PR #20;
-- current HEAD определяется через `origin/main`;
-- exact SHA используются как historical merge/test/refresh anchors;
-- documentation-only head не назван runtime-tested;
-- VUS implementation, review и runbook содержат post-merge closure;
-- historical attempt markers отделены от current status;
-- датированные test evidence PR #19/#20 не переписывались.
+## Current-state scan
 
-## Markdown links, stale markers и secrets
+Living/current documents отражают PR #21 как open и не используют `PR not created` как текущий status. Прежние markers встречаются только в явно historical sections/evidence.
 
-Выполнена read-only проверка изменённых документов:
+```text
+STALE_CURRENT_STATE_SCAN_STATUS=PASS
+PR21_CURRENT_STATE_STATUS=PASS
+IMPLEMENTATION_HEAD_RECORDING_STATUS=PASS
+```
 
-- относительные Markdown-ссылки из living docs указывают на существующие repository paths;
-- broken links в изменённом scope не выявлены;
-- living docs не содержат устаревших current-state assertions `latest functional PR: #15`, `migrations: 001–009` или current `PR #20 OPEN`;
-- прежние `NOT AUTHORIZED`, `NOT CREATED` и `RECHECK REQUIRED` встречаются только в явно помеченных historical sections;
-- credentials, access tokens, private keys, реальные пароли и содержимое `config/local.php` отсутствуют;
-- присутствующие SHA-256, commit SHA и локальные filesystem paths являются публичными техническими anchors, а не секретами.
+## Links and secrets
+
+Проверены relative links в изменённых living/process documents к существующим repository paths. Credentials, tokens, private keys, passwords, session data и содержимое `config/local.php` отсутствуют.
 
 ```text
 MARKDOWN_LINK_VALIDATION_STATUS=PASS
-STALE_CURRENT_STATE_SCAN_STATUS=PASS
 SECRET_REVIEW_STATUS=PASS
 ```
 
-## Theme, access и environment
+## Branch inventory
 
-Подтверждено:
+Fresh GitHub inventory после remediation:
 
-- theme CSS contract содержит 9 assets;
-- `military-occupational-specialties.css` указан для всех трёх themes;
-- новые owner-only routes используют `system.*.*`;
-- migrations 010 и 011 не добавили permissions;
-- installer baseline — 11 migrations;
-- Mobile testing остаётся `OUT OF SCOPE / NOT RUN`.
+```text
+main
+docs/post-pr20-baseline-refresh
+feature/military-positions-directory
+feature/public-military-occupational-specialties-directory
+```
+
+Branches не удалялись и refs не перемещались.
 
 ## Test classification
 
@@ -185,9 +172,7 @@ RUNTIME_RETEST=NOT_RUN_NOT_REQUIRED
 MOBILE_TESTING=OUT_OF_SCOPE_NOT_RUN
 ```
 
-Причина: diff строго documentation-only.
-
-## Итоговые markers
+## Final markers
 
 ```text
 DOCUMENTATION_IMPLEMENTATION_STATUS=PASS
@@ -198,9 +183,11 @@ MARKDOWN_LINK_VALIDATION_STATUS=PASS
 STALE_CURRENT_STATE_SCAN_STATUS=PASS
 SECRET_REVIEW_STATUS=PASS
 BASELINE_FACTS_STATUS=PASS
+PR19_OPERATIONAL_CLOSURE_STATUS=PASS
+PR20_OPERATIONAL_CLOSURE_STATUS=PASS
 HISTORICAL_EVIDENCE_PRESERVATION_STATUS=PASS
 MAIN_INTEGRITY_STATUS=PASS
-PR_STATUS=NOT_CREATED
+PR_STATUS=OPEN_21_NOT_MERGED
 MERGE_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
 BRANCH_DELETION_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
 ```
