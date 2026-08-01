@@ -2,7 +2,7 @@
 
 ## Implementation scope
 
-Exact changed-path count before re-testing: **23**.
+Exact changed-path count before re-testing: **24**.
 
 Migration packaging входит в runtime parity:
 
@@ -20,7 +20,8 @@ UI remediation добавляет:
 - русификацию видимых labels;
 - linked/static card behavior;
 - VUS-specific table proportions;
-- compact bottom boundary note.
+- compact bottom boundary note;
+- обновлённое ожидание `database/check-theme-management.php` для нового обязательного stylesheet.
 
 ## Automated
 
@@ -32,7 +33,7 @@ UI remediation добавляет:
 6. Integration checker: loader hashes, 9 tables, 26 triggers, exact seed, fingerprints, identifier distributions, lifecycle и rejection tests.
 7. UI checker: русификация, отсутствие fingerprints в пользовательском UI, стили трёх тем, интерактивные и статичные карточки, пропорции таблицы, compact bottom note.
 8. Regressions: ranks, organizational elements, military positions, RBAC, users, themes, Organization.
-9. Source/deploy parity для 13 runtime/package paths и HTTP smoke.
+9. Source/deploy parity для 14 runtime/package/test paths и HTTP smoke.
 10. Итоговая чистота и совпадение с origin feature branch.
 
 ## Manual desktop re-acceptance
