@@ -25,7 +25,7 @@ git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Living docs не хранят самореферентный current-main SHA или изменчивое состояние активного PR как постоянно актуальное поле. Exact states фиксируются в датированных evidence snapshots; live PR state определяется в GitHub.
+Living docs не хранят самореферентный current-main SHA, изменчивое состояние активного PR или текущий branch inventory как постоянно актуальное поле. Exact states фиксируются в датированных evidence snapshots; live repository state определяется через GitHub и Git.
 
 ## Functional baseline
 
@@ -37,23 +37,29 @@ migrations: 001–011
 system roles: 4
 system permissions: 25
 built-in themes: 3
+active functional increment: none
 mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-## Post-PR20 Baseline Refresh
+## Завершённый documentation baseline refresh — PR #21
 
-Workflow reference: **PR #21**, branch `docs/post-pr20-baseline-refresh`.
+PR #21 `docs: refresh baseline after PR #19 and PR #20` завершён:
 
 ```text
-classification: Markdown only
-final approved changed-path count: 25
-merge requires separate owner approval
-branch deletion requires separate post-merge approval
+final PR head: 4d44874ef02ffb9381334acfabfa383eba3e4ead
+merge method: merge commit
+merge commit: f5b53f2ee4453f293b58cbe486e0943ab602335b
+repeat Documentation Validation: PASS
+Final PR Review attempt 2: PASS
+post-merge Git verification: PASS
+runtime changes: none
 ```
 
-Live state PR #21 определяется в GitHub. Датированный pre-merge snapshot и exact heads находятся в Implementation и Documentation Validation records.
+После отдельного owner approval выполнен remote-first branch cleanup. Датированный terminal snapshot 2026-08-01 подтвердил `main only` на GitHub и локально, clean working tree и неизменность merge commit PR #21.
 
-Process records:
+- [Post-PR21 Merge and Cleanup Closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md)
+
+Process records PR #21:
 
 - [Architecture](architecture/POST-PR20-BASELINE-REFRESH-ARCHITECTURE.md)
 - [Specification](specification/POST-PR20-BASELINE-REFRESH-SPECIFICATION.md)
@@ -62,13 +68,23 @@ Process records:
 - [Implementation](implementation/POST-PR20-BASELINE-REFRESH-IMPLEMENTATION.md)
 - [Documentation Validation](testing/POST-PR20-BASELINE-REFRESH-VALIDATION.md)
 
-Первый Final PR Review PR #21 выявил incomplete operational closure PR #19 и stale post-PR markers. Scope отдельно расширен с 22 до 25 Markdown-путей; remediation не меняет runtime.
+Closure documentation artifacts:
+
+- [Closure Architecture](architecture/POST-PR21-MERGE-CLEANUP-CLOSURE-ARCHITECTURE.md)
+- [Closure Specification](specification/POST-PR21-MERGE-CLEANUP-CLOSURE-SPECIFICATION.md)
+- [Closure Formal Review](review/POST-PR21-MERGE-CLEANUP-CLOSURE-FORMAL-REVIEW.md)
+- [Closure Approval](decisions/POST-PR21-MERGE-CLEANUP-CLOSURE-APPROVAL.md)
+- [Closure Implementation](implementation/POST-PR21-MERGE-CLEANUP-CLOSURE-IMPLEMENTATION.md)
+- [Closure Validation](testing/POST-PR21-MERGE-CLEANUP-CLOSURE-VALIDATION.md)
+
+Эти process/evidence files являются историческими gate records и не используются как live status проекта.
 
 ## Классы документации
 
-1. **Living documentation** — merged functional baseline.
+1. **Living documentation** — merged functional baseline и устойчивые завершённые governance facts.
 2. **Historical process/test artifacts** — состояние конкретного gate или попытки.
 3. **Operational increment records** — current outcome плюс сохранённая история; после merge получают closure section.
+4. **Immutable cleanup records** — датированный terminal snapshot, не бессрочное описание будущего repository state.
 
 Historical `NOT CREATED`, `NOT AUTHORIZED` и `RECHECK REQUIRED` не переписываются задним числом, но не используются как living current assertions.
 
@@ -76,15 +92,21 @@ Historical `NOT CREATED`, `NOT AUTHORIZED` и `RECHECK REQUIRED` не переп
 
 Historical evidence:
 
+- [Post-PR21 merge and cleanup closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md)
 - [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md)
 - [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md)
 - [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md)
 
-Текущий remote inventory определяется динамически:
+Текущее состояние определяется динамически:
 
 ```powershell
+git fetch --prune origin
 git ls-remote --heads origin
+git branch -vv
+git status --short
 ```
+
+Для GitHub дополнительно проверяются open Pull Requests и Issues. Датированный `main only` snapshot не запрещает создание позднейших утверждённых веток.
 
 `SAFE TO DELETE` не является разрешением. Cleanup требует post-merge verification, fresh inventory, exact batch и отдельное owner approval.
 
@@ -99,7 +121,8 @@ git ls-remote --heads origin
 ## Правила актуальности
 
 - GitHub — единственный источник истины.
-- Current HEAD и live PR state определяются динамически.
+- Current HEAD, PRs, Issues и branches определяются динамически.
 - Documentation-only head не объявляется runtime-tested.
 - Mobile PASS не заявляется без фактической acceptance.
 - Merge и branch cleanup имеют отдельные approval gates.
+- Завершение cleanup собственной documentation branch не требует нового closure increment, если living docs не зависят от её transient state.

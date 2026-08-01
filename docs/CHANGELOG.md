@@ -29,19 +29,50 @@
 
 ### Post-PR20 Baseline Refresh — PR #21
 
-- создана ветка `docs/post-pr20-baseline-refresh` от `main @ 3082ec6ecbeddb92bd65e1398f05a9339abb199b`;
-- завершены Research, Analysis, Architecture, Specification, Formal Review и owner Approval;
+- создан documentation-only workflow для актуализации baseline после PR #19/#20;
 - initial scope: 22 Markdown paths;
 - initial Documentation Implementation и Validation: PASS;
-- создан PR #21 `docs: refresh baseline after PR #19 and PR #20`;
-- первый Final PR Review PR #21: `CHANGES REQUIRED`;
+- первый Final PR Review: `CHANGES REQUIRED`;
 - findings: incomplete operational closure PR #19, stale post-PR markers и отсутствие implementation head;
 - owner отдельно разрешил remediation и расширил allowlist с 22 до 25 Markdown-путей;
-- добавлены post-merge closures для operational records PR #19;
-- current-state documents синхронизированы с PR #21;
-- runtime, database, deploy, config, themes, tools и Git refs не изменялись;
-- repeat Documentation Validation и Final PR Review выполняются до отдельного merge gate;
-- merge и branch deletion не разрешены.
+- добавлены post-merge closures operational records PR #19;
+- living/current-state documents синхронизированы;
+- repeat Documentation Validation: PASS;
+- repeat Final PR Review attempt 2: PASS;
+- Final PR Review ID: `4835150606`;
+- owner отдельно разрешил merge;
+- PR #21 merged методом merge commit;
+- final PR head: `4d44874ef02ffb9381334acfabfa383eba3e4ead`;
+- merge commit: `f5b53f2ee4453f293b58cbe486e0943ab602335b`;
+- post-merge Git verification: PASS;
+- runtime, database, deploy, config, themes и tools не изменялись.
+
+### Post-PR21 branch cleanup
+
+После отдельного owner approval выполнен remote-first cleanup:
+
+- remote deletion set: 3 branches;
+- remote branches deleted: 3 / 3;
+- после remote cleanup на GitHub осталась только `main`;
+- local deletion set: 13 merged feature branches;
+- local branches deleted через `git branch -d`: 13 / 13;
+- после local cleanup локально осталась только `main`;
+- final local main и `origin/main`: `f5b53f2ee4453f293b58cbe486e0943ab602335b`;
+- working tree: clean;
+- force deletion: not used;
+- terminal verification: PASS;
+- незамерженные commits не потеряны.
+
+Датированный evidence: [Post-PR21 Merge and Cleanup Closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md).
+
+### Documentation closure synchronization
+
+- шесть living documents актуализированы до устойчивого post-PR21 состояния;
+- три operational records PR #21 получили post-merge and cleanup closure sections;
+- удалённая docs-ветка больше не используется как operational dependency;
+- current PR/Issue/branch state определяется динамически;
+- документационный diff не изменяет runtime-tested baseline;
+- Mobile PASS не заявляется.
 
 ## 2026-07-31
 

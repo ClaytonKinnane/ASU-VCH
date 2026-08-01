@@ -2,7 +2,7 @@
 
 ## 1. Назначение
 
-Runbook описывает синхронизацию, deploy и проверку stable baseline АСУ-ВЧ, а также read-only validation documentation-only changes.
+Runbook описывает синхронизацию, deploy и проверку stable baseline АСУ-ВЧ, documentation-only validation, branch inventory и утверждённый cleanup.
 
 ```text
 repository: C:\Project\ASU-VCH
@@ -15,10 +15,12 @@ URL: https://asu-vch.local
 
 ```text
 latest functional PR: #20
+completed baseline refresh PR: #21
 PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
-PR #20 merge / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+PR #20 merge / functional refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
+PR #21 merge: f5b53f2ee4453f293b58cbe486e0943ab602335b
 migrations: 001–011
 system roles: 4
 system permissions: 25
@@ -82,26 +84,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -AllowInvalidCertificate
 ```
 
-## 6. Documentation-only validation
+## 6. Generic documentation-only validation
 
-Post-PR20 Baseline Refresh отслеживается PR #21 и веткой `docs/post-pr20-baseline-refresh`. Live PR state определяется в GitHub; stable runbook не хранит `OPEN/MERGED` как постоянно актуальное поле.
-
-Approved validation contract:
-
-```text
-base / merge-base: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
-final changed-path allowlist: 25 Markdown paths
-runtime/config/database/migrations/theme/tool changes: none
-```
-
-Read-only validation:
+Для утверждённой documentation branch:
 
 ```powershell
 Set-Location -LiteralPath 'C:\Project\ASU-VCH'
 git status --short
 git fetch --prune origin
-git switch docs/post-pr20-baseline-refresh
-git pull --ff-only origin docs/post-pr20-baseline-refresh
+git switch <approved-docs-branch>
+git pull --ff-only origin <approved-docs-branch>
 git rev-parse HEAD
 git merge-base origin/main HEAD
 git rev-list --left-right --count origin/main...HEAD
@@ -112,22 +104,42 @@ git status --short
 
 Проверяются:
 
-- exact changed-path count = 25;
-- все changed paths имеют расширение `.md`;
+- exact owner-approved changed-path allowlist;
+- Markdown-only diff;
 - branch behind `origin/main` = 0;
-- PR #19 и PR #20 operational closures;
-- migrations 001–011, roles 4, permissions 25, themes 3;
-- relative links и secret scan;
-- no non-Markdown diff;
+- baseline facts и устойчивые anchors;
+- relative Markdown links;
+- stale current-state assertions;
+- secrets и содержимое `config/local.php` отсутствуют;
+- historical snapshots не переписаны задним числом;
 - no Mobile PASS claim;
-- live PR state соответствует GitHub;
-- merge и branch deletion выполняются только после отдельных approvals.
+- runtime/config/database/migrations/themes/tools/Git refs unchanged.
 
-Датированный Validation evidence фиксирует exact head и PR state на момент проверки.
+Live PR state определяется в GitHub и фиксируется только в датированных evidence records.
 
-## 7. Branch inventory and cleanup gate
+## 7. Исторический PR #21 и cleanup
 
-До cleanup:
+PR #21 завершён merge commit `f5b53f2ee4453f293b58cbe486e0943ab602335b`; post-merge Git verification — PASS.
+
+После отдельного owner approval выполнен remote-first cleanup:
+
+```text
+remote deleted: 3 / 3
+local deleted: 13 / 13
+terminal remote branches: main only
+terminal local branches: main only
+working tree: clean
+force deletion: not used
+terminal verification: PASS
+```
+
+Удалённая ветка `docs/post-pr20-baseline-refresh` является historical branch name и не используется как operational checkout target.
+
+Evidence: [Post-PR21 Merge and Cleanup Closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md).
+
+## 8. Branch inventory and cleanup gate
+
+Fresh inventory:
 
 ```powershell
 git fetch --prune origin
@@ -136,10 +148,40 @@ git branch -vv
 git branch --merged origin/main
 ```
 
-Для каждой ветки проверяются tip, reachability, unique commits и связанный merged PR. `SAFE TO DELETE` не является разрешением.
+Для каждой ветки проверяются:
 
-После завершения PR #21 требуется post-merge verification, новая inventory и отдельное owner approval exact batch. Remote deletion выполняется первой; затем `fetch --prune` и approved local deletion через `git branch -d`.
+1. exact tip;
+2. reachability из актуального `origin/main`;
+3. unique commits;
+4. связанный PR и post-merge state;
+5. exact owner-approved deletion batch.
 
-## 8. Security boundaries
+`SAFE TO DELETE` не является разрешением.
+
+Remote deletion выполняется первой. После подтверждения отсутствия remote refs выполняются `git fetch --prune` и только утверждённое локальное удаление через `git branch -d`. `git branch -D` и force-update refs для обычного cleanup запрещены.
+
+## 9. Terminal verification после cleanup
+
+```powershell
+git fetch --prune origin
+git rev-parse HEAD
+git rev-parse origin/main
+git status --porcelain
+git for-each-ref --format='%(refname:short)' refs/heads
+git ls-remote --heads origin
+```
+
+Проверяются:
+
+- local `main` = `origin/main` = ожидаемый merge commit;
+- working tree clean;
+- local branch set соответствует утверждённому результату;
+- remote branch set соответствует утверждённому результату;
+- `main` не перемещена неожиданно;
+- force deletion не использовался.
+
+Датированный `main only` snapshot не является запретом на позднейшее создание новой утверждённой ветки.
+
+## 10. Security boundaries
 
 Не публикуются credentials, session data, temporary passwords и содержимое `config/local.php`. Mobile testing для PR #19/#20: `OUT OF SCOPE / NOT RUN`.
