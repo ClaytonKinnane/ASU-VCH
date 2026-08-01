@@ -28,3 +28,16 @@ Identifier kinds: `none`, `base-specialty-number`, `full-code-complete`, `offici
 Migration: `011_public_military_occupational_specialties_directory.sql`.
 Route: `/admin/directories/military-occupational-specialties.php`.
 Permission: `system.*.*`.
+
+## Compatibility packaging
+
+В соответствии с Implementation Approval canonical migration хранится в двух gzip/base64 частях и загружается через `database/MilitaryOccupationalSpecialtyMigrationCompatibility.php`.
+
+```text
+canonical SQL SHA-256: 26039aedc4c700a883203eeaefd09194cc6a9a304b3c2db94a7479f8710b8fd9
+archive SHA-256:       1c1af1e07e040452499e5882ce181b088c4017c936b0892d2552e8447996bc39
+parts:                  2
+implementation paths:   18
+```
+
+Marker migration не содержит предметного SQL. Installer получает только canonical SQL после успешной проверки обоих hashes.
