@@ -19,7 +19,7 @@ git status --short
 ```text
 CURRENT_BRANCH=feature/public-military-occupational-specialties-directory
 ORIGIN_FEATURE_DIVERGENCE=0 0
-IMPLEMENTATION_FILE_COUNT=18
+IMPLEMENTATION_FILE_COUNT=23
 WORKING TREE=CLEAN
 ```
 
@@ -32,7 +32,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -AllowInvalidCertificate
 ```
 
-Runner выполняет backup, deploy, PHP lint, installer дважды, integration checker, regressions, source/deploy parity и HTTP smoke.
+Runner выполняет backup, deploy, PHP lint, installer дважды, основной integration checker, отдельный UI checker, regressions, source/deploy parity и HTTP smoke.
+
+UI checker должен завершиться marker:
+
+```text
+MILITARY_OCCUPATIONAL_SPECIALTIES_UI_CHECK=PASS
+```
 
 Ожидаемый финал:
 
@@ -51,4 +57,6 @@ SQL SHA-256:     26039aedc4c700a883203eeaefd09194cc6a9a304b3c2db94a7479f8710b8fd
 parts:           2
 ```
 
-После automated PASS выполняется отдельная ручная desktop-приёмка. PR не создаётся без отдельного разрешения.
+После Automated Testing PASS повторяется ручная desktop-приёмка с особым вниманием к русификации, расстояниям между секциями, поведению linked/static карточек, ширинам таблицы и нижнему пустому пространству.
+
+PR не создаётся без отдельного разрешения после PASS ручной desktop-приёмки.
