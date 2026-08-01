@@ -2,7 +2,7 @@
 
 ## Актуальные документы
 
-Эти документы описывают текущий merged baseline и обновляются при изменении состояния проекта:
+Living documentation описывает текущий merged functional baseline и обновляется после material merge:
 
 - [Текущее состояние проекта](PROJECT-STATUS.md)
 - [О проекте](PROJECT.md)
@@ -16,16 +16,16 @@
 - [История изменений](CHANGELOG.md)
 - [Архитектурные паттерны](ARCHITECTURAL-PATTERNS.md)
 
-Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют `database/migrations/*.sql`, installer и профильные integration checker'ы.
+Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют migrations, installer и профильные integration checker'ы.
 
-Актуальный repository HEAD определяется через `origin/main`:
+Актуальный HEAD определяется через `origin/main`:
 
 ```powershell
 git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Living documentation не хранит самореферентный SHA как постоянно актуальный `current main HEAD`. Точные SHA используются как исторические merge/test/refresh anchors и в датированных evidence snapshots.
+Exact SHA используются как historical merge/test/refresh anchors, а не как самореферентное current-main поле.
 
 ## Текущий functional baseline
 
@@ -40,46 +40,55 @@ built-in themes: 3
 mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-Последние функциональные инкременты:
-
-- PR #19 — owner-only read-only справочник типовых воинских должностей;
-- PR #20 — owner-only read-only справочник публичных сведений о ВУС.
-
 ## Post-PR20 Baseline Refresh
 
-Документационный инкремент:
+Текущий documentation-only инкремент:
+
+```text
+branch: docs/post-pr20-baseline-refresh
+PR: #21 OPEN
+classification: Markdown only
+approved changed-path count: 25
+merge: NOT AUTHORIZED
+branch deletion: NOT AUTHORIZED
+```
+
+Process records:
 
 - [Architecture](architecture/POST-PR20-BASELINE-REFRESH-ARCHITECTURE.md)
 - [Specification](specification/POST-PR20-BASELINE-REFRESH-SPECIFICATION.md)
 - [Formal Review](review/POST-PR20-BASELINE-REFRESH-FORMAL-REVIEW.md)
 - [Approval](decisions/POST-PR20-BASELINE-REFRESH-APPROVAL.md)
-- Implementation record и Documentation Validation добавляются в пределах утверждённого scope.
+- [Implementation](implementation/POST-PR20-BASELINE-REFRESH-IMPLEMENTATION.md)
+- [Documentation Validation](testing/POST-PR20-BASELINE-REFRESH-VALIDATION.md)
 
-## Исторические process artifacts
+Первый Final PR Review PR #21 выявил incomplete operational closure PR #19 и stale post-PR markers. Scope отдельно расширен с 22 до 25 Markdown-путей; remediation и повторная validation выполняются без runtime changes.
 
-Architecture, Specification, Review, Approval и датированные Test Evidence сохраняют состояние соответствующего gate. Формулировки `PENDING`, `NOT CREATED`, `NOT AUTHORIZED`, `RECHECK REQUIRED` или прежние baseline-значения внутри исторического артефакта не заменяют текущее состояние проекта и не переписываются задним числом.
+## Классы документации
 
-Increment-документы, которые одновременно служат текущим operational record, получают отдельный post-merge closure без удаления истории попыток.
+1. **Living documentation** — текущий merged baseline.
+2. **Historical process/test artifacts** — состояние конкретного gate или попытки.
+3. **Operational increment records** — current status плюс сохранённая история; после merge получают closure section.
+
+Исторические `NOT CREATED`, `NOT AUTHORIZED` и `RECHECK REQUIRED` не переписываются задним числом, но не должны оставаться current-status assertions.
 
 ## Repository governance
 
-Исторические administrative evidence:
+Исторические evidence:
 
 - [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md)
 - [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md)
 - [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md)
 
-Текущее количество remote branches определяется read-only командой:
+Текущее количество remote branches определяется динамически:
 
 ```powershell
 git ls-remote --heads origin
 ```
 
-Техническая классификация ветки как merged или safe-to-delete не является разрешением на удаление. Любой cleanup требует fresh inventory и отдельного явного решения владельца проекта.
+Technical `SAFE TO DELETE` не является разрешением. Cleanup требует post-merge verification, fresh inventory, exact batch и отдельное owner approval.
 
 ## Целевая архитектура
-
-Документы этой группы могут описывать более широкий целевой scope, чем фактически реализованный runtime:
 
 - [Целевая архитектура базы данных](DATABASE.md)
 - [Стартовая административная спецификация](STARTER-ADMIN-SPEC.md)
@@ -89,10 +98,8 @@ git ls-remote --heads origin
 
 ## Правила актуальности
 
-1. GitHub — единственный источник истины.
-2. Текущий HEAD определяется через `origin/main`.
-3. Living docs описывают merged baseline; historical artifacts сохраняют состояние своего gate.
-4. Текущие возможности подтверждаются merged code, migrations и результатами тестирования.
-5. Секреты и `config/local.php` не публикуются.
-6. Mobile PASS не заявляется без фактической мобильной приёмки.
-7. Merge и branch cleanup требуют отдельных явных разрешений.
+- GitHub — единственный источник истины.
+- Current HEAD определяется через `origin/main`.
+- Documentation-only head не объявляется runtime-tested.
+- Mobile PASS не заявляется без фактической mobile acceptance.
+- PR creation, merge и branch cleanup имеют отдельные approval gates.
