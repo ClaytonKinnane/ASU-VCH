@@ -18,7 +18,7 @@ MERGE_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 BRANCH_DELETION_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 ```
 
-## Repository и scope
+## Repository и exact scope
 
 Финальный compare branch к baseline подтвердил:
 
@@ -30,13 +30,7 @@ commits behind: 0
 changed paths: 22
 ```
 
-Все 22 changed paths:
-
-- входят в утверждённый exact allowlist;
-- являются Markdown-файлами;
-- не затрагивают runtime, config, database, migrations, themes, tools или Git refs.
-
-Allowlist:
+Все 22 changed paths входят в утверждённый allowlist, имеют расширение `.md` и не затрагивают runtime, config, database, migrations, themes, tools или Git refs.
 
 ```text
 README.md
@@ -63,9 +57,9 @@ docs/testing/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-LOCAL-RUNBOOK.md
 docs/review/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-FORMAL-REVIEW.md
 ```
 
-## Main integrity
+## Main, PR и branches
 
-Сравнение baseline с `main` завершилось:
+Сравнение baseline с `main`:
 
 ```text
 status: identical
@@ -73,13 +67,9 @@ ahead: 0
 behind: 0
 ```
 
-`main` не изменён настоящим инкрементом.
-
-## Pull Request и branch inventory
-
 Search по head `docs/post-pr20-baseline-refresh` вернул 0 Pull Request.
 
-Fresh GitHub inventory:
+Fresh GitHub branch inventory:
 
 ```text
 docs/post-pr20-baseline-refresh
@@ -155,6 +145,23 @@ Post-merge Git verification: PASS
 - historical attempt markers отделены от current status;
 - датированные test evidence PR #19/#20 не переписывались.
 
+## Markdown links, stale markers и secrets
+
+Выполнена read-only проверка изменённых документов:
+
+- относительные Markdown-ссылки из living docs указывают на существующие repository paths;
+- broken links в изменённом scope не выявлены;
+- living docs не содержат устаревших current-state assertions `latest functional PR: #15`, `migrations: 001–009` или current `PR #20 OPEN`;
+- прежние `NOT AUTHORIZED`, `NOT CREATED` и `RECHECK REQUIRED` встречаются только в явно помеченных historical sections;
+- credentials, access tokens, private keys, реальные пароли и содержимое `config/local.php` отсутствуют;
+- присутствующие SHA-256, commit SHA и локальные filesystem paths являются публичными техническими anchors, а не секретами.
+
+```text
+MARKDOWN_LINK_VALIDATION_STATUS=PASS
+STALE_CURRENT_STATE_SCAN_STATUS=PASS
+SECRET_REVIEW_STATUS=PASS
+```
+
 ## Theme, access и environment
 
 Подтверждено:
@@ -187,6 +194,9 @@ DOCUMENTATION_IMPLEMENTATION_STATUS=PASS
 DOCUMENTATION_VALIDATION_STATUS=PASS
 CHANGED_PATH_ALLOWLIST_STATUS=PASS
 MARKDOWN_ONLY_STATUS=PASS
+MARKDOWN_LINK_VALIDATION_STATUS=PASS
+STALE_CURRENT_STATE_SCAN_STATUS=PASS
+SECRET_REVIEW_STATUS=PASS
 BASELINE_FACTS_STATUS=PASS
 HISTORICAL_EVIDENCE_PRESERVATION_STATUS=PASS
 MAIN_INTEGRITY_STATUS=PASS
