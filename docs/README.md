@@ -2,7 +2,7 @@
 
 ## Актуальные документы
 
-Living documentation описывает текущий merged functional baseline и обновляется после material merge:
+Living documentation описывает текущий merged functional baseline:
 
 - [Текущее состояние проекта](PROJECT-STATUS.md)
 - [О проекте](PROJECT.md)
@@ -16,18 +16,18 @@ Living documentation описывает текущий merged functional baselin
 - [История изменений](CHANGELOG.md)
 - [Архитектурные паттерны](ARCHITECTURAL-PATTERNS.md)
 
-Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют migrations, installer и профильные integration checker'ы.
+Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют migrations, installer и профильные checker'ы.
 
-Актуальный HEAD определяется через `origin/main`:
+Current HEAD определяется через `origin/main`:
 
 ```powershell
 git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Exact SHA используются как historical merge/test/refresh anchors, а не как самореферентное current-main поле.
+Living docs не хранят самореферентный current-main SHA или изменчивое состояние активного PR как постоянно актуальное поле. Exact states фиксируются в датированных evidence snapshots; live PR state определяется в GitHub.
 
-## Текущий functional baseline
+## Functional baseline
 
 ```text
 latest functional PR: #20
@@ -42,16 +42,16 @@ mobile testing: OUT OF SCOPE / NOT RUN
 
 ## Post-PR20 Baseline Refresh
 
-Текущий documentation-only инкремент:
+Workflow reference: **PR #21**, branch `docs/post-pr20-baseline-refresh`.
 
 ```text
-branch: docs/post-pr20-baseline-refresh
-PR: #21 OPEN
 classification: Markdown only
-approved changed-path count: 25
-merge: NOT AUTHORIZED
-branch deletion: NOT AUTHORIZED
+final approved changed-path count: 25
+merge requires separate owner approval
+branch deletion requires separate post-merge approval
 ```
+
+Live state PR #21 определяется в GitHub. Датированный pre-merge snapshot и exact heads находятся в Implementation и Documentation Validation records.
 
 Process records:
 
@@ -62,31 +62,31 @@ Process records:
 - [Implementation](implementation/POST-PR20-BASELINE-REFRESH-IMPLEMENTATION.md)
 - [Documentation Validation](testing/POST-PR20-BASELINE-REFRESH-VALIDATION.md)
 
-Первый Final PR Review PR #21 выявил incomplete operational closure PR #19 и stale post-PR markers. Scope отдельно расширен с 22 до 25 Markdown-путей; remediation и повторная validation выполняются без runtime changes.
+Первый Final PR Review PR #21 выявил incomplete operational closure PR #19 и stale post-PR markers. Scope отдельно расширен с 22 до 25 Markdown-путей; remediation не меняет runtime.
 
 ## Классы документации
 
-1. **Living documentation** — текущий merged baseline.
+1. **Living documentation** — merged functional baseline.
 2. **Historical process/test artifacts** — состояние конкретного gate или попытки.
-3. **Operational increment records** — current status плюс сохранённая история; после merge получают closure section.
+3. **Operational increment records** — current outcome плюс сохранённая история; после merge получают closure section.
 
-Исторические `NOT CREATED`, `NOT AUTHORIZED` и `RECHECK REQUIRED` не переписываются задним числом, но не должны оставаться current-status assertions.
+Historical `NOT CREATED`, `NOT AUTHORIZED` и `RECHECK REQUIRED` не переписываются задним числом, но не используются как living current assertions.
 
 ## Repository governance
 
-Исторические evidence:
+Historical evidence:
 
 - [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md)
 - [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md)
 - [Repository audit 2026-07-29](REPOSITORY-AUDIT-2026-07-29.md)
 
-Текущее количество remote branches определяется динамически:
+Текущий remote inventory определяется динамически:
 
 ```powershell
 git ls-remote --heads origin
 ```
 
-Technical `SAFE TO DELETE` не является разрешением. Cleanup требует post-merge verification, fresh inventory, exact batch и отдельное owner approval.
+`SAFE TO DELETE` не является разрешением. Cleanup требует post-merge verification, fresh inventory, exact batch и отдельное owner approval.
 
 ## Целевая архитектура
 
@@ -99,7 +99,7 @@ Technical `SAFE TO DELETE` не является разрешением. Cleanup
 ## Правила актуальности
 
 - GitHub — единственный источник истины.
-- Current HEAD определяется через `origin/main`.
+- Current HEAD и live PR state определяются динамически.
 - Documentation-only head не объявляется runtime-tested.
-- Mobile PASS не заявляется без фактической mobile acceptance.
-- PR creation, merge и branch cleanup имеют отдельные approval gates.
+- Mobile PASS не заявляется без фактической acceptance.
+- Merge и branch cleanup имеют отдельные approval gates.
