@@ -4,9 +4,10 @@
 
 ```text
 DATE: 2026-08-01
-STATUS: PROPOSED
+STATUS: APPROVED / IMPLEMENTED / PR OPEN
 BASELINE: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 BRANCH: docs/post-pr20-baseline-refresh
+PR: #21 OPEN
 RUNTIME_CHANGE: NONE
 DATABASE_CHANGE: NONE
 BRANCH_DELETION: OUT OF SCOPE
@@ -19,167 +20,132 @@ BRANCH_DELETION: OUT OF SCOPE
 - PR #19 — «Типовые воинские должности», migration 010;
 - PR #20 — «Публичные сведения о военно-учётных специальностях», migration 011.
 
-Текущая living documentation по-прежнему в основном описывает baseline после PR #15: migrations 001–009, последний functional PR #15 и tested runtime HEAD Organizational Structure v1. Несколько текущих VUS-документов также сохраняют формулировки `PR OPEN`, `MERGE NOT AUTHORIZED` и `TARGETED RECHECK REQUIRED`, хотя все соответствующие gates завершены и PR #20 merged.
+Living documentation до настоящего инкремента в основном описывала baseline после PR #15. Первый Final PR Review PR #21 дополнительно установил, что current operational records должны быть закрыты post-merge не только для PR #20, но и для PR #19.
 
 ## Цель
 
-Создать documentation-only baseline refresh, который:
+Documentation-only refresh:
 
-1. синхронизирует living documentation с `main` после PR #19/#20;
-2. разделяет текущие baseline markers и исторические process artifacts;
+1. синхронизирует living documentation с merged PR #19/#20;
+2. отражает migrations 001–011, 4 роли, 25 permissions и 3 темы;
 3. фиксирует проверенные runtime anchors без заявления, что documentation-only commits были runtime-протестированы;
-4. отражает migrations 001–011, неизменные 4 роли и 25 permissions;
-5. документирует оба новых справочника и theme asset contract;
-6. закрывает текущие VUS-статусы post-merge addendum'ами;
-7. сохраняет branch cleanup как отдельный последующий административный gate.
+4. разделяет living current state и historical process/test artifacts;
+5. добавляет post-merge closure для operational records PR #19 и PR #20;
+6. оставляет branch cleanup отдельным post-merge административным workflow.
 
 ## Источники истины
 
-Приоритет фактов:
+Приоритет:
 
 1. merged code и migrations в `main`;
 2. metadata merged PR #19/#20;
-3. профильные Automated Testing и Manual Desktop Acceptance evidence;
+3. Automated Testing и Manual Desktop Acceptance evidence;
 4. Final PR Review и post-merge verification evidence;
-5. living documentation после настоящего refresh;
-6. исторические Architecture/Specification/Review/Approval/Test artifacts.
-
-Текущий `main` определяется динамически через `origin/main`. Exact SHA используется только как исторический anchor настоящего refresh:
+5. living documentation после refresh;
+6. historical Architecture/Specification/Review/Approval/Test artifacts.
 
 ```text
 PR #19 merge commit: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
-PR #20 merge commit / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 PR #19 tested runtime HEAD: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
 PR #19 final feature HEAD: 5424cefe2f1a6bdc2fa706612040a3985c88f04f
+PR #20 merge / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 PR #20 tested runtime HEAD: 9db06c4a26066ca25dc36c627c1236089a3c1238
 PR #20 final feature HEAD: bea147505a85010b61fe938eb07ec474d76cdab5
 ```
+
+Current `main` определяется динамически через `origin/main`; exact SHA выше являются historical anchors.
 
 ## Классы документации
 
 ### Living documentation
 
-Living documents описывают текущее merged состояние и обновляются настоящим инкрементом:
+Описывает текущий merged baseline и обновляется после material merge.
 
-- root README;
-- documentation index;
-- project/status/environment/runbook/database/themes/access/roadmap/changelog;
-- project-wide architectural patterns.
+### Historical artifacts
 
-### Исторические artifacts
+Architecture, Specification, Review, Approval и датированные Test Evidence сохраняют состояние соответствующего gate. Исторические `NOT CREATED`, `NOT AUTHORIZED` и `RECHECK REQUIRED` не переписываются как будто их не существовало.
 
-Architecture, Specification, Review, Approval и датированные Test Evidence сохраняют состояние соответствующего gate. Прежние формулировки `NOT CREATED`, `NOT AUTHORIZED` или `RECHECK REQUIRED` внутри датированного события не переписываются как будто они никогда не существовали.
+### Operational increment records
 
-### Current-state sections внутри increment records
-
-Если increment document одновременно содержит историю попыток и явно текущий верхнеуровневый статус/следующий gate, обновляется только current-state framing и добавляется post-merge closure. Исторические попытки и исходные markers остаются неизменными.
+Содержат current-status framing и историческую хронологию. Post-merge closure обновляет current framing, не удаляя историю попыток.
 
 ## Целевая baseline-модель
 
 ```text
 repository pointer: origin/main
 latest functional PR: #20
-previous functional PR: #19
-latest functional merge anchor: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
-latest tested runtime HEAD: 9db06c4a26066ca25dc36c627c1236089a3c1238
 migrations: 001–011
 system roles: 4
 system permissions: 25
 built-in themes: 3
 active functional increment: none
 active documentation increment: Post-PR20 Baseline Refresh
+active documentation PR: #21
 mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-## Новые функциональные области baseline
+## Functional baseline
 
 ### Military Positions Directory v1
 
 - migration 010;
-- 14 tables и 41 triggers;
-- 1 published catalog version;
-- 4 version sources, 24 source entries, 28 source-entry evidence records;
-- 4 families, 34 canonical types, 35 variants;
-- composition и organizational context evidence;
-- 0 automatic military-rank relation tables;
+- 14 tables, 41 triggers;
+- 34 canonical types, 35 variants;
+- no automatic military-rank relations;
 - owner-only GET route `/admin/directories/military-positions.php`.
 
 ### Public Military Occupational Specialties v1
 
 - migration 011;
-- 9 tables и 26 triggers;
-- 1 published version;
-- 5 legal sources и 4 official source snapshots;
-- 3 code segments, 6 public context domains, 3 personnel scopes;
-- 2 normative direct disclosures;
-- 4 training organizations и 15 training programs;
+- 9 tables, 26 triggers;
+- 5 legal sources, 4 official snapshots;
+- 4 training organizations, 15 training programs;
 - 17 searchable records;
-- отсутствие relations к positions, ranks, equipment и personal data;
+- no relations to positions, ranks, equipment or personal data;
 - owner-only GET route `/admin/directories/military-occupational-specialties.php`.
 
 ## Theme contract
 
-После PR #20 каждая тема содержит девять обязательных CSS-assets:
+Каждая тема содержит девять обязательных CSS-assets, включая:
 
 ```text
-css/theme.css
-css/auth.css
-css/account.css
-css/users.css
-css/theme-management.css
-css/directories.css
 css/military-occupational-specialties.css
 css/organization.css
-css/operation-result-modal.css
 ```
 
-Тема `asu-evgeniya-rostova` дополнительно сохраняет четыре обязательных SVG-assets.
+## Scope architecture
+
+После Final PR Review PR #21 exact allowlist расширен с 22 до 25 Markdown-путей. Добавлены operational records PR #19:
+
+```text
+docs/implementation/MILITARY-POSITIONS-DIRECTORY-V1-IMPLEMENTATION.md
+docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-LOCAL-RUNBOOK.md
+docs/review/MILITARY-POSITIONS-DIRECTORY-V1-FORMAL-REVIEW.md
+```
+
+Runtime, config, database, migrations, themes, tools и Git refs исключены.
 
 ## Branch governance
 
-На момент Research после создания настоящей docs-ветки GitHub содержит:
-
-```text
-main
-docs/post-pr20-baseline-refresh
-feature/military-positions-directory
-feature/public-military-occupational-specialties-directory
-```
-
-Обе feature-ветки технически подтверждены как полностью merged в `main`, но их удаление не входит в настоящий documentation increment. После merge документационного PR требуется fresh inventory, отдельный exact cleanup set и отдельное явное owner approval. Активная docs-ветка не может входить в cleanup до собственного merge и отдельного разрешения.
-
-Локальный audit пользователя подтвердил 13 local feature branches в `git branch --merged origin/main`; локальное удаление также остаётся отдельным последующим scope.
+Создание PR #21 не разрешает merge. Branch cleanup выполняется только после merge refresh, post-merge verification, fresh inventory, exact cleanup batch и отдельного owner approval.
 
 ## Validation architecture
 
-Documentation validation должна подтвердить:
+Validation подтверждает:
 
-- exact changed-path allowlist;
+- exact allowlist 25;
 - Markdown-only diff;
 - отсутствие runtime/config/database/theme/tool изменений;
-- отсутствие stale current-state markers в living docs;
+- корректные PR #19/#20 anchors;
 - migrations 001–011;
-- PR #19/#20 merged anchors;
-- latest tested runtime HEAD `9db06c4...`;
-- 4 roles / 25 permissions / 3 themes;
-- девять обязательных CSS-assets;
-- корректные relative links;
-- отсутствие секретов и содержимого `config/local.php`;
-- сохранность исторических evidence sections;
+- living/current-state consistency с PR #21;
+- post-merge closures PR #19/#20;
+- relative links и secret scan;
 - отсутствие Mobile PASS claim;
-- branch cleanup not performed / separately gated.
-
-Runtime, deploy, installer, database и browser testing не требуются, поскольку implementation ограничена Markdown.
+- отсутствие merge и branch deletion.
 
 ## Ограничения
 
-- Не изменять runtime, migrations, seed, themes, tools или Git refs.
-- Не удалять remote или local branches.
-- Не переписывать исторические test results задним числом.
-- Не заявлять post-merge local runtime smoke, если он не выполнялся.
-- Не заявлять mobile testing PASS.
-- Не создавать PR и не выполнять merge без отдельных разрешений.
-
-## Gate
-
-Переход к реализации living-document updates допускается только после Specification, Formal Review и отдельного явного Approval владельца проекта.
+- Runtime/deploy/database retest не требуется для Markdown-only diff.
+- Merge PR #21 требует отдельного разрешения после Final PR Review PASS.
+- Remote и local ветки не удаляются в этом инкременте.
