@@ -7,10 +7,12 @@
 ```text
 repository pointer: origin/main
 latest functional PR: #20
+latest completed documentation PR: #21
 PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
-PR #20 merge / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
+PR #20 merge / functional refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
+PR #21 merge: f5b53f2ee4453f293b58cbe486e0943ab602335b
 migrations: 001–011
 system roles: 4
 system permissions: 25
@@ -33,9 +35,7 @@ built-in themes: 3
 - [x] PR #20 repeated Final PR Review PASS;
 - [x] PR #20 merge и post-merge Git verification.
 
-## Documentation baseline refresh
-
-Workflow reference: PR #21, branch `docs/post-pr20-baseline-refresh`.
+## Завершённый documentation baseline refresh — PR #21
 
 ```text
 classification: documentation only
@@ -55,17 +55,20 @@ runtime changes: none
 - [x] owner-approved scope expansion 22 → 25;
 - [x] PR #19 operational closure;
 - [x] current-state remediation;
-- [x] repeat Documentation Validation PASS.
+- [x] repeat Documentation Validation PASS;
+- [x] repeat Final PR Review PASS;
+- [x] separate owner merge approval;
+- [x] PR #21 merge commit `f5b53f2ee4453f293b58cbe486e0943ab602335b`;
+- [x] post-merge Git verification PASS;
+- [x] fresh remote/local inventory;
+- [x] exact cleanup approval;
+- [x] remote-first cleanup: 3 / 3 remote branches deleted;
+- [x] safe local cleanup: 13 / 13 local feature branches deleted;
+- [x] terminal verification PASS;
+- [x] dated terminal snapshot: remote `main only`, local `main only`, working tree clean;
+- [x] force deletion not used.
 
-Оставшиеся gates определяются live state PR #21 в GitHub и не хранятся здесь как изменчивый current status:
-
-1. repeat Final PR Review;
-2. separate merge approval;
-3. merge и post-merge verification;
-4. fresh remote/local branch inventory;
-5. exact cleanup approval;
-6. remote-first и approved local cleanup;
-7. terminal verification.
+Evidence: [Post-PR21 Merge and Cleanup Closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md).
 
 ## Последние catalogs
 
@@ -95,9 +98,20 @@ post-merge verification: PASS
 mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-## Следующий functional increment
+## Текущее плановое состояние
 
-Не выбран и не утверждён. Возможные направления требуют отдельного Research → Approval cycle:
+```text
+active functional increment: none
+active documentation increment after closure: none
+open implementation task: none
+next functional increment: not selected / not approved
+```
+
+Текущее состояние PRs, Issues и branches определяется динамически через GitHub/Git, а не хранится здесь как неизменяемый snapshot.
+
+## Возможные будущие направления
+
+Каждое направление требует отдельного Research → Approval cycle:
 
 - карточка военнослужащего;
 - штатные структуры и кадровые назначения;
@@ -106,9 +120,12 @@ mobile testing: OUT OF SCOPE / NOT RUN
 - production/CI infrastructure;
 - отдельный mobile verification increment.
 
+Ни одно направление не выбрано и не утверждено.
+
 ## Постоянные ограничения
 
 - Public catalogs не являются кадровым или персональным воинским учётом.
 - Mobile PASS не заявляется без фактической acceptance.
 - PR creation, merge и branch deletion требуют отдельных approvals.
 - `SAFE TO DELETE` не является deletion authorization.
+- Датированный `main only` terminal snapshot не запрещает создание будущей утверждённой ветки.
