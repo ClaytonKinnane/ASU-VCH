@@ -1,0 +1,122 @@
+.mos-page .mos-section,
+.mos-page .directory-panel {
+    margin-bottom: 24px;
+}
+
+.mos-page .directory-panel:last-child {
+    margin-bottom: 0;
+}
+
+.mos-page .directory-panel-grid {
+    margin-bottom: 0;
+}
+
+.mos-page .directory-linked-card {
+    display: flex;
+    min-height: 230px;
+    flex-direction: column;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.mos-page .directory-linked-card .legal-source-link {
+    margin-top: auto;
+    padding-top: 16px;
+}
+
+.mos-page .directory-linked-card:hover,
+.mos-page .directory-linked-card:focus-within {
+    transform: translateY(-4px);
+    border-color: var(--button-border);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, .18), 0 0 0 1px var(--button-border);
+}
+
+.mos-page .directory-info-card {
+    min-height: 190px;
+    padding: 22px;
+}
+
+.mos-page .directory-info-card h2 {
+    margin: 12px 0 10px;
+    padding-right: 0;
+    font-size: 19px;
+}
+
+.mos-page .directory-info-card p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.mos-page .directory-info-card small {
+    display: block;
+    margin-top: 10px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.mos-page .mos-directory-filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mos-page .mos-directory-filters .directory-filter-submit,
+.mos-page .mos-directory-filters .mos-filter-reset {
+    width: 100%;
+}
+
+.mos-page .mos-records-table th:nth-child(1) { width: 26%; }
+.mos-page .mos-records-table th:nth-child(2) { width: 22%; }
+.mos-page .mos-records-table th:nth-child(3) { width: 24%; }
+.mos-page .mos-records-table th:nth-child(4) { width: 28%; }
+
+.mos-page .mos-records-table th,
+.mos-page .mos-records-table td {
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+.mos-page .mos-records-table td:first-child a {
+    display: inline;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: auto;
+}
+
+.mos-page .mos-records-table td small {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+
+.mos-page .mos-records-table td p {
+    margin: 8px 0 0;
+}
+
+.mos-page .directory-boundary-note {
+    min-height: 0;
+    margin-top: 18px;
+    padding: 24px 18px 4px;
+}
+
+@media (max-width: 1180px) {
+    .mos-page .mos-directory-filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .mos-page .mos-directory-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .mos-page .mos-directory-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .mos-page .mos-records-table {
+        min-width: 980px;
+    }
+}
