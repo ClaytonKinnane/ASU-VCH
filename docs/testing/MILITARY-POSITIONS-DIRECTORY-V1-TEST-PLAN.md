@@ -13,7 +13,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 1. Чистая синхронизация `feature/military-positions-directory` с `origin`.
 2. HEAD локальной ветки равен remote feature HEAD.
 3. Merge-base соответствует утверждённому baseline `8cc604eec7e973c2917ea0b1f9b08b976b673f41`.
-4. Точный committed scope из 21 изменённого пути.
+4. Точный committed scope из 22 изменённых путей, включая immutable automated testing evidence.
 5. `git diff --check` без ошибок.
 6. SHA-256 deploy-only `config/local.php` до и после Testing не изменяется.
 7. SQL backup выполняется до deploy и migration.
