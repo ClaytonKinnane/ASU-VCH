@@ -11,6 +11,11 @@ final class MilitaryOccupationalSpecialtyCatalogRepository
     {
     }
 
+    public static function shouldSearchPublicDisclosures(string $recordType, string $organization): bool
+    {
+        return $recordType !== 'training-program' && $organization === '';
+    }
+
     /** @return array<string,mixed> */
     public function currentVersion(): array
     {
