@@ -4,21 +4,22 @@
 
 ```text
 DATE: 2026-08-01
-STATUS: IMPLEMENTED / VALIDATION REQUIRED
+STATUS: IMPLEMENTED / PR REVIEW REMEDIATED / REVALIDATION REQUIRED
 BASELINE: f5b53f2ee4453f293b58cbe486e0943ab602335b
 BRANCH: docs/post-pr21-merge-cleanup-closure
+TRACKING_PR: #22
 CLASSIFICATION: DOCUMENTATION ONLY
 APPROVED_PATH_COUNT: 16
-SUBSTANTIVE_IMPLEMENTATION_HEAD: fd3799bb856e6f6f7070928c5be66b5840f5da08
+INITIAL_SUBSTANTIVE_IMPLEMENTATION_HEAD: fd3799bb856e6f6f7070928c5be66b5840f5da08
+ANTI_RECURSION_REMEDIATION_CONTENT_HEAD: 5b53bf76d85e6bc31471fce6ae99f19a42b0d6db
 RUNTIME_CHANGE: NONE
 DATABASE_CHANGE: NONE
 GIT_REF_CHANGE: NONE
-PULL_REQUEST: NOT CREATED
 MERGE: NOT AUTHORIZED
 BRANCH_DELETION: NOT AUTHORIZED
 ```
 
-`SUBSTANTIVE_IMPLEMENTATION_HEAD` — последний commit, содержащий living/operational/closure content. Настоящий Implementation record и последующий Validation record являются evidence-only commits.
+`INITIAL_SUBSTANTIVE_IMPLEMENTATION_HEAD` фиксирует первоначальный living/operational/closure content до Final PR Review PR #22. `ANTI_RECURSION_REMEDIATION_CONTENT_HEAD` фиксирует исправление четырёх living documents. Настоящий Implementation record и последующий Validation record являются evidence-only commits.
 
 ## Выполненный scope
 
@@ -115,12 +116,61 @@ docs/implementation/POST-PR21-MERGE-CLEANUP-CLOSURE-IMPLEMENTATION.md
 docs/testing/POST-PR21-MERGE-CLEANUP-CLOSURE-VALIDATION.md
 ```
 
-## Anti-recursion result
+## Final PR Review attempt 1 — PR #22
+
+Review выполнялся на head:
+
+```text
+f71746ea73724c0a7348d2b46f7df2c95ebeb498
+```
+
+```text
+REVIEW_ID: 4835622973
+RESULT: CHANGES REQUIRED
+BLOCKING_FINDINGS: 1
+MAJOR_FINDINGS: 1
+MINOR_FINDINGS: 0
+```
+
+Finding: четыре living documents содержали transient ordinal `latest completed documentation PR: #21`. После merge PR #22 это поле стало бы ложным и нарушило anti-recursion policy. Initial Validation поэтому преждевременно заявляла `ANTI_RECURSION_STATUS=PASS`.
+
+GitHub не разрешил автору PR оформить `REQUEST_CHANGES` на собственный PR, поэтому обязательный verdict опубликован как review `COMMENT`; workflow gate остался `CHANGES REQUIRED`.
+
+## Owner-approved remediation
+
+Владелец отдельно разрешил в существующем allowlist из 16 путей:
+
+- заменить transient ordinal устойчивым historical framing;
+- обновить Implementation и Validation evidence;
+- обновить PR body;
+- провести повторную Documentation Validation;
+- провести повторный Final PR Review.
+
+Merge и branch deletion не разрешены.
+
+Исправлены:
+
+```text
+docs/PROJECT-STATUS.md
+docs/PROJECT.md
+docs/LOCAL-RUNBOOK.md
+docs/ROADMAP.md
+```
+
+Во всех четырёх документах поле заменено на:
+
+```text
+completed baseline refresh PR: #21
+```
+
+Это устойчивый исторический anchor конкретного baseline-refresh workflow, а не утверждение о последнем documentation PR в репозитории. Current/latest PR state определяется динамически через GitHub.
+
+## Anti-recursion result after remediation
 
 Living docs не содержат:
 
 - branch настоящего closure increment как обязательную current dependency;
-- будущий PR number/state настоящего increment как постоянно актуальное поле;
+- будущий или latest documentation PR number/state настоящего increment как постоянно актуальное поле;
 - требование создать ещё один documentation refresh после его merge.
 
 После будущего merge достаточно post-merge Git verification, отдельного branch deletion approval и terminal verification. Удаление собственной docs-ветки не требует нового repository documentation closure.
@@ -154,4 +204,4 @@ MOBILE_TESTING: OUT_OF_SCOPE_NOT_RUN
 
 ## Следующий gate
 
-Требуется Documentation Validation на evidence head настоящего Implementation record. Создание Pull Request, merge и branch deletion остаются запрещёнными до отдельных approvals.
+Требуется повторная Documentation Validation на exact evidence head настоящего Implementation record. Merge и branch deletion остаются запрещёнными до отдельных approvals.
