@@ -94,7 +94,7 @@ Runner самостоятельно:
 
 1. повторно делает `git fetch --prune origin`;
 2. проверяет branch, HEAD, merge-base, divergence и чистоту рабочего дерева;
-3. проверяет точный список из 22 implementation-путей относительно утверждённого baseline;
+3. проверяет точный список из 23 implementation-путей относительно утверждённого baseline;
 4. объединяет пять base64-частей, проверяет SHA-256 gzip-архива, распаковывает canonical migration 010 и проверяет SHA-256 SQL;
 5. проверяет `git diff --check`;
 6. фиксирует SHA-256 `config/local.php`;
@@ -112,7 +112,7 @@ Runner самостоятельно:
 
 Runner не создаёт commit, push или PR.
 
-## 6. Успешный финал
+## 6. Успешный финал автоматизированного Testing
 
 В конце должны присутствовать маркеры:
 
@@ -120,12 +120,18 @@ Runner не создаёт commit, push или PR.
 IMPLEMENTATION_SCOPE_STATUS=PASS
 SOURCE_DEPLOY_PARITY_STATUS=PASS
 AUTOMATED_TESTING_STATUS=PASS
-MANUAL_DESKTOP_ACCEPTANCE_STATUS=NOT_RUN
+MANUAL_DESKTOP_ACCEPTANCE_STATUS=PASS_RECORDED_IN_GITHUB
 MOBILE_TESTING_STATUS=OUT_OF_SCOPE_NOT_RUN
 COMMIT_PUSH_PR_STATUS=IMPLEMENTATION_COMMIT_ALREADY_ON_GITHUB_PR_NOT_CREATED
 ```
 
-## 7. Что отправить в чат
+Manual desktop acceptance хранится отдельно в:
+
+```text
+docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-MANUAL-DESKTOP-ACCEPTANCE-2026-08-01.md
+```
+
+## 7. Что отправлять в чат при повторном Testing
 
 Скопировать полный безопасный вывод PowerShell начиная со строки:
 
@@ -143,11 +149,13 @@ COMMIT_PUSH_PR_STATUS=IMPLEMENTATION_COMMIT_ALREADY_ON_GITHUB_PR_NOT_CREATED
 - session identifiers;
 - приватные ключи и токены.
 
-## 8. После automated PASS
+## 8. Текущее состояние gate
 
-Следующий gate — manual desktop acceptance в трёх встроенных темах. Commit реализации уже находится в feature-ветке GitHub только для синхронизации и Testing. PR, merge и удаление ветки не выполняются без отдельных явных разрешений владельца.
+Automated Testing и manual desktop acceptance завершены со статусом PASS. PR, merge и удаление ветки не выполняются без отдельных явных разрешений владельца.
 
 ```text
+manual desktop acceptance: PASS
 mobile testing: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
+next gate: explicit Pull Request creation approval
 ```
