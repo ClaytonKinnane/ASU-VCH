@@ -91,6 +91,7 @@ $ExpectedPaths = @(
     'docs/implementation/MILITARY-POSITIONS-DIRECTORY-V1-IMPLEMENTATION.md',
     'docs/review/MILITARY-POSITIONS-DIRECTORY-V1-FORMAL-REVIEW.md',
     'docs/specification/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md',
+    'docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-AUTOMATED-TESTING-2026-08-01.md',
     'docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-LOCAL-RUNBOOK.md',
     'docs/testing/MILITARY-POSITIONS-DIRECTORY-V1-TEST-PLAN.md',
     'public/admin/directories.php',
