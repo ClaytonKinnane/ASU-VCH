@@ -19,11 +19,12 @@ git status --short
 ```text
 CURRENT_BRANCH=feature/public-military-occupational-specialties-directory
 ORIGIN_FEATURE_DIVERGENCE=0 0
-IMPLEMENTATION_FILE_COUNT=24
+IMPLEMENTATION_FILE_COUNT=25
 WORKING TREE=CLEAN
+PR_STATUS=OPEN_20_NOT_MERGED
 ```
 
-## Automated Testing
+## Automated Testing after Final PR Review remediation
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
@@ -33,6 +34,17 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 ```
 
 Runner выполняет backup, deploy, PHP lint, installer дважды, основной integration checker, отдельный UI checker, regressions, source/deploy parity и HTTP smoke.
+
+Integration checker должен подтвердить новые markers:
+
+```text
+OK record_type all without organization includes direct disclosures
+OK direct-disclosure without organization includes direct disclosures
+OK training-program excludes direct disclosures
+OK record_type all with organization excludes direct disclosures
+OK direct-disclosure with organization produces no direct-disclosure rows
+OK organization filter returns only matching training programs
+```
 
 UI checker должен завершиться marker:
 
@@ -51,10 +63,11 @@ OK theme management integration check completed
 Ожидаемый финал:
 
 ```text
+IMPLEMENTATION_FILE_COUNT=25
 AUTOMATED_TESTING_STATUS=PASS
-MANUAL_DESKTOP_ACCEPTANCE_STATUS=NOT_RUN
+MANUAL_DESKTOP_ACCEPTANCE_STATUS=TARGETED_RECHECK_REQUIRED
 MOBILE_TESTING_STATUS=OUT_OF_SCOPE_NOT_RUN
-PR_STATUS=NOT_CREATED
+PR_STATUS=OPEN_20_NOT_MERGED
 ```
 
 Migration loader дополнительно обязан подтвердить:
@@ -65,6 +78,19 @@ SQL SHA-256:     26039aedc4c700a883203eeaefd09194cc6a9a304b3c2db94a7479f8710b8fd
 parts:           2
 ```
 
-После Automated Testing PASS повторяется ручная desktop-приёмка с особым вниманием к русификации, расстояниям между секциями, поведению linked/static карточек, ширинам таблицы и нижнему пустому пространству.
+## Targeted Manual Desktop Recheck
 
-PR не создаётся без отдельного разрешения после PASS ручной desktop-приёмки.
+После Automated Testing PASS под владельцем проверить:
+
+1. без фильтров — 17 записей;
+2. `Тип записи = Все` + организация — только программы выбранной организации, без нормативных примеров;
+3. `Тип записи = Нормативные примеры` + организация — пустое состояние;
+4. `Тип записи = Программы подготовки` + та же организация — тот же набор программ;
+5. сброс — снова 17 записей;
+6. Console errors = 0, HTTP/asset 404 = 0.
+
+Ранее принятая визуальная проверка трёх тем и двух desktop-разрешений сохраняется, поскольку CSS/theme assets не изменялись.
+
+После targeted PASS обновляется существующий manual acceptance evidence-файл без добавления нового changed path, затем выполняется повторный Final PR Review.
+
+Merge и удаление ветки не разрешены.
