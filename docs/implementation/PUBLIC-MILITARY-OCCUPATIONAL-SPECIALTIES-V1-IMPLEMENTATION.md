@@ -3,12 +3,12 @@
 ## Статус
 
 ```text
-PHASE: AUTOMATED TESTING PASS / MANUAL DESKTOP RE-ACCEPTANCE REQUIRED
+PHASE: FINAL PR REVIEW REMEDIATION IMPLEMENTED / RE-TESTING REQUIRED
 BASELINE: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
 BRANCH: feature/public-military-occupational-specialties-directory
 MIGRATION: 011_public_military_occupational_specialties_directory.sql
-IMPLEMENTATION_PATHS: 24
-PR: NOT CREATED
+IMPLEMENTATION_PATHS: 25
+PR: #20 OPEN
 MERGE: NOT AUTHORIZED
 ```
 
@@ -225,8 +225,68 @@ MOBILE_TESTING_STATUS=OUT_OF_SCOPE_NOT_RUN
 PR_STATUS=NOT_CREATED
 ```
 
+## Manual Desktop Acceptance attempt 2
+
+```text
+DATE: 2026-08-01
+RUNTIME_HEAD: e1bf5c85708cfa29d3a0356368938345eb2064e2
+RESULT: PASS
+THEMES: 3 OF 3
+DESKTOP RESOLUTIONS: 1920x1080 AND 1366x768
+CONSOLE ERRORS: 0
+HTTP OR ASSET 404: 0
+DEFECTS: NONE
+MOBILE: OUT OF SCOPE / NOT RUN
+```
+
+Evidence: `docs/testing/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-MANUAL-DESKTOP-ACCEPTANCE-2026-08-01.md`.
+
+## Pull Request
+
+```text
+PR: #20
+STATE: OPEN
+BASE: main
+HEAD BEFORE FINAL REVIEW REMEDIATION: 42aa35bae08625595449697bbe684b962f052d4c
+MERGE: NOT AUTHORIZED
+BRANCH DELETION: NOT AUTHORIZED
+```
+
+## Final PR Review attempt 1
+
+```text
+DATE: 2026-08-01
+RESULT: CHANGES REQUIRED
+BLOCKING FINDINGS: 2
+```
+
+Зафиксированы:
+
+1. при `record_type=all` и выбранной организации нормативные direct-disclosure записи ошибочно оставались в общем результате;
+2. runner ожидал 24 пути, тогда как фактический PR head после evidence-файла содержал 25 путей.
+
+Дополнительно требовалась синхронизация PR body, Specification и Implementation metadata.
+
+## Final PR Review remediation
+
+Реализовано в утверждённом scope:
+
+- `MilitaryOccupationalSpecialtyCatalogRepository::shouldSearchPublicDisclosures()` определяет включение нормативных записей;
+- при выбранной организации direct-disclosure записи исключаются;
+- `record_type=direct-disclosure + organization` возвращает пустой результат;
+- integration checker проверяет пять комбинаций `record_type/organization` и фактическую фильтрацию программ по организации;
+- runner ожидает финальный exact scope из 25 путей, включая manual acceptance evidence;
+- финальные markers runner отражают открытый PR #20 и необходимость targeted manual recheck;
+- Specification, Test Plan, Runbook, Implementation и PR body синхронизируются с фактическим scope.
+
+Migration, seed, schema, permissions и theme assets этим исправлением не изменены.
+
 ## Следующий gate
 
-Повторная Manual Desktop Acceptance исправленного интерфейса в трёх темах при 1920×1080 и 1366×768.
+Полный Automated Testing на актуальном PR head. После PASS требуется targeted Manual Desktop Recheck только для фильтра организации:
 
-PR не создаётся до PASS ручной desktop-приёмки. Mobile testing остаётся OUT OF SCOPE / NOT RUN.
+- `record_type=all + организация` — только программы выбранной организации;
+- `record_type=direct-disclosure + организация` — пустое состояние;
+- сброс фильтров — полный набор из 17 записей.
+
+После фиксации PASS выполняется повторный Final PR Review. Merge и удаление ветки остаются запрещены.
