@@ -1,16 +1,16 @@
 # Documentation Validation — Post-PR20 Baseline Refresh
 
-## Current result
+## Final pre-review result
 
 ```text
 DATE: 2026-08-01
-VALIDATION_ATTEMPT: 2 / AFTER FINAL PR REVIEW REMEDIATION
+VALIDATION_ATTEMPT: FINAL / AFTER PR REVIEW REMEDIATION
 DOCUMENTATION_VALIDATION_STATUS: PASS
 BASELINE: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 BRANCH: docs/post-pr20-baseline-refresh
-PR: #21 OPEN
-VALIDATED_IMPLEMENTATION_HEAD: 8950dbe606b75498f33dc1b1f091d7f2cf713ab9
-REMEDIATION_CONTENT_HEAD: 454a4371461a79f7ef82b41ea6d964d9d4bff4d6
+TRACKING_PR: #21
+VALIDATED_IMPLEMENTATION_HEAD: 092e09b10c5509ff9976782a0bc757ff597b0200
+FINAL_REMEDIATION_CONTENT_HEAD: 7b7f9d4c945d4f2abb70b36b1b437908cef5ed17
 CLASSIFICATION: DOCUMENTATION ONLY
 EXPECTED_PATH_COUNT: 25
 ACTUAL_PATH_COUNT: 25
@@ -21,11 +21,11 @@ MERGE_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 BRANCH_DELETION_STATUS: NOT_AUTHORIZED_NOT_PERFORMED
 ```
 
-Этот Validation record является evidence-only commit после validated implementation head и не создаёт новый runtime или substantive documentation implementation anchor.
+Этот Validation record является evidence-only commit после validated implementation head. Live PR state определяется в GitHub; exact state ниже является датированным validation snapshot.
 
-## Repository and exact scope
+## Repository and scope
 
-Compare `main...8950dbe...` подтвердил:
+Compare `main...092e09b...` подтвердил:
 
 ```text
 base main: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
@@ -72,9 +72,9 @@ NON_MARKDOWN_DIFF=0
 RUNTIME_CONFIG_DATABASE_MIGRATION_THEME_TOOL_DIFF=0
 ```
 
-## PR metadata
+## Validation snapshot of PR #21
 
-На validated head PR #21:
+На validated implementation head:
 
 ```text
 state: OPEN
@@ -83,11 +83,11 @@ merged: NO
 base: main
 base SHA: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
 head: docs/post-pr20-baseline-refresh
-head SHA: 8950dbe606b75498f33dc1b1f091d7f2cf713ab9
+head SHA: 092e09b10c5509ff9976782a0bc757ff597b0200
 changed files: 25
 ```
 
-PR body обновлён и отражает allowlist 25, remediation findings, exact implementation heads и запрет merge/branch deletion.
+PR body отражает final allowlist 25, remediation findings, exact evidence anchors и запрет merge/branch deletion.
 
 ## Baseline facts
 
@@ -107,20 +107,11 @@ system permissions: 25
 built-in themes: 3
 ```
 
-## Closure validation
+## Operational closures
 
-PR #19 operational records теперь подтверждают:
+PR #19 records подтверждают closed/merged current outcome, preserve original review/testing history и направляют stable operations в общий runbook.
 
-```text
-PR #19 CLOSED / MERGED
-merge commit: 99f9f283...
-tested runtime: 0455f012...
-Implementation current status: merged
-increment runbook: historical
-Formal Review: original verdict preserved + post-merge closure
-```
-
-PR #20 operational records сохраняют merged/post-merge verified current status и historical attempts.
+PR #20 records сохраняют merged/post-merge verified current outcome и historical attempts.
 
 ```text
 PR19_OPERATIONAL_CLOSURE_STATUS=PASS
@@ -128,19 +119,19 @@ PR20_OPERATIONAL_CLOSURE_STATUS=PASS
 HISTORICAL_EVIDENCE_PRESERVATION_STATUS=PASS
 ```
 
-## Current-state scan
+## Living-document stability
 
-Living/current documents отражают PR #21 как open и не используют `PR not created` как текущий status. Прежние markers встречаются только в явно historical sections/evidence.
+Living docs не хранят live `OPEN/MERGED` state PR #21 как постоянно актуальное поле. Они ссылаются на PR #21 как workflow record и требуют определять live state в GitHub. Exact pre-merge states остаются в датированных process/evidence records.
 
 ```text
 STALE_CURRENT_STATE_SCAN_STATUS=PASS
-PR21_CURRENT_STATE_STATUS=PASS
+TRANSIENT_PR_STATE_POLICY_STATUS=PASS
 IMPLEMENTATION_HEAD_RECORDING_STATUS=PASS
 ```
 
 ## Links and secrets
 
-Проверены relative links в изменённых living/process documents к существующим repository paths. Credentials, tokens, private keys, passwords, session data и содержимое `config/local.php` отсутствуют.
+Relative Markdown links в изменённом scope указывают на существующие repository paths. Credentials, tokens, private keys, passwords, session data и содержимое `config/local.php` отсутствуют.
 
 ```text
 MARKDOWN_LINK_VALIDATION_STATUS=PASS
@@ -149,8 +140,6 @@ SECRET_REVIEW_STATUS=PASS
 
 ## Branch inventory
 
-Fresh GitHub inventory после remediation:
-
 ```text
 main
 docs/post-pr20-baseline-refresh
@@ -158,7 +147,7 @@ feature/military-positions-directory
 feature/public-military-occupational-specialties-directory
 ```
 
-Branches не удалялись и refs не перемещались.
+Branches не удалялись, refs не перемещались.
 
 ## Test classification
 
@@ -181,13 +170,13 @@ CHANGED_PATH_ALLOWLIST_STATUS=PASS
 MARKDOWN_ONLY_STATUS=PASS
 MARKDOWN_LINK_VALIDATION_STATUS=PASS
 STALE_CURRENT_STATE_SCAN_STATUS=PASS
+TRANSIENT_PR_STATE_POLICY_STATUS=PASS
 SECRET_REVIEW_STATUS=PASS
 BASELINE_FACTS_STATUS=PASS
 PR19_OPERATIONAL_CLOSURE_STATUS=PASS
 PR20_OPERATIONAL_CLOSURE_STATUS=PASS
 HISTORICAL_EVIDENCE_PRESERVATION_STATUS=PASS
 MAIN_INTEGRITY_STATUS=PASS
-PR_STATUS=OPEN_21_NOT_MERGED
 MERGE_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
 BRANCH_DELETION_STATUS=NOT_AUTHORIZED_NOT_PERFORMED
 ```
