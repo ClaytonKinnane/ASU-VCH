@@ -20,6 +20,11 @@ $directories = [
         'Публичное нормативное ядро типовых воинских должностей с тарифными разрядами и доказательными связями.',
         '/admin/directories/military-positions.php',
     ],
+    [
+        'Военно-учётные специальности',
+        'Публичные сведения, структура кодов и официальные программы подготовки.',
+        '/admin/directories/military-occupational-specialties.php',
+    ],
 ];
 ?>
 <!DOCTYPE html>
