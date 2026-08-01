@@ -1,8 +1,8 @@
 # Текущее состояние проекта АСУ-ВЧ
 
-Дата актуализации: `2026-08-01`.
+Дата актуализации functional baseline: `2026-08-01`.
 
-## Репозиторий и functional anchors
+## Репозиторий и anchors
 
 Актуальный stable HEAD определяется через `origin/main`:
 
@@ -46,7 +46,7 @@ manual desktop acceptance: PASS
 mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-Owner-only read-only catalog не создаёт штатные позиции, кадровые назначения или automatic rank relations.
+Catalog owner-only/read-only; штатные позиции, кадровые назначения, personal data и automatic rank relations не реализованы.
 
 ### PR #20 — Публичные сведения о ВУС
 
@@ -64,19 +64,19 @@ post-merge Git verification: PASS
 mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-Каталог не связан с должностями, званиями, ВВСТ или personal data и не заявляется как полный персональный воинский учёт.
+Catalog не связан с positions, ranks, equipment или personal data и не заявляется как полный персональный воинский учёт.
 
 ## Реализованные области
 
 - bootstrap owner, authentication, protected sessions и CSRF;
 - 4 system roles и 25 permissions;
-- полный user lifecycle и required password change;
+- full user lifecycle и required password change;
 - 3 trusted themes;
 - owner-only read-only directories: ranks, organizational element types, military positions, public VUS;
 - Organizational Structure v1;
 - migrations 001–011.
 
-## Последний проверенный runtime baseline
+## Последний runtime-tested baseline
 
 ```text
 runtime head: 9db06c4a26066ca25dc36c627c1236089a3c1238
@@ -92,32 +92,29 @@ manual desktop acceptance: PASS
 targeted manual recheck: PASS
 ```
 
-## Активный documentation increment
+## Documentation baseline refresh workflow
+
+Post-PR20 Baseline Refresh отслеживается PR #21 и веткой `docs/post-pr20-baseline-refresh`.
 
 ```text
-increment: Post-PR20 Baseline Refresh
-branch: docs/post-pr20-baseline-refresh
-PR: #21 OPEN
 classification: documentation only
 initial allowlist: 22 Markdown paths
 final approved allowlist: 25 Markdown paths
 Final PR Review attempt 1: CHANGES REQUIRED
-remediation: IMPLEMENTED / REVALIDATION IN PROGRESS
-merge: NOT AUTHORIZED
-branch deletion: NOT AUTHORIZED
+owner-approved remediation: COMPLETE
+repeat Documentation Validation: PASS
 ```
 
-Первый Final PR Review потребовал закрыть operational records PR #19 и синхронизировать current-state markers с уже созданным PR #21. Владелец отдельно утвердил расширение allowlist до 25 путей.
+Live state PR #21, reviews и merge status определяются в GitHub, а не хранятся в living document как постоянно актуальное поле. Exact pre-merge snapshot и heads зафиксированы в process/evidence records.
 
-## Repository cleanup status
+## Repository cleanup
 
-Исторический cleanup 2026-07-31 завершён. Текущий cleanup не выполнялся. После merge PR #21 требуются post-merge verification, fresh remote/local inventory, exact cleanup batch и отдельное owner approval.
+Historical cleanup 2026-07-31 завершён. Следующий cleanup возможен только после завершения PR #21, post-merge verification, fresh remote/local inventory, exact cleanup batch и отдельного owner approval.
 
-## Текущий gate
+## Постоянные gates
 
 ```text
-repeat Documentation Validation: REQUIRED
-repeat Final PR Review: REQUIRED
-merge approval: NOT GRANTED
-branch deletion approval: NOT GRANTED
+merge: separate explicit owner approval required
+branch deletion: separate post-merge owner approval required
+mobile PASS: not claimed
 ```
