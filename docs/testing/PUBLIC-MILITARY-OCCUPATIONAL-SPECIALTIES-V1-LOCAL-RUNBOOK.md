@@ -19,7 +19,7 @@ git status --short
 ```text
 CURRENT_BRANCH=feature/public-military-occupational-specialties-directory
 ORIGIN_FEATURE_DIVERGENCE=0 0
-IMPLEMENTATION_FILE_COUNT=23
+IMPLEMENTATION_FILE_COUNT=24
 WORKING TREE=CLEAN
 ```
 
@@ -38,6 +38,14 @@ UI checker должен завершиться marker:
 
 ```text
 MILITARY_OCCUPATIONAL_SPECIALTIES_UI_CHECK=PASS
+```
+
+Theme-management regression должен подтвердить:
+
+```text
+OK Evgeniya Rostova required assets registered
+OK Evgeniya Rostova asset URL: css/military-occupational-specialties.css
+OK theme management integration check completed
 ```
 
 Ожидаемый финал:
