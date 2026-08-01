@@ -104,6 +104,32 @@ MOBILE: OUT OF SCOPE / NOT RUN
 - добавлен `check-military-occupational-specialties-ui.php`;
 - testing runner расширен до exact scope из 23 путей и 13 runtime parity paths.
 
+## Automated Testing attempt 3
+
+```text
+DATE: 2026-08-01
+HEAD: 2ec9eb1866ed59cdf3411bbed1e145abc7d12fc2
+RESULT: TEST-CHECKER PATH DEFECT
+BACKUP: PASS
+DEPLOY: PASS
+PHP FILES LINTED: 113
+INSTALLER TWICE: PASS / NO NEW MIGRATIONS
+CORE VUS CHECKER: PASS
+UI CHECKER: FAIL BEFORE STYLESHEET ASSERTIONS
+DATABASE CHANGES: NONE
+```
+
+UI checker корректно подтвердил русификацию, отсутствие fingerprint в пользовательском интерфейсе и требуемые классы разметки, но искал тематические CSS только в исходном пути `themes/...`. После локального deploy темы находятся в `public/themes/...`, поэтому проверка остановилась на чтении первого stylesheet.
+
+Исправление:
+
+```text
+COMMIT: 96019219cad02e42f40e5b384ded3e60adfd441a
+CHECKER THEME ROOT: source themes/ OR deployed public/themes/
+```
+
+Runtime page, CSS, migration, seed и база данных этим дефектом не затронуты.
+
 ## Следующий gate
 
 Повторная локальная синхронизация, Automated Testing и повторная Manual Desktop Acceptance в трёх темах при 1920×1080 и 1366×768.
