@@ -78,6 +78,7 @@ $DeployConfigPath = Join-Path $DeployRoot 'config\local.php'
 $ExpectedPaths = @(
     'app/Directory/MilitaryOccupationalSpecialtyCatalogRepository.php',
     'app/bootstrap.php',
+    'config/themes.php',
     'database/MilitaryOccupationalSpecialtyMigrationCompatibility.php',
     'database/OrganizationalStructureMigrationCompatibility.php',
     'database/migrations/011_public_military_occupational_specialties_directory.sql',
@@ -92,19 +93,27 @@ $ExpectedPaths = @(
     'docs/testing/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-TEST-PLAN.md',
     'public/admin/directories.php',
     'public/admin/directories/military-occupational-specialties.php',
+    'themes/asu-blue/assets/css/military-occupational-specialties.css',
+    'themes/asu-light-blue/assets/css/military-occupational-specialties.css',
+    'themes/asu-evgeniya-rostova/assets/css/military-occupational-specialties.css',
     'tools/Test-MilitaryOccupationalSpecialtiesDirectory.ps1',
-    'tools/check-military-occupational-specialties-directory.php'
+    'tools/check-military-occupational-specialties-directory.php',
+    'tools/check-military-occupational-specialties-ui.php'
 )
 $RuntimeParityPaths = @(
     'app/Directory/MilitaryOccupationalSpecialtyCatalogRepository.php',
     'app/bootstrap.php',
+    'config/themes.php',
     'database/MilitaryOccupationalSpecialtyMigrationCompatibility.php',
     'database/OrganizationalStructureMigrationCompatibility.php',
     'database/migrations/011_public_military_occupational_specialties_directory.sql',
     'database/migrations/011_public_military_occupational_specialties_directory.sql.gz.b64.part00',
     'database/migrations/011_public_military_occupational_specialties_directory.sql.gz.b64.part01',
     'public/admin/directories.php',
-    'public/admin/directories/military-occupational-specialties.php'
+    'public/admin/directories/military-occupational-specialties.php',
+    'themes/asu-blue/assets/css/military-occupational-specialties.css',
+    'themes/asu-light-blue/assets/css/military-occupational-specialties.css',
+    'themes/asu-evgeniya-rostova/assets/css/military-occupational-specialties.css'
 )
 
 Write-Step 'Repository preflight and remote verification'
@@ -208,6 +217,7 @@ Invoke-External 'php' @('.\database\install.php')
 
 Write-Step 'Public VUS integration checker'
 Invoke-External 'php' @('.\tools\check-military-occupational-specialties-directory.php')
+Invoke-External 'php' @('.\tools\check-military-occupational-specialties-ui.php')
 
 Write-Step 'Directory regressions'
 Invoke-External 'php' @('.\tools\check-all-theme-directory-assets.php')
