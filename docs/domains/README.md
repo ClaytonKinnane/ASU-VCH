@@ -1,20 +1,23 @@
 # Предметные области АСУ-ВЧ
 
-## Назначение
+## Назначение и классификация
 
 Каталог `docs/domains` содержит целевые спецификации предметных областей АСУ-ВЧ. Они определяют границы ответственности, инварианты, зависимости, аудит, безопасность и критерии готовности.
 
-Документы доменов являются архитектурными требованиями. Реализованное состояние фиксируется отдельно в `docs/PROJECT-STATUS.md`, `docs/DATABASE-CURRENT.md`, executable migrations и профильных Test Report.
+Этот `README.md` является **living domain index**, поскольку содержит текущую карту реализации. Документы отдельных доменов являются архитектурными требованиями и могут описывать целевую модель шире runtime.
+
+Реализованное состояние фиксируется в `../PROJECT-STATUS.md`, `../DATABASE-CURRENT.md`, executable migrations и профильных Test Report. Наличие решения в целевой доменной спецификации само по себе не доказывает существование runtime-функции.
 
 ## Текущая фаза проекта
 
 Проект находится в фазе **incremental implementation**:
 
 ```text
-Project architecture     — APPROVED
-Domain modeling          — CONTINUES PER INCREMENT
-Implementation           — STARTED
-Functional increments    — PR #1–#9, #12, #15 MERGED
+Project architecture        — APPROVED
+Domain modeling             — CONTINUES PER INCREMENT
+Implementation              — STARTED
+Functional increments       — PR #1–#9, #12, #15, #19, #20 MERGED
+Latest functional PR        — #20
 Active functional increment — NONE
 ```
 
@@ -25,17 +28,28 @@ Active functional increment — NONE
 | Домен | Текущее состояние |
 |---|---|
 | Security | Реализован базовый runtime: пользователи, аутентификация, RBAC, approval, password change, rejection, archive/restore |
-| Reference | Реализованы специализированные read-only каталоги воинских званий и типов организационных элементов; универсальный reference runtime не заявлен |
+| Reference | Реализованы четыре специализированных owner-only read-only каталога: воинские звания, типы организационных элементов, типовые воинские должности и публичные сведения о ВУС; универсальный reference runtime не заявлен |
 | Organization | Частично реализован runtime Organizational Structure v1: structures, versions, draft tree, document metadata, history и compare |
 | Audit | Аудит критических операций реализован внутри Security и Organization; общий доменный журнал ещё не реализован |
 | Infrastructure | Реализованы installer, migrations, local deploy, theme registry, health и CLI checker'ы |
 | Documents | Общий Documents runtime не реализован; Organization хранит только собственную document metadata и связи с версиями |
 
+### Реализованные специализированные Reference-каталоги
+
+| Functional PR | Каталог | Migration |
+|---:|---|---:|
+| #8 | Составы военнослужащих и воинские звания | 007 |
+| #9 | Типы организационных элементов | 008 |
+| #19 | Типовые воинские должности | 010 |
+| #20 | Публичные сведения о военно-учётных специальностях | 011 |
+
+Каталоги PR #19 и PR #20 основаны только на утверждённом public-source scope. Они не создают кадровые назначения, штатные позиции конкретной организации или связи с персональными данными.
+
 Будущие направления:
 
 ```text
 Personnel
-Positions and assignments
+Staff positions and personnel assignments
 Orders
 Medical
 Equipment
@@ -45,7 +59,9 @@ Archive domain
 Notifications
 ```
 
-Они не являются активными задачами и требуют полного documentation-first цикла.
+`Staff positions and personnel assignments` означает будущую кадровую/штатную модель и не дублирует уже реализованный публичный каталог типов воинских должностей.
+
+Будущие направления не являются активными задачами и требуют полного documentation-first цикла.
 
 ## Владение данными
 
@@ -81,11 +97,13 @@ Migration 009 создаёт 7 таблиц и 16 DB triggers. Домен исп
 Не реализованы:
 
 - карточки военнослужащих;
-- должности и штатные позиции;
+- штатные позиции конкретной организации;
 - кадровые назначения;
 - численность, вооружение и иные закрытые сведения;
 - общий Documents domain и document files;
 - общий Audit domain.
+
+Публичный каталог типов воинских должностей не снимает эти ограничения: он не является штатным расписанием и не содержит фактических назначений.
 
 Metadata документов внутри Organization не передаёт домену владение универсальными документами. Реализованная структура не должна наполняться закрытыми или фактическими сведениями без отдельного утверждения scope и защиты.
 
@@ -106,20 +124,24 @@ Infrastructure → внешние технические системы
 
 ```text
 Research
-→ Domain Specification
-→ Architecture options
-→ Recommendation
-→ Formal Review
+→ Analysis
+→ Architecture
+→ Specification
+→ Review
 → Approval
-→ ERD / Migration Specification
 → Implementation
-→ Integration Tests
-→ UI / Browser Acceptance
+→ Testing
+→ Commit
+→ Push
 → Pull Request
-→ Separate Merge Approval
+→ Final PR Review
+→ separate merge approval
+→ Merge
+→ post-merge verification
+→ separate branch deletion approval
 ```
 
-Migration и runtime-код не создаются до утверждения соответствующей спецификации.
+Для DB-инкремента ERD и Migration Specification включаются в Architecture/Specification до Implementation. Migration и runtime-код не создаются до утверждения соответствующей документации.
 
 ## Существующие архитектурные документы
 
