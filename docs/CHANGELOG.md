@@ -1,5 +1,24 @@
 # История изменений
 
+## 2026-08-02
+
+### Full Documentation Consistency Reconciliation
+
+- выполнен полный read-only audit Markdown-документации относительно `main @ 1eef56b50a8d2278a62c5b70a471663b12132354` и merged PR #1–#22;
+- подтверждено соответствие канонического functional baseline: latest functional PR #20, migrations 001–011, 4 system roles, 25 system permissions и 3 built-in themes;
+- `docs/domains/README.md` актуализирован до PR #20 и четырёх реализованных специализированных Reference-каталогов;
+- `docs/migrations/README.md` актуализирован до migrations 001–011, включая compatibility packaging migrations 010 и 011;
+- введено правило semantic classification: current-state раздел обновляется вместе с baseline независимо от каталога файла;
+- `docs/DATABASE.md` явно классифицирован как target architecture, broken reference `DOMAINS.md` исправлен на `domains/README.md`, а первоначальный next-step plan обозначен как historical sequence;
+- `docs/STARTER-ADMIN-SPEC.md` обозначен как historical implemented specification functional PR #1;
+- `Admin / 12315` согласованно классифицирован как публично известный local-only development fixture, а не production или instance-specific credential;
+- production credentials, реальные temporary passwords, session data и `config/local.php` остаются запрещёнными к публикации;
+- runtime password hardening отложен в отдельный будущий Security increment;
+- создан immutable audit record `DOCUMENTATION-CONSISTENCY-AUDIT-2026-08-02.md`;
+- runtime, database, migrations, config, themes, public routes, deploy и tools не изменялись;
+- runtime/database/browser retesting не требовался;
+- mobile testing: `OUT OF SCOPE / NOT RUN`.
+
 ## 2026-08-01
 
 ### Справочник типовых воинских должностей — PR #19
@@ -32,7 +51,7 @@
 - создан documentation-only workflow для актуализации baseline после PR #19/#20;
 - initial scope: 22 Markdown paths;
 - initial Documentation Implementation и Validation: PASS;
-- первый Final PR Review: `CHANGES REQUIRED`;
+- первый Final PR Review: `CHANGES_REQUIRED`;
 - findings: incomplete operational closure PR #19, stale post-PR markers и отсутствие implementation head;
 - owner отдельно разрешил remediation и расширил allowlist с 22 до 25 Markdown-путей;
 - добавлены post-merge closures operational records PR #19;

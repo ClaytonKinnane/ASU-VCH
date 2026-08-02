@@ -39,19 +39,41 @@ No material database, runtime, documentation-baseline or repository-cleanup impl
 
 ## Current state versus historical evidence
 
-Documentation belongs to one of three classes:
+Documentation belongs to the following semantic classes:
 
 1. **Living documentation** — describes the current merged baseline and must be refreshed after material merges.
-2. **Historical process artifacts** — Architecture, Specification, Review, Approval and dated Test Evidence preserving the state of their gate.
-3. **Operational increment records** — may contain both attempt history and a current-status section; post-merge closure updates current framing without deleting history.
+2. **Living indexes** — current inventories embedded in catalogs that may also contain target documents, such as `docs/domains/README.md` and `docs/migrations/README.md`.
+3. **Target architecture** — approved or researched future model that may be wider than implemented runtime.
+4. **Historical implemented specifications** — original requirements of completed increments, preserved with explicit temporal framing.
+5. **Historical process artifacts** — Architecture, Specification, Review, Approval and dated Test Evidence preserving the state of their gate.
+6. **Operational increment records** — may contain both attempt history and a current-status section; post-merge closure updates current framing without deleting history.
+7. **Immutable audit/cleanup records** — dated snapshots that do not impose a permanent future repository state.
+
+### Semantic classification overrides directory classification
+
+A document or section is treated as living/current-state whenever it asserts any of the following, regardless of its folder:
+
+- current functional or documentation baseline;
+- current migration numbering;
+- current map of implemented domains or catalogs;
+- current roles, permissions, themes, routes or runtime capabilities;
+- current repository, PR, Issue or branch state.
+
+A mixed document must label its current-state, target and historical sections explicitly. A file is not exempt from baseline refresh merely because most neighboring files are target specifications or historical evidence.
+
+Baseline refresh scope must therefore include every semantically living document and living index affected by the merged change. The refresh audit records the evaluated current-state document set and explains any exclusion.
 
 Rules:
 
 - current repository HEAD is resolved dynamically through `origin/main`;
 - exact SHA values are stored as historical merge/test/refresh anchors;
 - documentation-only commits are never presented as runtime-tested heads;
-- stale current-state fields must not remain in living documentation;
-- historical `NOT AUTHORIZED`, `NOT CREATED` or `RECHECK REQUIRED` markers are preserved when they accurately describe the recorded moment.
+- stale current-state fields must not remain in living documentation or living indexes;
+- target architecture must point to current-state sources rather than imply complete implementation;
+- historical specifications receive status banners or closure addenda without rewriting original requirements;
+- historical `NOT AUTHORIZED`, `NOT CREATED` or `RECHECK REQUIRED` markers are preserved when they accurately describe the recorded moment;
+- links in target/historical documents must still resolve unless explicitly marked as obsolete evidence;
+- current PR/Issue/branch state is not persisted as a permanent living field.
 
 ## Domain ownership
 
@@ -208,6 +230,8 @@ Each domain documents initial status, allowed transitions, prohibited reverse tr
 ## Security boundaries
 
 Permissions never bypass validation, CSRF, domain invariants, audit, transactions or secret handling. Infrastructure resources are not exposed directly when application authorization is required.
+
+Publicly documented local-only development fixtures are not production secrets, but must be explicitly scoped to local environments, require replacement on first use and never be reused as instance-specific credentials. Real temporary passwords, production credentials, session data, private keys, tokens and local configuration remain secret.
 
 ## Migration packaging and compatibility
 

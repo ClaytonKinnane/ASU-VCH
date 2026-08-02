@@ -110,7 +110,7 @@ git status --short
 - baseline facts и устойчивые anchors;
 - relative Markdown links;
 - stale current-state assertions;
-- secrets и содержимое `config/local.php` отсутствуют;
+- production/instance secrets и содержимое `config/local.php` отсутствуют;
 - historical snapshots не переписаны задним числом;
 - no Mobile PASS claim;
 - runtime/config/database/migrations/themes/tools/Git refs unchanged.
@@ -184,4 +184,37 @@ git ls-remote --heads origin
 
 ## 10. Security boundaries
 
-Не публикуются credentials, session data, temporary passwords и содержимое `config/local.php`. Mobile testing для PR #19/#20: `OUT OF SCOPE / NOT RUN`.
+### Не публикуются
+
+- production credentials;
+- credentials конкретной установки или окружения;
+- реальные временные пароли пользователей;
+- session identifiers и session data;
+- содержимое `config/local.php`;
+- иные secrets, tokens и private keys.
+
+### Известный local-only development fixture
+
+Текущий baseline содержит публично известный локальный fixture:
+
+```text
+username: Admin
+password: 12315
+environment: local only
+must_change_password: true
+```
+
+Это не secret конкретной установки, а воспроизводимая development fixture, уже зафиксированная в historical starter specification и `database/seed-local-owner.php`.
+
+Границы использования:
+
+- seed выполняется только при `environment=local`;
+- fixture не применяется в production;
+- пароль нельзя использовать повторно для иных учётных записей или окружений;
+- при первом входе обязательна смена пароля;
+- реальные временные пароли пользователей не публикуются;
+- перед production-развёртыванием локальная тестовая база и известные credentials не переносятся.
+
+Замена фиксированного local password на interactive prompt или безопасную генерацию является отдельным будущим Security increment. Она не считается уже реализованной и требует полного documentation-first workflow и runtime testing.
+
+Mobile testing для PR #19/#20: `OUT OF SCOPE / NOT RUN`.
