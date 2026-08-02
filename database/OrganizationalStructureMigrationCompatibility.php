@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/MilitaryPositionMigrationCompatibility.php';
 require_once __DIR__ . '/MilitaryOccupationalSpecialtyMigrationCompatibility.php';
+require_once __DIR__ . '/MilitaryRankDirectoryV2MigrationCompatibility.php';
 
 function transform_organizational_structure_migration_sql(string $sql): string
 {
@@ -62,6 +63,14 @@ function prepare_migration_sql_for_environment(
     }
     if ($migrationName === '011_public_military_occupational_specialties_directory.sql') {
         return load_military_occupational_specialty_migration_sql(__DIR__ . '/migrations');
+    }
+    if ($migrationName === MILITARY_RANK_V2_MIGRATION) {
+        return prepare_military_rank_directory_v2_migration_sql(
+            $pdo,
+            $schemaName,
+            $migrationName,
+            $sql
+        );
     }
 
     if ($migrationName !== '009_organizational_structure_v1.sql') {
