@@ -15,8 +15,10 @@ Living documentation описывает текущий merged functional baselin
 - [План разработки](ROADMAP.md)
 - [История изменений](CHANGELOG.md)
 - [Архитектурные паттерны](ARCHITECTURAL-PATTERNS.md)
+- [Текущая карта доменов](domains/README.md)
+- [Текущий index migrations](migrations/README.md)
 
-Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют migrations, installer и профильные checker'ы.
+Каноническое функциональное состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую схему определяют executable migrations, installer и профильные checker'ы.
 
 Current HEAD определяется через `origin/main`:
 
@@ -26,6 +28,12 @@ git rev-parse origin/main
 ```
 
 Living docs не хранят самореферентный current-main SHA, изменчивое состояние активного PR или текущий branch inventory как постоянно актуальное поле. Exact states фиксируются в датированных evidence snapshots; live repository state определяется через GitHub и Git.
+
+### Semantic classification rule
+
+Класс документа определяется не только каталогом, но и содержанием. Раздел является living/current-state, если он сообщает текущий functional baseline, нумерацию migrations, карту реализованных доменов, набор ролей/permissions/themes или repository state.
+
+Поэтому `domains/README.md` и `migrations/README.md` обновляются вместе с functional baseline, хотя соседние документы каталогов могут быть target architecture.
 
 ## Functional baseline
 
@@ -82,16 +90,47 @@ Closure documentation artifacts:
 ## Классы документации
 
 1. **Living documentation** — merged functional baseline и устойчивые завершённые governance facts.
-2. **Historical process/test artifacts** — состояние конкретного gate или попытки.
-3. **Operational increment records** — current outcome плюс сохранённая история; после merge получают closure section.
-4. **Immutable cleanup records** — датированный terminal snapshot, не бессрочное описание будущего repository state.
+2. **Living indexes** — current domain/migration inventories внутри каталогов, которые также содержат target documents.
+3. **Target architecture** — утверждённая или исследуемая модель, которая может быть шире runtime.
+4. **Historical implemented specifications** — исходные requirements завершённых инкрементов; сохраняются с явным temporal framing.
+5. **Historical process/test artifacts** — состояние конкретного gate или попытки.
+6. **Operational increment records** — current outcome плюс сохранённая история; после merge получают closure section.
+7. **Immutable audit/cleanup records** — датированный snapshot, не бессрочное описание будущего repository state.
 
 Historical `NOT CREATED`, `NOT AUTHORIZED` и `RECHECK REQUIRED` не переписываются задним числом, но не используются как living current assertions.
+
+## Целевая архитектура
+
+- [Целевая архитектура базы данных](DATABASE.md)
+- [Предметные области](domains/README.md) — living index с ссылками на target domain documents
+- [ERD](erd/)
+- [Спецификации миграций](migrations/README.md) — living index с ссылками на target migration specifications
+
+`DATABASE.md` описывает target architecture. Текущее физическое состояние всегда сверяется с `DATABASE-CURRENT.md` и executable migrations.
+
+## Historical implemented specifications
+
+- [Стартовая административная спецификация](STARTER-ADMIN-SPEC.md) — реализована функциональным PR #1; не является текущим implementation plan.
+
+Исходные requirements и известные для своего времени ограничения сохраняются. Current outcome определяется living documentation.
+
+## Documentation consistency audit — 2026-08-02
+
+- [Immutable audit record](DOCUMENTATION-CONSISTENCY-AUDIT-2026-08-02.md)
+- [Architecture](architecture/FULL-DOCUMENTATION-CONSISTENCY-RECONCILIATION-ARCHITECTURE.md)
+- [Specification](specification/FULL-DOCUMENTATION-CONSISTENCY-RECONCILIATION-SPECIFICATION.md)
+- [Formal Review](review/FULL-DOCUMENTATION-CONSISTENCY-RECONCILIATION-FORMAL-REVIEW.md)
+- [Approval](decisions/FULL-DOCUMENTATION-CONSISTENCY-RECONCILIATION-APPROVAL.md)
+- [Implementation](implementation/FULL-DOCUMENTATION-CONSISTENCY-RECONCILIATION-IMPLEMENTATION.md)
+- [Validation](testing/FULL-DOCUMENTATION-CONSISTENCY-RECONCILIATION-VALIDATION.md)
+
+Эти ссылки не фиксируют transient PR/branch state. Live workflow state определяется через GitHub.
 
 ## Repository governance
 
 Historical evidence:
 
+- [Documentation consistency audit 2026-08-02](DOCUMENTATION-CONSISTENCY-AUDIT-2026-08-02.md)
 - [Post-PR21 merge and cleanup closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md)
 - [Repository cleanup closure 2026-07-31](REPOSITORY-CLEANUP-2026-07-31.md)
 - [Repository audit 2026-07-30](REPOSITORY-AUDIT-2026-07-30.md)
@@ -110,19 +149,14 @@ git status --short
 
 `SAFE TO DELETE` не является разрешением. Cleanup требует post-merge verification, fresh inventory, exact batch и отдельное owner approval.
 
-## Целевая архитектура
-
-- [Целевая архитектура базы данных](DATABASE.md)
-- [Стартовая административная спецификация](STARTER-ADMIN-SPEC.md)
-- [Предметные области](domains/README.md)
-- [ERD](erd/)
-- [Спецификации миграций](migrations/README.md)
-
 ## Правила актуальности
 
-- GitHub — единственный источник истины.
+- GitHub — единственный источник истины для live Git state.
 - Current HEAD, PRs, Issues и branches определяются динамически.
 - Documentation-only head не объявляется runtime-tested.
+- Current-state sections обновляются независимо от расположения файла.
+- Target architecture не представляется как уже реализованная schema.
+- Historical specifications получают temporal framing, но не переписываются задним числом.
 - Mobile PASS не заявляется без фактической acceptance.
 - Merge и branch cleanup имеют отдельные approval gates.
 - Завершение cleanup собственной documentation branch не требует нового closure increment, если living docs не зависят от её transient state.
