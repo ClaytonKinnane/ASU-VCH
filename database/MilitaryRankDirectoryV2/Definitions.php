@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+/** @return list<array{code:string,name:string,parent_code:?string,sort_order:int}> */
 function military_rank_v1_expected_compositions(): array
 {
     return [
@@ -15,7 +16,6 @@ function military_rank_v1_expected_compositions(): array
 }
 
 /** @return list<array{code:string,name:string,parent_code:?string,sort_order:int}> */
-
 function military_rank_v2_expected_compositions(): array
 {
     return [
@@ -31,7 +31,6 @@ function military_rank_v2_expected_compositions(): array
 }
 
 /** @return list<array{code:string,troop_name:string,naval_name:?string,sort_order:int,composition_code:string}> */
-
 function military_rank_v2_expected_levels(): array
 {
     return [
@@ -55,6 +54,88 @@ function military_rank_v2_expected_levels(): array
         ['code' => 'colonel-general', 'troop_name' => 'генерал-полковник', 'naval_name' => 'адмирал', 'sort_order' => 18, 'composition_code' => 'higher-officers'],
         ['code' => 'army-general', 'troop_name' => 'генерал армии', 'naval_name' => 'адмирал флота', 'sort_order' => 19, 'composition_code' => 'higher-officers'],
         ['code' => 'marshal-russian-federation', 'troop_name' => 'Маршал Российской Федерации', 'naval_name' => null, 'sort_order' => 20, 'composition_code' => 'higher-officers'],
+    ];
+}
+
+/** @return list<array{source_code:string,source_role:string,sort_order:int}> */
+function military_rank_v2_expected_version_sources(): array
+{
+    return [
+        [
+            'source_code' => 'federal-law-53-fz-article-46',
+            'source_role' => 'primary-list',
+            'sort_order' => 1,
+        ],
+        [
+            'source_code' => 'presidential-decree-1237-article-20',
+            'source_role' => 'equivalence-and-order',
+            'sort_order' => 2,
+        ],
+    ];
+}
+
+/** @return list<array{composition_code:string,source_code:string,source_role:string,sort_order:int,note:?string}> */
+function military_rank_v2_expected_composition_sources(): array
+{
+    $derivedNote = 'Источник перечисляет уровни внутри общего нормативного состава; разделение является прикладной классификацией АСУ-ВЧ.';
+
+    return [
+        [
+            'composition_code' => 'enlisted',
+            'source_code' => 'federal-law-53-fz-article-46',
+            'source_role' => 'normative-definition',
+            'sort_order' => 1,
+            'note' => null,
+        ],
+        [
+            'composition_code' => 'soldiers-and-sailors',
+            'source_code' => 'federal-law-53-fz-article-46',
+            'source_role' => 'derived-classification-basis',
+            'sort_order' => 1,
+            'note' => $derivedNote,
+        ],
+        [
+            'composition_code' => 'sergeants-and-starshinas',
+            'source_code' => 'federal-law-53-fz-article-46',
+            'source_role' => 'derived-classification-basis',
+            'sort_order' => 1,
+            'note' => $derivedNote,
+        ],
+        [
+            'composition_code' => 'warrant-officers',
+            'source_code' => 'federal-law-53-fz-article-46',
+            'source_role' => 'normative-definition',
+            'sort_order' => 1,
+            'note' => null,
+        ],
+        [
+            'composition_code' => 'officers',
+            'source_code' => 'federal-law-53-fz-article-46',
+            'source_role' => 'normative-definition',
+            'sort_order' => 1,
+            'note' => null,
+        ],
+        [
+            'composition_code' => 'junior-officers',
+            'source_code' => 'presidential-decree-1237-article-20',
+            'source_role' => 'rank-list',
+            'sort_order' => 1,
+            'note' => null,
+        ],
+        [
+            'composition_code' => 'senior-officers',
+            'source_code' => 'presidential-decree-1237-article-20',
+            'source_role' => 'rank-list',
+            'sort_order' => 1,
+            'note' => null,
+        ],
+        [
+            'composition_code' => 'higher-officers',
+            'source_code' => 'presidential-decree-1237-article-20',
+            'source_role' => 'rank-list',
+            'sort_order' => 1,
+            'note' => null,
+        ],
     ];
 }
 
@@ -124,7 +205,6 @@ function military_rank_v2_constraint_exists(
 }
 
 /** @return array<string,mixed>|null */
-
 function military_rank_v2_version_by_code(PDO $pdo, string $code, bool $withLifecycle): ?array
 {
     $columns = $withLifecycle
