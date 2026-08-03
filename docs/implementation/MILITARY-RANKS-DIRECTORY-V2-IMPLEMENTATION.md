@@ -1,28 +1,20 @@
 # Implementation — Составы военнослужащих и воинские звания v2
 
-Статус: **IMPLEMENTED**
+## Historical implementation status
 
-Ветка: `feature/military-ranks-directory-v2`
+```text
+status at implementation gate: IMPLEMENTED
+branch at implementation gate: feature/military-ranks-directory-v2
+runtime/manual acceptance head: b44aed14ee1a54be213cbc939322ba21b02e7a58
+```
 
-Runtime/manual acceptance head: `b44aed14ee1a54be213cbc939322ba21b02e7a58`
+Этот раздел сохраняет исходное pre-merge состояние. Current closure приведён ниже.
 
-## 1. Application layer
+## Application layer
 
-### `app/Directory/MilitaryRankCatalogRepository.php`
+`MilitaryRankCatalogRepository` расширен current/visible version APIs, version-scoped sources/compositions, search/filtering и integrity errors.
 
-Repository расширен поддержкой:
-
-- current published version;
-- списка visible published/superseded versions;
-- version lookup по code;
-- version-scoped sources и compositions;
-- поиска по выбранной версии;
-- ancestry-aware фильтрации родительских составов;
-- integrity errors при некорректном current state.
-
-### `app/Directory/MilitaryRankCompatibilityService.php`
-
-Добавлен read-only compatibility service со статусами:
+`MilitaryRankCompatibilityService` добавлен как Reference-owned read-only service со статусами:
 
 - `compatible`;
 - `incompatible`;
@@ -31,120 +23,72 @@ Repository расширен поддержкой:
 - `record-not-found`;
 - `integrity-error`.
 
-Сервис не зависит от Organization и проверяет same-version ancestry.
+Service использует same-version ancestry и не зависит от Organization.
 
-## 2. Database layer
+## Database layer
 
-Добавлены:
+Добавлены compatibility loader, versioned DDL/publication/recovery modules, marker migration 012 и trigger templates.
 
-- `database/MilitaryRankDirectoryV2MigrationCompatibility.php`;
-- `database/MilitaryRankDirectoryV2/Baseline.php`;
-- `Definitions.php`;
-- `Ddl.php`;
-- `PublishedState.php`;
-- `Recovery.php`;
-- `SqlTemplates.php`;
-- `publication.sql`;
-- семь trigger template files;
-- marker `database/migrations/012_military_ranks_directory_v2.sql`.
+Published outcome:
 
-`database/OrganizationalStructureMigrationCompatibility.php` маршрутизирует migration 012 через compatibility loader.
+```text
+v1: superseded / valid_to 2026-08-02
+v2: published/current / valid_from 2026-08-03
+compositions/categories: 8
+semantics: 8
+ranks: 20
+version sources: 2
+composition sources: 8
+triggers: 18
+```
 
-Результат публикации:
+## UI and themes
 
-- v1: superseded, valid_to `2026-08-02`;
-- v2: published/current, valid_from `2026-08-03`;
-- 8 compositions;
-- 8 semantics;
-- 20 ranks;
-- 2 version sources;
-- 8 composition sources;
-- 18 lifecycle/integrity/immutability triggers.
+Owner-only route supports version switching, current/historical lifecycle metadata, derived/staffing badges, source cards, version-aware search/filters, empty state and controlled HTTP 503.
 
-## 3. UI
+Visual remediation replaced a stretched two-column grid with one start-aligned hierarchy, child indentation/connectors and concise labels.
 
-Обновлён owner-only route:
+`css/military-ranks-v2.css` is required in all three themes.
 
-`public/admin/directories/military-ranks.php`
+## Checkers and boundaries
 
-Добавлено:
+Source, loader, compatibility-service, core DB, UI-layout, theme, permission and Organization compatibility checks were added/updated.
 
-- version switch;
-- current/historical lifecycle metadata;
-- current v2 и historical v1;
-- derived/staffing badges;
-- explicit v1 historical notice;
-- source cards;
-- version-aware search и filters;
-- controlled empty state;
-- controlled HTTP 503 state;
-- read-only presentation.
+Not added:
 
-После ручного visual review выполнена UI-remediation:
-
-- двухколоночная composition grid заменена одной start-aligned колонкой;
-- устранено растягивание карточек;
-- child cards получили отступ и connector;
-- child labels сокращены до собственных имён;
-- полный composition path сохранён в таблице званий.
-
-## 4. Themes
-
-Зарегистрирован и опубликован asset:
-
-`css/military-ranks-v2.css`
-
-для тем:
-
-- `asu-blue`;
-- `asu-light-blue`;
-- `asu-evgeniya-rostova`.
-
-`config/themes.php` содержит asset в required list каждой темы.
-
-## 5. Checkers
-
-Добавлены/обновлены:
-
-- `tools/check-military-ranks-directory-v2-source.php`;
-- `tools/check-military-rank-v2-loader.php`;
-- `tools/check-military-rank-compatibility-service.php`;
-- `tools/check-military-ranks-directory-core.php`;
-- `tools/check-military-ranks-directory-v2-ui-layout.php`;
-- theme regression checker;
-- permission baseline regression adapter;
-- Organization migration compatibility self-check.
-
-Source checker дополнительно блокирует:
-
-- повреждённый UTF-8;
-- управляющие байты;
-- `TRIGGGER` и повреждённые SQL tokens;
-- неполный набор 18 DROP/CREATE trigger declarations;
-- запрещённые Staffing/Organization scope terms.
-
-UI-layout checker блокирует:
-
-- возврат двухколоночной растягивающей grid;
-- отсутствие start alignment;
-- отсутствие child indentation/connector;
-- повторение полного parent path в child card labels.
-
-## 6. Scope boundaries
-
-Не добавлены:
-
-- Staffing schema;
+- Staffing schema or slots;
 - Organization relations;
-- military position definitions;
 - personnel assignments;
-- реальные данные подразделений/военнослужащих;
+- real unit/personnel data;
 - mutation routes;
-- permissions;
+- new permissions;
 - increment B.
 
-## 7. Operational note
+## Historical operational note
 
-Migration 012 уже применена в локальной Open Server / MySQL 8.4 среде. Повторный installer сообщает 12 применённых migrations и отсутствие новых migrations.
+Migration 012 was applied in local Open Server/MySQL 8.4; repeat installer reported 12 migrations and no new migrations. Documentation commits after runtime head did not change runtime/database behavior.
 
-Документационные commits после runtime head не изменяют application runtime или БД.
+## Post-merge and branch-lifecycle closure
+
+```text
+PR: #24 CLOSED / MERGED
+FINAL_FEATURE_HEAD=2e996849ec51be4d83676aa779bf7e797e35932e
+MERGE_COMMIT=feac7230616d3a8df98acb48f43a0b60f89f2255
+RUNTIME_MANUAL_ACCEPTANCE_HEAD=b44aed14ee1a54be213cbc939322ba21b02e7a58
+FINAL_PR_REVIEW_REMEDIATION_HEAD=fe893e8315f7add80ed4d0501b41d8bc39b4b0e8
+POST_MERGE_VERIFICATION=PASS
+REPEAT_INSTALLER=12 / NO NEW MIGRATIONS
+DATABASE_REGRESSION=PASS
+DEPLOY_AND_SOURCE_PARITY=PASS
+HTTP_SMOKE=PASS
+FEATURE_BRANCH=DELETED AFTER SEPARATE APPROVAL
+MOBILE=OUT OF SCOPE / NOT RUN
+```
+
+Merge was executed only after separate owner permission. Post-merge verification confirmed `main`, feature-tree inclusion/parity, static checks, deploy, installer, DB regression, HTTP smoke and clean worktree.
+
+Branch deletion was a separate later operation. The deleted branch name remains historical evidence and is not an operational checkout dependency.
+
+```text
+CURRENT_INCREMENT_OUTCOME=IMPLEMENTED / TESTED / ACCEPTED / REVIEWED / MERGED / VERIFIED / BRANCH_CLEANED
+```
