@@ -22,12 +22,20 @@ try {
     $pagePath = $root . '/public/admin/directories/military-ranks.php';
     $page = file_get_contents($pagePath);
     military_rank_ui_layout_check(is_string($page), 'military ranks page readable');
+
+    $hierarchyClassNeedle = <<<'PHP'
+directory-composition-card<?= $composition['parent_id'] !== null ? ' is-child' : '' ?>
+PHP;
+    $hierarchyPathNeedle = <<<'PHP'
+<strong><?= e($composition['path']) ?></strong>
+PHP;
+
     military_rank_ui_layout_check(
-        str_contains($page, "directory-composition-card<?= $composition['parent_id'] !== null ? ' is-child' : '' ?>"),
+        str_contains($page, $hierarchyClassNeedle),
         'composition hierarchy class is data-driven'
     );
     military_rank_ui_layout_check(
-        str_contains($page, "<strong><?= e($composition['path']) ?></strong>"),
+        str_contains($page, $hierarchyPathNeedle),
         'composition hierarchy path remains explicit'
     );
 
