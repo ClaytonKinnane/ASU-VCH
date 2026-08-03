@@ -139,6 +139,40 @@ function military_rank_v2_expected_composition_sources(): array
     ];
 }
 
+function military_rank_v2_version_source_matches_expected(
+    string $sourceCode,
+    string $sourceRole,
+    int $sortOrder
+): bool {
+    foreach (military_rank_v2_expected_version_sources() as $expectedSource) {
+        if ($sourceCode === $expectedSource['source_code']) {
+            return $sourceRole === $expectedSource['source_role']
+                && $sortOrder === $expectedSource['sort_order'];
+        }
+    }
+
+    return false;
+}
+
+function military_rank_v2_composition_source_matches_expected(
+    string $compositionCode,
+    string $sourceCode,
+    string $sourceRole,
+    int $sortOrder,
+    ?string $note
+): bool {
+    foreach (military_rank_v2_expected_composition_sources() as $expectedSource) {
+        if ($compositionCode === $expectedSource['composition_code']) {
+            return $sourceCode === $expectedSource['source_code']
+                && $sourceRole === $expectedSource['source_role']
+                && $sortOrder === $expectedSource['sort_order']
+                && $note === $expectedSource['note'];
+        }
+    }
+
+    return false;
+}
+
 function military_rank_v2_table_exists(PDO $pdo, string $schemaName, string $tableName): bool
 {
     $stmt = $pdo->prepare(
