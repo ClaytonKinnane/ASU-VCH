@@ -17,9 +17,11 @@ BEGIN
     END IF;
 END;
 
-CREATE TRIGGGER trg_military_rank_levels_before_delete
+CREATE TRIGGER trg_military_rank_levels_before_delete
 BEFORE DELETE ON military_rank_levels
 FOR EACH ROW
 BEGIN
-    IF COALESCE((SELECT lifecycle_status FROM military_rank_catalog_versions WHEQHYHÓ˜Ø][Ù×İ™\œÚ[Û—ÚY
-K	ÉÊHˆ	ØZ[[™ÉÈS‚ˆÒQÓSÔSÕUH	ÍL	ÈÑUQTÔĞQÑWÕVH	ÓRSUT–WÔS’×ÓU‘SÑSUWÑ“Ô’QS‰ÎÂˆS‘QÂ‘S‘Â‚
+    IF COALESCE((SELECT lifecycle_status FROM military_rank_catalog_versions WHERE id = OLD.catalog_version_id), '') <> 'building' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'MILITARY_RANK_LEVEL_DELETE_FORBIDDEN';
+    END IF;
+END;
