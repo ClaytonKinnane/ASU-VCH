@@ -1,7 +1,9 @@
 # Formal Review — Составы военнослужащих и воинские звания v2
 
-Статус: **PASS**  
-Дата: **2026-08-03**  
+Статус: **PASS**
+
+Дата: **2026-08-03**
+
 Ветка: `feature/military-ranks-directory-v2`
 
 ## 1. Рассмотренные материалы
@@ -116,9 +118,12 @@ Process deviation: предмиграционная резервная копи�
 
 ## 8. Итог
 
-Blocking findings: **0**  
-Major findings: **0**  
-Minor findings: **0**  
+Blocking findings: **0**
+
+Major findings: **0**
+
+Minor findings: **0**
+
 Formal Review: **PASS**
 
 Инкремент допускается к Pull Request и Final PR Review. Merge не разрешён этим review и требует отдельного явного решения владельца.
