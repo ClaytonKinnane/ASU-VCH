@@ -94,10 +94,6 @@ function military_rank_v2_assert_recoverable_building_state(PDO $pdo, int $versi
         }
     }
 
-    $expectedVersionSources = [];
-    foreach (military_rank_v2_expected_version_sources() as $expectedSource) {
-        $expectedVersionSources[$expectedSource['source_code']] = $expectedSource;
-    }
     $sourceStmt = $pdo->prepare(
         'SELECT s.code, vs.source_role, vs.sort_order '
         . 'FROM military_rank_catalog_version_sources vs '
@@ -106,19 +102,15 @@ function military_rank_v2_assert_recoverable_building_state(PDO $pdo, int $versi
     );
     $sourceStmt->execute(['version_id' => $versionId]);
     foreach ($sourceStmt->fetchAll() as $row) {
-        $sourceCode = (string) $row['code'];
-        $expectedSource = $expectedVersionSources[$sourceCode] ?? null;
-        if (!is_array($expectedSource)
-            || (string) $row['source_role'] !== $expectedSource['source_role']
-            || (int) $row['sort_order'] !== $expectedSource['sort_order']) {
+        if (!military_rank_v2_version_source_matches_expected(
+            (string) $row['code'],
+            (string) $row['source_role'],
+            (int) $row['sort_order']
+        )) {
             throw new RuntimeException('Migration 012 recovery: building v2 содержит неожиданный version source.');
         }
     }
 
-    $expectedCompositionSources = [];
-    foreach (military_rank_v2_expected_composition_sources() as $expectedSource) {
-        $expectedCompositionSources[$expectedSource['composition_code']] = $expectedSource;
-    }
     $compositionSourceStmt = $pdo->prepare(
         'SELECT cs.composition_id, s.code, cs.source_role, cs.sort_order, cs.note '
         . 'FROM military_personnel_composition_sources cs '
@@ -128,15 +120,15 @@ function military_rank_v2_assert_recoverable_building_state(PDO $pdo, int $versi
     $compositionSourceStmt->execute(['version_id' => $versionId]);
     foreach ($compositionSourceStmt->fetchAll() as $row) {
         $compositionCode = $compositionCodesById[(int) $row['composition_id']] ?? null;
-        $expectedSource = is_string($compositionCode)
-            ? ($expectedCompositionSources[$compositionCode] ?? null)
-            : null;
         $actualNote = $row['note'] !== null ? (string) $row['note'] : null;
-        if (!is_array($expectedSource)
-            || (string) $row['code'] !== $expectedSource['source_code']
-            || (string) $row['source_role'] !== $expectedSource['source_role']
-            || (int) $row['sort_order'] !== $expectedSource['sort_order']
-            || $actualNote !== $expectedSource['note']) {
+        if (!is_string($compositionCode)
+            || !military_rank_v2_composition_source_matches_expected(
+                $compositionCode,
+                (string) $row['code'],
+                (string) $row['source_role'],
+                (int) $row['sort_order'],
+                $actualNote
+            )) {
             throw new RuntimeException('Migration 012 recovery: building v2 содержит неожиданный composition source.');
         }
     }
