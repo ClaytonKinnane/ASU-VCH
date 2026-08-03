@@ -1,9 +1,13 @@
 # Составы военнослужащих и воинские звания v2 — Architecture & Specification
 
-Статус: **APPROVED**  
-Дата утверждения: **2026-08-03**  
-Базовая ветка: `main`  
-Базовый commit: `5f97ed4237cca6fed314952e0c19716d98e7f459`  
+Статус: **APPROVED**
+
+Дата утверждения: **2026-08-03**
+
+Базовая ветка: `main`
+
+Базовый commit: `5f97ed4237cca6fed314952e0c19716d98e7f459`
+
 Рабочая ветка: `feature/military-ranks-directory-v2`
 
 ## 1. Цель
