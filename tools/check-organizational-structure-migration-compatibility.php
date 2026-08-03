@@ -79,11 +79,14 @@ $expectedAdaptedCheckers = [
     'tools/check-military-ranks-directory-core.php',
     'tools/check-organizational-elements-directory-core.php',
 ];
-$expectedDeployThemePathCheckers = [
+$expectedPassthroughCheckers = [
     'tools/check-military-ranks-directory-core.php',
+];
+$expectedDeployThemePathCheckers = [
     'tools/check-organizational-elements-directory-core.php',
 ];
-$adapterPreparationValid = permission_baseline_compatible_checker_paths() === $expectedAdaptedCheckers;
+$adapterPreparationValid = permission_baseline_compatible_checker_paths() === $expectedAdaptedCheckers
+    && permission_baseline_passthrough_checker_paths() === $expectedPassthroughCheckers;
 $deployThemePathPreparationValid = deploy_theme_path_compatible_checker_paths() === $expectedDeployThemePathCheckers;
 $dynamicOutput = 'echo "OK system permissions: {$permissionCount}\\n";';
 $legacyThemePath = '$root . \'/themes/\' . $themeSlug . \'/assets/css/directories.css\'';
@@ -97,10 +100,17 @@ foreach ($expectedAdaptedCheckers as $checker) {
 
     try {
         $preparedChecker = prepare_permission_baseline_compatible_checker($checkerSource, $checker);
-        $adapterPreparationValid = $adapterPreparationValid
-            && !str_contains($preparedChecker, '$permissionCount === 19')
-            && substr_count($preparedChecker, '$permissionCount >= 19') === 1
-            && substr_count($preparedChecker, $dynamicOutput) === 1;
+        if (in_array($checker, $expectedPassthroughCheckers, true)) {
+            $adapterPreparationValid = $adapterPreparationValid
+                && $preparedChecker === $checkerSource
+                && str_contains($preparedChecker, '$permissionCount === 25')
+                && str_contains($preparedChecker, "'css/military-ranks-v2.css'");
+        } else {
+            $adapterPreparationValid = $adapterPreparationValid
+                && !str_contains($preparedChecker, '$permissionCount === 19')
+                && substr_count($preparedChecker, '$permissionCount >= 19') === 1
+                && substr_count($preparedChecker, $dynamicOutput) === 1;
+        }
         if (in_array($checker, $expectedDeployThemePathCheckers, true)) {
             $deployThemePathPreparationValid = $deployThemePathPreparationValid
                 && !str_contains($preparedChecker, $legacyThemePath)
@@ -114,9 +124,8 @@ foreach ($expectedAdaptedCheckers as $checker) {
     }
 }
 
-$themeExpectedAssetNeedle = <<<'PHP'
-'css/theme-management.css', 'css/directories.css', 'css/organization.css',
-PHP;
+$themeOrganizationAssetNeedle = "'css/organization.css'";
+$themeMilitaryRanksAssetNeedle = "'css/military-ranks-v2.css'";
 $uiPolishThemeRootNeedle = <<<'PHP'
 $themeRoot = is_dir($root . '/public/themes')
 PHP;
@@ -147,7 +156,11 @@ $checks = [
     ),
     'theme management checker ожидает organization.css' => str_contains(
         $themeManagementChecker,
-        $themeExpectedAssetNeedle
+        $themeOrganizationAssetNeedle
+    ),
+    'theme management checker ожидает military-ranks-v2.css' => str_contains(
+        $themeManagementChecker,
+        $themeMilitaryRanksAssetNeedle
     ),
     'UI polish checker использует опубликованный theme path' => str_contains(
         $uiPolishChecker,
@@ -158,6 +171,8 @@ $checks = [
     ),
     'permission regression adapter ограничен четырьмя checker-файлами' => permission_baseline_compatible_checker_paths()
         === $expectedAdaptedCheckers,
+    'permission regression adapter распознаёт v2 passthrough checker' => permission_baseline_passthrough_checker_paths()
+        === $expectedPassthroughCheckers,
     'permission regression adapter реально готовит все четыре checker-файла' => $adapterPreparationValid,
     'directory regression adapter использует опубликованные темы' => $deployThemePathPreparationValid,
     'CLI adapter использует протестированную функцию подготовки' => str_contains(
