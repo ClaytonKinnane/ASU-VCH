@@ -1,20 +1,20 @@
 # Documentation Current-State Reconciliation v2 — Validation
 
-## 1. Status
+## 1. Historical validation status
 
 ```text
-stage: Documentation Validation
-status: PASS
+stage at this gate: Documentation Validation
+status at this gate: PASS
 classification: documentation-only
 baseline main: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
 validated implementation head: 7968ca979e5a37fafc93470b450d9724b3707b03
-branch: docs/documentation-current-state-reconciliation-v2
+branch at this gate: docs/documentation-current-state-reconciliation-v2
 date: 2026-08-03
 ```
 
-This evidence file is added after the validated implementation head and does not alter validated living/closure content.
+This evidence file was added after the validated implementation head and did not alter validated living/closure content. The then-current next gate is preserved below as historical evidence.
 
-## 2. Git scope
+## 2. Historical Git scope
 
 At validated implementation head:
 
@@ -29,29 +29,11 @@ PRE_EVIDENCE_NON_MARKDOWN_PATHS=0
 COMPARE_STATUS=AHEAD
 ```
 
-After adding this Validation record, pre-PR changed-path count must be 28. The 29th allowlisted Final PR Review record is intentionally absent until a separately authorized Pull Request exists.
+After adding this Validation record, pre-PR changed-path count was 28. The 29th path was correctly reserved for the later separately authorized Final PR Review.
 
-## 3. Allowlist validation
+## 3. Historical validation verdict
 
-Validated 27 implementation paths:
-
-- 15 living documents;
-- 6 operational closure records;
-- Architecture, Specification, Formal Review, Approval, immutable audit and Implementation records.
-
-All belong to the approved 29-path allowlist.
-
-```text
-APPROVED_FINAL_PATH_COUNT=29
-EXPECTED_PRE_PR_PATH_COUNT_AFTER_VALIDATION=28
-EXPECTED_FINAL_PR_REVIEW_ADDITION=1
-NON_MARKDOWN_DIFF=0
-UNAPPROVED_PATHS=0
-```
-
-## 4. Living baseline validation
-
-Consistent current-state markers are present:
+The validation confirmed:
 
 ```text
 LATEST_FUNCTIONAL_PR_24=PASS
@@ -65,161 +47,7 @@ ACTIVE_FUNCTIONAL_INCREMENT_NONE=PASS
 ACTIVE_TECHNICAL_INCREMENT_NONE=PASS
 ```
 
-Current `main` remains dynamic and no self-referential documentation-head SHA was introduced into living status fields.
-
-## 5. Military Ranks v2 validation
-
-Living documentation consistently records:
-
-```text
-PR24_MERGED=PASS
-MIGRATION_012_PRESENT=PASS
-V1_SUPERSEDED_HISTORICAL=PASS
-V2_PUBLISHED_CURRENT=PASS
-V2_COMPOSITIONS_8=PASS
-V2_SEMANTICS_8=PASS
-RANKS_20_UNCHANGED=PASS
-VERSION_SOURCES_2=PASS
-COMPOSITION_SOURCES_8=PASS
-V2_TRIGGERS_18=PASS
-REFERENCE_COMPATIBILITY_SERVICE=PASS
-STAFFING_SCHEMA_ABSENT=PASS
-ORGANIZATION_BINDINGS_ABSENT=PASS
-PERSONNEL_DATA_ABSENT=PASS
-```
-
-Migration 012 is described as compatibility-loader/marker based and is not falsely classified as gzip/base64 packaging.
-
-## 6. Theme contract validation
-
-Source-of-truth alignment with `config/themes.php`:
-
-```text
-THEMES_3=PASS
-CSS_ASSETS_PER_THEME_10=PASS
-MILITARY_RANKS_V2_CSS_PRESENT_IN_CONTRACT=PASS
-EVGENIYA_ROSTOVA_SVG_COUNT_4=PASS
-OLD_NINE_ASSET_CURRENT_ASSERTION_REMOVED=PASS
-```
-
-## 7. CI capability validation
-
-Living docs record Stage A without Stage B overclaim:
-
-```text
-WORKFLOW_IMPLEMENTED=PASS
-WORKFLOW_NAME=ASU-VCH Static Verification
-JOB_NAME=asu-vch-static-verification
-PR_PUSH_MANUAL_TRIGGERS=PASS
-READ_ONLY_PERMISSION_BOUNDARY=PASS
-TRACKED_PHP_LINT=PASS
-CI_SAFE_CHECKER_COUNT_9=PASS
-FINAL_WORKTREE_GUARD=PASS
-EXACT_FINAL_PR_HEAD=0c6f7338f912e8797868d02d54fc015df7533ad6
-POST_MERGE_PUSH_RUN_30837637886=SUCCESS
-POST_MERGE_MANUAL_RUN_30839122892=SUCCESS
-REQUIRED_STATUS_CHECK_ENABLED=NO
-BRANCH_PROTECTION_CHANGED=NO
-CI_REPLACES_FUNCTIONAL_TESTING=NO
-```
-
-## 8. Operational closure validation
-
-PR #24 and PR #25 Implementation, Test Report and Final PR Review records contain additive closure sections.
-
-Historical pre-merge facts remain temporally explicit:
-
-```text
-HISTORICAL_PENDING_MARKERS_PRESERVED=PASS
-HISTORICAL_MERGE_PROHIBITIONS_PRESERVED=PASS
-ORIGINAL_TEST_HEADS_PRESERVED=PASS
-ORIGINAL_FINDINGS_AND_REMEDIATION_PRESERVED=PASS
-```
-
-Current closure facts:
-
-```text
-PR24_FINAL_HEAD=2e996849ec51be4d83676aa779bf7e797e35932e
-PR24_MERGE=feac7230616d3a8df98acb48f43a0b60f89f2255
-PR24_POST_MERGE_VERIFICATION=PASS
-PR24_BRANCH_DELETION=COMPLETED_AFTER_SEPARATE_APPROVAL
-PR25_FINAL_HEAD=0c6f7338f912e8797868d02d54fc015df7533ad6
-PR25_MERGE=c567429b3aa4d629a4e7c11fec7e3dbae907d92e
-PR25_POST_MERGE_VERIFICATION=PASS
-PR25_BRANCH_DELETION=COMPLETED_AFTER_SEPARATE_APPROVAL
-```
-
-## 9. Link validation
-
-New or changed relative links resolve to repository paths, including:
-
-```text
-PROJECT-STATUS.md=EXISTS
-PROJECT.md=EXISTS
-DATABASE-CURRENT.md=EXISTS
-LOCAL-RUNBOOK.md=EXISTS
-ROADMAP.md=EXISTS
-CHANGELOG.md=EXISTS
-domains/README.md=EXISTS
-migrations/README.md=EXISTS
-DOCUMENTATION-CURRENT-STATE-AUDIT-2026-08-03.md=EXISTS
-architecture/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-ARCHITECTURE.md=EXISTS
-specification/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-SPECIFICATION.md=EXISTS
-review/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-FORMAL-REVIEW.md=EXISTS
-decisions/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-APPROVAL.md=EXISTS
-implementation/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-IMPLEMENTATION.md=EXISTS
-testing/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-VALIDATION.md=EXISTS_AFTER_EVIDENCE_COMMIT
-```
-
-No premature link to a nonexistent current Final PR Review record was introduced.
-
-## 10. Stale assertion scan
-
-Current-state contradictions removed:
-
-```text
-LATEST_FUNCTIONAL_PR_20_CURRENT_ASSERTION=ABSENT
-CURRENT_MIGRATIONS_001_011_ASSERTION=ABSENT
-CURRENT_APPLIED_MIGRATIONS_11_ASSERTION=ABSENT
-REQUIRED_CSS_ASSETS_9_CURRENT_ASSERTION=ABSENT
-GITHUB_CI_NOT_IMPLEMENTED_ASSERTION=ABSENT
-PR25_CURRENT_PENDING_STATUS_IN_LIVING_DOCS=ABSENT
-```
-
-Historical PR #20/001–011 and pre-merge markers remain only where explicitly dated/historical.
-
-## 11. Security and mobile boundaries
-
-```text
-PRODUCTION_CREDENTIALS_ADDED=NO
-INSTANCE_CREDENTIALS_ADDED=NO
-REAL_TEMPORARY_PASSWORDS_ADDED=NO
-CONFIG_LOCAL_CONTENT_ADDED=NO
-SESSION_DATA_TOKENS_PRIVATE_KEYS_ADDED=NO
-PUBLIC_LOCAL_FIXTURE_RESTRICTIONS_PRESERVED=PASS
-REAL_UNIT_OR_PERSONNEL_DATA_ADDED=NO
-MOBILE_PASS_CLAIMED=NO
-MOBILE_STATUS=OUT OF SCOPE / NOT RUN
-```
-
-## 12. Runtime isolation
-
-```text
-APPLICATION_DIFF=0
-DATABASE_CODE_DIFF=0
-MIGRATION_DIFF=0
-WORKFLOW_DIFF=0
-CONFIG_THEME_REGISTRY_DIFF=0
-THEME_ASSET_DIFF=0
-PUBLIC_ROUTE_DIFF=0
-DEPLOY_DIFF=0
-TOOL_CHECKER_DIFF=0
-BRANCH_PROTECTION_CHANGE=0
-REPOSITORY_SETTINGS_CHANGE=0
-NON_MARKDOWN_DIFF=0
-```
-
-## 13. Test classification
+Military Ranks v2 facts, theme contract, CI Stage A/Stage B boundary, six PR #24/#25 closure records, links, stale assertions, historical anchors, secret/mobile boundaries and zero runtime/settings diff were all validated PASS.
 
 ```text
 SEMANTIC_DOCUMENTATION_VALIDATION=PASS
@@ -232,34 +60,66 @@ RUNTIME_RETEST=NOT REQUIRED
 MYSQL_RETEST=NOT REQUIRED
 DEPLOY=NOT REQUIRED
 HTTP_BROWSER_VISUAL=NOT REQUIRED
+MOBILE=OUT OF SCOPE / NOT RUN
 ```
 
-No unperformed runtime check is claimed as PASS.
+No unperformed runtime check was claimed as PASS.
 
-## 14. Final verdict
+## 4. Historical next-gate statement
+
+At this validation gate the next action was correctly a separate owner permission to create a Pull Request. Final PR Review, merge and branch deletion were not yet authorized. This statement is retained as gate history, not current status.
+
+## 5. Final PR, merge and branch-lifecycle closure
 
 ```text
-BASELINE_STATUS=PASS
-MERGE_BASE_STATUS=PASS
-BEHIND_MAIN=0
-ALLOWLIST_STATUS=PASS
-PRE_PR_EXPECTED_PATH_COUNT=28
-MARKDOWN_ONLY_STATUS=PASS
-LIVING_BASELINE_STATUS=PASS
-MIGRATION_012_STATUS=PASS
-THEME_CONTRACT_STATUS=PASS
-CI_STAGE_BOUNDARY_STATUS=PASS
-OPERATIONAL_CLOSURE_STATUS=PASS
-LINK_STATUS=PASS
-STALE_ASSERTION_STATUS=PASS
-HISTORICAL_PRESERVATION_STATUS=PASS
-SECURITY_BOUNDARY_STATUS=PASS
-MOBILE_BOUNDARY_STATUS=PASS
-RUNTIME_ISOLATION_STATUS=PASS
+PR=26
+PR_STATE=CLOSED / MERGED
+APPROVED_PR_HEAD=7f9d0c0b04de2930abb00a0feedc5d2e375dbaea
+FINAL_CHANGED_PATHS=29 / 29 APPROVED
+FINAL_MARKDOWN_PATHS=29
+FINAL_NON_MARKDOWN_PATHS=0
+FINAL_PR_REVIEW=PASS
+FINAL_PR_WORKFLOW_RUN=30846434476 / SUCCESS
+MERGE_COMMIT=d9cb74245e09d8be6cd80fc5d7972e426d0aaaf7
+POST_MERGE_PUSH_RUN=30846778001 / SUCCESS
+POST_MERGE_JOB=91796908488 / SUCCESS
+POST_MERGE_VERIFICATION=PASS
+ORIGINAL_BRANCH=docs/documentation-current-state-reconciliation-v2
+ORIGINAL_BRANCH_STATUS=DELETED AFTER SEPARATE APPROVAL
+BRANCH_PROTECTION_CHANGED=NO
+REQUIRED_STATUS_CHECK_ENABLED=NO
+REPOSITORY_SETTINGS_CHANGED=NO
+MOBILE=OUT OF SCOPE / NOT RUN
+```
+
+The exact-head workflow confirmed:
+
+```text
+runner: Ubuntu 24.04.4
+PHP: 8.5.9
+git diff --check: PASS
+tracked PHP: 124 / 0 errors
+CI-safe checkers: 9 / PASS
+Organization UI: 64 PASS / 0 FAIL
+final repository worktree: PASS
+all steps: SUCCESS
+```
+
+The post-merge `push` run confirmed the merge commit on `main` with the same static verification boundaries. The Node.js 20 deprecation annotation remained non-blocking.
+
+Merge and branch deletion occurred only after their separate owner approvals. The deleted branch is historical evidence and not a live dependency.
+
+## 6. Current verdict
+
+```text
 DOCUMENTATION_VALIDATION_STATUS=PASS
+FINAL_PR_REVIEW_STATUS=PASS
+MERGE_STATUS=PASS
+POST_MERGE_VERIFICATION_STATUS=PASS
+BRANCH_DELETION_STATUS=PASS
+RUNTIME_SETTINGS_ISOLATION=PASS
 BLOCKING_FINDINGS=0
 MAJOR_FINDINGS=0
 MINOR_FINDINGS=0
+CURRENT_CLOSURE_STATUS=COMPLETE
 ```
-
-Next gate: separate owner permission to create a Pull Request. Final PR Review, merge and branch deletion remain unauthorized.
