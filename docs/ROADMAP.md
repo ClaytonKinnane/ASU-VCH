@@ -29,21 +29,19 @@ required CSS assets: 10
 - [x] current v2 / historical v1;
 - [x] automated/runtime/DB/deploy/HTTP testing PR #24;
 - [x] manual desktop acceptance PR #24;
-- [x] Final PR Review и separate merge approval PR #24;
-- [x] PR #24 merge and post-merge verification;
-- [x] separate deletion approval и feature-branch cleanup PR #24.
+- [x] Final PR Review and separate merge approval PR #24;
+- [x] PR #24 merge, post-merge verification and separately approved branch cleanup.
 
 ## Завершённый technical Stage A — PR #25
 
-- [x] Architecture, Specification, Review и Approval;
+- [x] Architecture, Specification, Review and Approval;
 - [x] workflow implementation;
-- [x] PR-triggered exact-head static verification;
-- [x] Final PR Review;
-- [x] separate merge approval;
+- [x] PR exact-head static verification;
+- [x] Final PR Review and separate merge approval;
 - [x] merge commit;
 - [x] post-merge push run `30837637886` — SUCCESS;
 - [x] post-merge workflow_dispatch `30839122892` — SUCCESS;
-- [x] separate deletion approval и feature-branch cleanup.
+- [x] separately approved feature-branch cleanup.
 
 ```text
 GitHub Actions static verification: implemented
@@ -51,19 +49,15 @@ required status check: not enabled
 branch protection Stage B: not implemented / separately gated
 ```
 
-## Текущее documentation reconciliation
-
-`Documentation Current-State Reconciliation v2` синхронизирует living documentation и operational closure после PR #24/#25.
-
-Текущий workflow:
+## Documentation Current-State Reconciliation v2
 
 - [x] read-only audit;
 - [x] Architecture;
 - [x] Specification;
 - [x] Formal Review;
 - [x] owner Approval;
-- [ ] Implementation;
-- [ ] Documentation Validation;
+- [x] documentation-only Implementation;
+- [x] semantic Documentation Validation;
 - [ ] separate permission for Pull Request;
 - [ ] Pull Request;
 - [ ] Final PR Review;
@@ -71,9 +65,9 @@ branch protection Stage B: not implemented / separately gated
 - [ ] merge and post-merge verification;
 - [ ] separate branch deletion approval.
 
-Отметки обновляются только после фактического gate; текущий document не заявляет собственный future merge.
+Validation status and exact head are recorded in `testing/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-VALIDATION.md`. The current reconciliation does not claim its own future PR, merge or cleanup.
 
-## Текущее плановое состояние
+## Current planning state
 
 ```text
 active functional increment: none
@@ -81,25 +75,25 @@ active technical increment: none
 next functional increment: not selected / not approved
 ```
 
-## Возможные будущие направления
+## Possible future directions
 
-Каждое направление требует отдельного Research → Approval cycle:
+Each requires a separate Research → Approval cycle:
 
 - personnel card;
-- staffing structure и personnel assignments;
-- общий Documents domain;
-- общий Audit domain;
+- staffing structure and personnel assignments;
+- common Documents domain;
+- common Audit domain;
 - production deployment infrastructure;
 - branch protection Stage B / required status check;
-- отдельный mobile verification increment.
+- separate mobile verification increment.
 
-Static CI Stage A уже реализован и не включается в future scope повторно.
+Static CI Stage A is already implemented and is not repeated as future scope.
 
-## Постоянные ограничения
+## Permanent constraints
 
-- Public catalogs не являются staffing или personal military accounting.
-- Static CI не заменяет DB/deploy/browser/manual testing.
-- Required status check не считается включённым.
-- Mobile PASS не заявляется без фактической acceptance.
-- PR creation, merge и branch deletion требуют отдельных approvals.
-- `SAFE TO DELETE` не является deletion authorization.
+- Public catalogs are not staffing or personal military accounting.
+- Static CI does not replace DB/deploy/browser/manual testing.
+- Required status check is not enabled.
+- Mobile PASS is not claimed without actual acceptance.
+- PR creation, merge and branch deletion require separate approvals.
+- `SAFE TO DELETE` is not deletion authorization.
