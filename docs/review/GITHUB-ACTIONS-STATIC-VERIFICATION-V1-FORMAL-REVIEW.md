@@ -1,7 +1,7 @@
 # GitHub Actions Static Verification v1 — Formal Review
 
-**Статус:** PASS / Approved for Implementation  
-**Reviewed baseline:** `main @ feac7230616d3a8df98acb48f43a0b60f89f2255`  
+**Статус:** PASS / Approved for Implementation
+**Reviewed baseline:** `main @ feac7230616d3a8df98acb48f43a0b60f89f2255`
 **Дата:** 2026-08-03
 
 ## 1. Review scope
