@@ -1,8 +1,8 @@
 # GitHub Actions Static Verification v1 — Implementation
 
-**Статус:** IMPLEMENTED / PR VERIFICATION PENDING  
-**Дата:** 2026-08-03  
-**Base:** `main @ feac7230616d3a8df98acb48f43a0b60f89f2255`  
+**Статус:** IMPLEMENTED / PR VERIFICATION PENDING
+**Дата:** 2026-08-03
+**Base:** `main @ feac7230616d3a8df98acb48f43a0b60f89f2255`
 **Branch:** `feature/github-actions-static-verification-v1`
 
 ## 1. Preflight
