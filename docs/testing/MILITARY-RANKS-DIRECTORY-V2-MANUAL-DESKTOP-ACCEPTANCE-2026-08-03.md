@@ -1,7 +1,9 @@
-# Manual Desktop Acceptance — Составы военнослужащих и воинские звания v2
+# Manual Desktop Acceptance — Справочник воинских званий v2
 
-Дата: **2026-08-03**  
-Результат: **PASS**  
+Дата: **2026-08-03**
+
+Результат: **PASS**
+
 Runtime head: `b44aed14ee1a54be213cbc939322ba21b02e7a58`
 
 ## Итог владельца
@@ -44,101 +46,22 @@ FINAL_RESULT=PASS
 | АСУ Светлая синяя | PASS | PASS |
 | Евгения Ростова | PASS | PASS |
 
-## Current v2
+## Проверенные сценарии
 
-Проверено:
-
-- code `rf-military-ranks-staffing-scopes-v2`;
-- current published state;
-- effective date `2026-08-03`;
-- verification date `2026-08-02`;
-- 8 composition/category cards;
-- 20 ranks;
-- derived badges только у soldiers/sailors и sergeants/starshinas;
-- staffing-selectable badges у четырёх утверждённых categories;
-- parent/child hierarchy без растянутых пустых карточек;
-- concise child labels;
-- no horizontal overflow.
-
-Filter counts:
-
-| Фильтр | Результат |
-|---|---:|
-| Все составы | 20 |
-| Солдаты и матросы | 2 |
-| Сержанты и старшины | 4 |
-| Прапорщики и мичманы | 2 |
-| Офицеры | 12 |
-| Младшие офицеры | 4 |
-| Старшие офицеры | 3 |
-| Высшие офицеры | 5 |
-
-## Historical v1
-
-Проверено:
-
-- code `rf-military-ranks-2026-07-27`;
-- previous published state;
-- valid_to `2026-08-02`;
-- 6 composition cards;
-- 20 ranks;
-- derived/staffing badges отсутствуют;
-- у каждой карточки показано, что пригодность для штатных должностей в исторической версии не определена;
-- officer child hierarchy сохранена во всех трёх темах.
-
-Filter counts:
-
-| Фильтр | Результат |
-|---|---:|
-| Все составы | 20 |
-| Солдаты, матросы, сержанты и старшины | 6 |
-| Прапорщики и мичманы | 2 |
-| Офицеры | 12 |
-| Младшие офицеры | 4 |
-| Старшие офицеры | 3 |
-| Высшие офицеры | 5 |
-
-## Search и empty state
-
-Подтверждены:
-
-- поиск `Маршал`;
-- поиск `старшина 1 статьи`;
-- заведомо отсутствующий запрос;
-- тематический empty state;
-- reset к 20 строкам;
-- совместная работа версии, поиска и фильтра.
-
-## Read-only и security
-
-Подтверждены:
-
-- badge «Только чтение»;
-- отсутствие create/edit/delete controls;
-- отсутствие mutation forms;
-- два официальных источника;
-- ссылки открываются в новой вкладке;
-- non-owner получает HTTP 403 и тематическую страницу запрета.
-
-## DevTools
-
-```text
-CONSOLE_ERRORS=0
-HTTP_OR_ASSET_404=0
-```
+- текущая версия `rf-military-ranks-staffing-scopes-v2`;
+- историческая версия `rf-military-ranks-2026-07-27`;
+- переключение версий;
+- утверждённые количества по всем фильтрам v1/v2;
+- поиск, empty state и reset;
+- read-only UI без mutation controls;
+- два официальных источника и открытие ссылок в новой вкладке;
+- HTTP 403 для пользователя без owner-доступа;
+- console errors: 0;
+- HTTP/asset 404: 0.
 
 ## Visual remediation evidence
 
-Первый вариант composition grid получил FAIL из-за растягивания карточек и неясной иерархии.
-
-После исправления подтверждено:
-
-- одна start-aligned колонка;
-- parent cards не растягиваются;
-- child cards следуют под своим parent;
-- connectors и indentation видимы;
-- child labels не повторяют parent path;
-- badges читаются во всех трёх темах.
+Первичная проверка выявила растягивание карточек и неясную parent/child иерархию. После исправления подтверждены одна start-aligned колонка, компактные карточки, indentation/connectors и короткие дочерние заголовки во всех трёх темах.
 
 ## Scope note
 
@@ -151,4 +74,4 @@ DEFECTS=NONE
 FINAL_RESULT=PASS
 ```
 
-Инкремент допускается к фиксации evidence, Pull Request и Final PR Review. Merge не разрешён данным документом.
+Документ не разрешает merge; требуется отдельное явное решение владельца.
