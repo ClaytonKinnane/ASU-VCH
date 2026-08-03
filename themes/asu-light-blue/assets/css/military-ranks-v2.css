@@ -1,0 +1,24 @@
+.directory-notice { margin-bottom: 18px; padding: 13px 16px; border: 1px solid #d8a136; border-radius: 8px; color: #6b4800; background: #fff8e6; }
+.directory-version-state { display: inline-flex; margin-bottom: 8px; color: #086ad5; font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: .055em; }
+.directory-meta { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.directory-version-panel { margin-bottom: 22px; padding: 20px 22px; display: grid; grid-template-columns: minmax(0,1fr) minmax(300px,.65fr); align-items: end; gap: 22px; }
+.directory-version-panel h2 { margin: 0; color: #086ad5; font-size: 20px; }
+.directory-version-panel p { margin: 6px 0 0; color: var(--text-secondary); }
+.directory-version-form label { display: grid; gap: 7px; color: var(--text-secondary); font-size: 13px; }
+.directory-composition-panel { margin-bottom: 22px; padding: 22px; }
+.directory-composition-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 10px; align-items: start; }
+.directory-composition-card { position: relative; min-width: 0; align-self: start; padding: 14px 16px; border: 1px solid #c6dcf1; border-radius: 8px; background: #fbfdff; }
+.directory-composition-card:not(.is-child) { margin-top: 8px; border-color: #8bb8e5; background: #f4f8fd; }
+.directory-composition-card:first-child { margin-top: 0; }
+.directory-composition-card.is-child { margin-left: 30px; border-left: 3px solid #8bb8e5; }
+.directory-composition-card.is-child::before { content: ""; position: absolute; left: -20px; top: -11px; width: 17px; height: 29px; border-left: 1px solid #9dbfe0; border-bottom: 1px solid #9dbfe0; border-bottom-left-radius: 6px; pointer-events: none; }
+.directory-composition-card p { margin: 10px 0 6px; color: var(--text-secondary); line-height: 1.5; }
+.directory-composition-card small { display: block; color: #667b8e; line-height: 1.45; }
+.directory-composition-badges { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+.directory-derived-badge,.directory-staffing-badge { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; line-height: 1.25; }
+.directory-derived-badge { border: 1px solid #8bb8e5; color: #086ad5; background: #f3f8fe; }
+.directory-staffing-badge { border: 1px solid #4aa481; color: #17664a; background: #edf9f4; }
+.directory-derived-badge-inline { margin-top: 7px; }
+.directory-rank-filters { grid-template-columns: minmax(260px,1fr) minmax(250px,.7fr) auto auto; }
+@media (max-width:980px) { .directory-meta { grid-template-columns: 1fr 1fr; } .directory-version-panel { grid-template-columns: 1fr; } }
+@media (max-width:760px) { .directory-meta { grid-template-columns: 1fr; } .directory-composition-card.is-child { margin-left: 0; } .directory-composition-card.is-child::before { display: none; } }

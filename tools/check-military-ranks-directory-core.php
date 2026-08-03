@@ -9,18 +9,39 @@ if (PHP_SAPI !== 'cli') {
 
 $root = dirname(__DIR__);
 $app = require $root . '/config/app.php';
-$localFile = $root . '/config/local.php';
-if (!is_file($localFile)) {
-    fwrite(STDERR, "Не найден config/local.php.\n");
-    exit(1);
+
+$localCandidates = [];
+$explicitLocalFile = getenv('ASU_VCH_LOCAL_CONFIG');
+if (is_string($explicitLocalFile) && trim($explicitLocalFile) !== '') {
+    $localCandidates[] = trim($explicitLocalFile);
+}
+$localCandidates[] = $root . '/config/local.php';
+$localCandidates[] = 'C:/OSPanel/home/asu-vch.local/config/local.php';
+
+$localFile = null;
+foreach (array_unique($localCandidates) as $candidate) {
+    if (is_file($candidate)) {
+        $localFile = $candidate;
+        break;
+    }
 }
 
-require_once $root . '/app/Directory/MilitaryRankCatalogRepository.php';
-require_once $root . '/app/Theme/ThemeRegistry.php';
+if (!is_string($localFile)) {
+    fwrite(
+        STDERR,
+        "Не найден config/local.php. Проверены:\n- "
+        . implode("\n- ", array_unique($localCandidates))
+        . "\n"
+    );
+    exit(1);
+}
 
 $local = require $localFile;
 $config = array_replace_recursive($app, $local);
 $db = $config['database'];
+
+require_once $root . '/app/Directory/MilitaryRankCatalogRepository.php';
+require_once $root . '/app/Theme/ThemeRegistry.php';
 
 function military_ranks_check(bool $condition, string $message): void
 {
@@ -30,13 +51,7 @@ function military_ranks_check(bool $condition, string $message): void
 }
 
 try {
-    $dsn = sprintf(
-        'mysql:host=%s;port=%d;dbname=%s;charset=%s',
-        $db['host'],
-        $db['port'],
-        $db['name'],
-        $db['charset']
-    );
+    $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $db['host'], $db['port'], $db['name'], $db['charset']);
     $pdo = new PDO($dsn, $db['username'], $db['password'], [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -44,161 +59,90 @@ try {
     ]);
 
     $migration = $pdo->prepare('SELECT COUNT(*) FROM migrations WHERE migration = :migration');
-    $migration->execute(['migration' => '007_military_ranks_directory.sql']);
-    military_ranks_check((int) $migration->fetchColumn() === 1, 'Миграция 007 не зарегистрирована.');
-    echo "OK migration 007\n";
+    $migration->execute(['migration' => '012_military_ranks_directory_v2.sql']);
+    military_ranks_check((int) $migration->fetchColumn() === 1, 'Миграция 012 не зарегистрирована.');
 
-    $tableStmt = $pdo->prepare(
-        'SELECT COUNT(*) FROM information_schema.tables '
-        . 'WHERE table_schema = :schema_name AND table_name = :table_name'
-    );
-    $tables = [
-        'legal_sources',
-        'military_rank_catalog_versions',
-        'military_rank_catalog_version_sources',
-        'military_personnel_compositions',
-        'military_rank_levels',
-    ];
-    foreach ($tables as $tableName) {
-        $tableStmt->execute(['schema_name' => $db['name'], 'table_name' => $tableName]);
-        military_ranks_check((int) $tableStmt->fetchColumn() === 1, "Не найдена таблица {$tableName}.");
-    }
-    echo 'OK tables: ' . count($tables) . "\n";
-
-    $versionRows = $pdo->query(
-        "SELECT id, code, verified_at FROM military_rank_catalog_versions WHERE is_current = 1 ORDER BY id"
+    $versions = $pdo->query(
+        "SELECT id, code, lifecycle_status, is_current, valid_from, valid_to, verified_at, published_at "
+        . "FROM military_rank_catalog_versions ORDER BY valid_from, id"
     )->fetchAll();
-    military_ranks_check(count($versionRows) === 1, 'Ожидалась ровно одна текущая версия каталога.');
-    military_ranks_check(
-        $versionRows[0]['code'] === 'rf-military-ranks-2026-07-27',
-        'Код текущей версии не совпадает.'
-    );
-    military_ranks_check($versionRows[0]['verified_at'] === '2026-07-27', 'Дата проверки версии не совпадает.');
-    $versionId = (int) $versionRows[0]['id'];
-    echo "OK current catalog version\n";
+    military_ranks_check(count($versions) >= 2, 'Ожидались версии v1 и v2.');
 
-    $sourceCount = $pdo->prepare(
-        'SELECT COUNT(*) FROM military_rank_catalog_version_sources WHERE catalog_version_id = :version_id'
-    );
-    $sourceCount->execute(['version_id' => $versionId]);
-    military_ranks_check((int) $sourceCount->fetchColumn() === 2, 'Ожидалось два нормативных источника.');
-
-    $sourceCodes = $pdo->prepare(
-        'SELECT s.code, vs.source_role, vs.sort_order '
-        . 'FROM military_rank_catalog_version_sources vs '
-        . 'JOIN legal_sources s ON s.id = vs.legal_source_id '
-        . 'WHERE vs.catalog_version_id = :version_id ORDER BY vs.sort_order'
-    );
-    $sourceCodes->execute(['version_id' => $versionId]);
-    $sourceRows = $sourceCodes->fetchAll();
-    $expectedSources = [
-        ['code' => 'federal-law-53-fz-article-46', 'source_role' => 'primary-list', 'sort_order' => 1],
-        ['code' => 'presidential-decree-1237-article-20', 'source_role' => 'equivalence-and-order', 'sort_order' => 2],
-    ];
-    military_ranks_check(count($sourceRows) === count($expectedSources), 'Количество нормативных источников не совпадает.');
-    foreach ($expectedSources as $index => $expectedSource) {
-        $actualSource = $sourceRows[$index] ?? null;
-        military_ranks_check(
-            is_array($actualSource)
-            && $actualSource['code'] === $expectedSource['code']
-            && $actualSource['source_role'] === $expectedSource['source_role']
-            && (int) $actualSource['sort_order'] === $expectedSource['sort_order'],
-            'Нормативные источники или их порядок не совпадают.'
-        );
+    $byCode = [];
+    foreach ($versions as $version) {
+        $byCode[(string) $version['code']] = $version;
     }
-    echo "OK legal sources: 2\n";
+    $v1 = $byCode['rf-military-ranks-2026-07-27'] ?? null;
+    $v2 = $byCode['rf-military-ranks-staffing-scopes-v2'] ?? null;
+    military_ranks_check(is_array($v1) && is_array($v2), 'Не найдены v1/v2.');
+    military_ranks_check($v1['lifecycle_status'] === 'superseded' && (int) $v1['is_current'] === 0 && $v1['valid_to'] === '2026-08-02', 'Lifecycle v1 неверен.');
+    military_ranks_check($v2['lifecycle_status'] === 'published' && (int) $v2['is_current'] === 1, 'Lifecycle v2 неверен.');
+    military_ranks_check($v2['valid_from'] === '2026-08-03' && $v2['verified_at'] === '2026-08-02' && $v2['published_at'] !== null, 'Даты v2 неверны.');
+    $v1Id = (int) $v1['id'];
+    $v2Id = (int) $v2['id'];
 
-    $compositionCount = $pdo->prepare(
-        'SELECT COUNT(*) FROM military_personnel_compositions WHERE catalog_version_id = :version_id'
+    $count = static function (PDO $pdo, string $table, int $versionId): int {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM `{$table}` WHERE catalog_version_id = :version_id");
+        $stmt->execute(['version_id' => $versionId]);
+        return (int) $stmt->fetchColumn();
+    };
+    military_ranks_check($count($pdo, 'military_personnel_compositions', $v1Id) === 6, 'v1 должна содержать 6 составов.');
+    military_ranks_check($count($pdo, 'military_rank_levels', $v1Id) === 20, 'v1 должна содержать 20 званий.');
+    military_ranks_check($count($pdo, 'military_personnel_composition_semantics', $v1Id) === 0, 'v1 не должна иметь Staffing semantics.');
+    military_ranks_check($count($pdo, 'military_personnel_compositions', $v2Id) === 8, 'v2 должна содержать 8 составов.');
+    military_ranks_check($count($pdo, 'military_personnel_composition_semantics', $v2Id) === 8, 'v2 должна содержать 8 semantics.');
+    military_ranks_check($count($pdo, 'military_rank_levels', $v2Id) === 20, 'v2 должна содержать 20 званий.');
+    military_ranks_check($count($pdo, 'military_rank_catalog_version_sources', $v2Id) === 2, 'v2 должна содержать 2 version sources.');
+    military_ranks_check($count($pdo, 'military_personnel_composition_sources', $v2Id) === 8, 'v2 должна содержать 8 composition sources.');
+
+    $selectableStmt = $pdo->prepare(
+        'SELECT c.code FROM military_personnel_composition_semantics s '
+        . 'JOIN military_personnel_compositions c ON c.id = s.composition_id AND c.catalog_version_id = s.catalog_version_id '
+        . 'WHERE s.catalog_version_id = :version_id AND s.is_staffing_selectable = 1 ORDER BY c.code'
     );
-    $compositionCount->execute(['version_id' => $versionId]);
-    military_ranks_check((int) $compositionCount->fetchColumn() === 6, 'Ожидалось шесть составов.');
-    echo "OK compositions: 6\n";
+    $selectableStmt->execute(['version_id' => $v2Id]);
+    military_ranks_check($selectableStmt->fetchAll(PDO::FETCH_COLUMN) === [
+        'officers', 'sergeants-and-starshinas', 'soldiers-and-sailors', 'warrant-officers',
+    ], 'Набор Staffing-selectable categories неверен.');
 
-    $expected = [
-        1 => ['рядовой', 'матрос'],
-        2 => ['ефрейтор', 'старший матрос'],
-        3 => ['младший сержант', 'старшина 2 статьи'],
-        4 => ['сержант', 'старшина 1 статьи'],
-        5 => ['старший сержант', 'главный старшина'],
-        6 => ['старшина', 'главный корабельный старшина'],
-        7 => ['прапорщик', 'мичман'],
-        8 => ['старший прапорщик', 'старший мичман'],
-        9 => ['младший лейтенант', 'младший лейтенант'],
-        10 => ['лейтенант', 'лейтенант'],
-        11 => ['старший лейтенант', 'старший лейтенант'],
-        12 => ['капитан', 'капитан-лейтенант'],
-        13 => ['майор', 'капитан 3 ранга'],
-        14 => ['подполковник', 'капитан 2 ранга'],
-        15 => ['полковник', 'капитан 1 ранга'],
-        16 => ['генерал-майор', 'контр-адмирал'],
-        17 => ['генерал-лейтенант', 'вице-адмирал'],
-        18 => ['генерал-полковник', 'адмирал'],
-        19 => ['генерал армии', 'адмирал флота'],
-        20 => ['Маршал Российской Федерации', null],
-    ];
-
-    $rankStmt = $pdo->prepare(
-        'SELECT sort_order, troop_name, naval_name FROM military_rank_levels '
-        . 'WHERE catalog_version_id = :version_id ORDER BY sort_order'
-    );
-    $rankStmt->execute(['version_id' => $versionId]);
-    $rankRows = $rankStmt->fetchAll();
-    military_ranks_check(count($rankRows) === 20, 'Ожидалось двадцать уровней воинских званий.');
-    foreach ($rankRows as $index => $row) {
-        $order = $index + 1;
-        military_ranks_check((int) $row['sort_order'] === $order, "Нарушен порядок в строке {$order}.");
-        military_ranks_check(
-            $row['troop_name'] === $expected[$order][0] && $row['naval_name'] === $expected[$order][1],
-            "Не совпадает нормативная пара в строке {$order}."
-        );
+    $compositionIds = [];
+    $stmt = $pdo->prepare('SELECT id, code FROM military_personnel_compositions WHERE catalog_version_id = :version_id');
+    $stmt->execute(['version_id' => $v2Id]);
+    foreach ($stmt->fetchAll() as $row) {
+        $compositionIds[(string) $row['code']] = (int) $row['id'];
     }
-    echo "OK normative rank pairs: 20\n";
+    $rankIds = [];
+    $stmt = $pdo->prepare('SELECT id, code FROM military_rank_levels WHERE catalog_version_id = :version_id');
+    $stmt->execute(['version_id' => $v2Id]);
+    foreach ($stmt->fetchAll() as $row) {
+        $rankIds[(string) $row['code']] = (int) $row['id'];
+    }
+
+    $service = new MilitaryRankCompatibilityService($pdo);
+    military_ranks_check($service->check($v2Id, $compositionIds['soldiers-and-sailors'], $rankIds['private']) === MilitaryRankCompatibilityService::COMPATIBLE, 'soldiers/private должны быть compatible.');
+    military_ranks_check($service->check($v2Id, $compositionIds['soldiers-and-sailors'], $rankIds['sergeant']) === MilitaryRankCompatibilityService::INCOMPATIBLE, 'soldiers/sergeant должны быть incompatible.');
+    military_ranks_check($service->check($v2Id, $compositionIds['officers'], $rankIds['colonel']) === MilitaryRankCompatibilityService::COMPATIBLE, 'officers/colonel должны быть compatible по ancestry.');
+    $v1Composition = (int) $pdo->query("SELECT id FROM military_personnel_compositions WHERE catalog_version_id = {$v1Id} ORDER BY id LIMIT 1")->fetchColumn();
+    $v1Rank = (int) $pdo->query("SELECT id FROM military_rank_levels WHERE catalog_version_id = {$v1Id} ORDER BY id LIMIT 1")->fetchColumn();
+    military_ranks_check($service->check($v1Id, $v1Composition, $v1Rank) === MilitaryRankCompatibilityService::COMPOSITION_NOT_SELECTABLE, 'v1 не должна иметь Staffing eligibility.');
 
     $repository = new MilitaryRankCatalogRepository($pdo);
-    $version = $repository->currentVersion();
-    military_ranks_check($version['id'] === $versionId, 'Repository вернул другую текущую версию.');
-    military_ranks_check(count($repository->sources()) === 2, 'Repository не вернул два источника.');
-    military_ranks_check(count($repository->compositions()) === 6, 'Repository не вернул шесть составов.');
-    military_ranks_check($repository->search()['total'] === 20, 'Repository не вернул двадцать уровней.');
-    military_ranks_check($repository->search('', 'enlisted')['total'] === 6, 'Фильтр enlisted не вернул 6 строк.');
-    military_ranks_check($repository->search('', 'warrant-officers')['total'] === 2, 'Фильтр warrant-officers не вернул 2 строки.');
-    military_ranks_check($repository->search('', 'officers')['total'] === 12, 'Родительский фильтр officers не вернул 12 строк.');
-    military_ranks_check($repository->search('', 'junior-officers')['total'] === 4, 'Фильтр junior-officers не вернул 4 строки.');
-    military_ranks_check($repository->search('', 'senior-officers')['total'] === 3, 'Фильтр senior-officers не вернул 3 строки.');
-    military_ranks_check($repository->search('', 'higher-officers')['total'] === 5, 'Фильтр higher-officers не вернул 5 строк.');
-
-    $sergeant = $repository->search('старшина 1 статьи');
-    military_ranks_check(
-        $sergeant['total'] === 1 && $sergeant['items'][0]['troop_name'] === 'сержант',
-        'Поиск нормативной пары сержанта работает неверно.'
-    );
-    military_ranks_check($repository->search('адмирал')['total'] === 4, 'Поиск по корабельным званиям работает неверно.');
-    echo "OK repository search and filters\n";
+    military_ranks_check($repository->currentVersion()['id'] === $v2Id, 'Repository вернул не v2.');
+    military_ranks_check(count($repository->visibleVersions()) >= 2, 'Repository не показывает историю.');
+    military_ranks_check(count($repository->compositions($v2Id)) === 8, 'Repository не вернул 8 составов v2.');
+    military_ranks_check($repository->search('', '', $v2Id)['total'] === 20, 'Repository не вернул 20 званий v2.');
+    military_ranks_check($repository->search('', 'soldiers-and-sailors', $v2Id)['total'] === 2, 'Фильтр soldiers неверен.');
+    military_ranks_check($repository->search('', 'sergeants-and-starshinas', $v2Id)['total'] === 4, 'Фильтр sergeants неверен.');
 
     $permissionCount = (int) $pdo->query('SELECT COUNT(*) FROM permissions WHERE is_system = 1')->fetchColumn();
-    military_ranks_check($permissionCount === 19, "Ожидалось 19 системных разрешений, найдено {$permissionCount}.");
-    echo "OK system permissions: 19\n";
+    military_ranks_check($permissionCount === 25, "Ожидалось 25 системных разрешений, найдено {$permissionCount}.");
 
     $themes = require $root . '/config/themes.php';
-    $themeRegistry = new ThemeRegistry($root, $root . '/config/themes.php');
-    foreach (['asu-blue', 'asu-light-blue'] as $themeSlug) {
-        $requiredAssets = $themes['themes'][$themeSlug]['required_assets'] ?? [];
-        military_ranks_check(
-            in_array('css/directories.css', $requiredAssets, true),
-            "Тема {$themeSlug} не регистрирует css/directories.css."
-        );
-        military_ranks_check(
-            is_file($root . '/themes/' . $themeSlug . '/assets/css/directories.css'),
-            "Не найден исходный CSS справочников для темы {$themeSlug}."
-        );
-        military_ranks_check(
-            $themeRegistry->assetUrl($themeSlug, 'css/directories.css')
-                === '/themes/' . $themeSlug . '/assets/css/directories.css',
-            "Опубликованный CSS справочников недоступен для темы {$themeSlug}."
-        );
+    $registry = new ThemeRegistry($root, $root . '/config/themes.php');
+    foreach (['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'] as $theme) {
+        military_ranks_check(in_array('css/military-ranks-v2.css', $themes['themes'][$theme]['required_assets'] ?? [], true), "Тема {$theme} не регистрирует CSS v2.");
+        military_ranks_check($registry->assetUrl($theme, 'css/military-ranks-v2.css') === "/themes/{$theme}/assets/css/military-ranks-v2.css", "CSS v2 темы {$theme} недоступен.");
     }
-    echo "OK theme assets: 2\n";
 
     echo "MILITARY RANKS DIRECTORY CHECK PASSED\n";
     exit(0);

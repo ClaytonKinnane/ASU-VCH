@@ -14,10 +14,17 @@ function permission_baseline_compatible_checker_paths(): array
 }
 
 /** @return list<string> */
-function deploy_theme_path_compatible_checker_paths(): array
+function permission_baseline_passthrough_checker_paths(): array
 {
     return [
         'tools/check-military-ranks-directory-core.php',
+    ];
+}
+
+/** @return list<string> */
+function deploy_theme_path_compatible_checker_paths(): array
+{
+    return [
         'tools/check-organizational-elements-directory-core.php',
     ];
 }
@@ -26,6 +33,16 @@ function prepare_permission_baseline_compatible_checker(string $source, string $
 {
     if (!in_array($relativePath, permission_baseline_compatible_checker_paths(), true)) {
         throw new InvalidArgumentException("Checker не разрешён: {$relativePath}");
+    }
+
+    if (in_array($relativePath, permission_baseline_passthrough_checker_paths(), true)) {
+        if (!str_contains($source, '$permissionCount === 25')
+            || !str_contains($source, 'Ожидалось 25 системных разрешений, найдено {$permissionCount}.')
+            || !str_contains($source, "'css/military-ranks-v2.css'")) {
+            throw new RuntimeException("Актуальный v2 checker не распознан в {$relativePath}.");
+        }
+
+        return $source;
     }
 
     $requiredReplacements = [

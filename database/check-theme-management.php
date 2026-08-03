@@ -33,9 +33,10 @@ try {
 
     $expectedAssets = [
         'css/theme.css', 'css/auth.css', 'css/account.css', 'css/users.css',
-        'css/theme-management.css', 'css/directories.css', 'css/military-occupational-specialties.css',
-        'css/organization.css', 'css/operation-result-modal.css',
-        'img/hearts-pattern.svg', 'img/balloons.svg', 'img/teddy-bear.svg', 'img/plush-bunny.svg',
+        'css/theme-management.css', 'css/directories.css', 'css/military-ranks-v2.css',
+        'css/military-occupational-specialties.css', 'css/organization.css',
+        'css/operation-result-modal.css', 'img/hearts-pattern.svg', 'img/balloons.svg',
+        'img/teddy-bear.svg', 'img/plush-bunny.svg',
     ];
     $evgeniya = $themes['asu-evgeniya-rostova'];
     theme_check($evgeniya['name'] === 'Евгения Ростова', 'Evgeniya Rostova display name');
