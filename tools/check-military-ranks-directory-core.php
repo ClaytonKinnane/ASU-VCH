@@ -9,11 +9,33 @@ if (PHP_SAPI !== 'cli') {
 
 $root = dirname(__DIR__);
 $app = require $root . '/config/app.php';
-$localFile = $root . '/config/local.php';
-if (!is_file($localFile)) {
-    fwrite(STDERR, "Не найден config/local.php.\n");
+
+$localCandidates = [];
+$explicitLocalFile = getenv('ASU_VCH_LOCAL_CONFIG');
+if (is_string($explicitLocalFile) && trim($explicitLocalFile) !== '') {
+    $localCandidates[] = trim($explicitLocalFile);
+}
+$localCandidates[] = $root . '/config/local.php';
+$localCandidates[] = 'C:/OSPanel/home/asu-vch.local/config/local.php';
+
+$localFile = null;
+foreach (array_unique($localCandidates) as $candidate) {
+    if (is_file($candidate)) {
+        $localFile = $candidate;
+        break;
+    }
+}
+
+if (!is_string($localFile)) {
+    fwrite(
+        STDERR,
+        "Не найден config/local.php. Проверены:\n- "
+        . implode("\n- ", array_unique($localCandidates))
+        . "\n"
+    );
     exit(1);
 }
+
 $local = require $localFile;
 $config = array_replace_recursive($app, $local);
 $db = $config['database'];
