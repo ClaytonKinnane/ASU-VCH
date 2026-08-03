@@ -3,7 +3,8 @@
 Дата завершения: **2026-08-03**  
 Итог: **PASS**  
 Ветка: `feature/military-ranks-directory-v2`  
-Runtime/manual acceptance head: `b44aed14ee1a54be213cbc939322ba21b02e7a58`
+Runtime/manual acceptance head: `b44aed14ee1a54be213cbc939322ba21b02e7a58`  
+Final PR Review remediation head: `fe893e8315f7add80ed4d0501b41d8bc39b4b0e8`
 
 ## 1. Целевая среда
 
@@ -175,7 +176,61 @@ MOBILE=OUT_OF_SCOPE / NOT_RUN
 
 Mobile PASS не заявляется.
 
-## 11. Финальный статус
+## 11. Final PR Review remediation
+
+Первая Final PR Review выявила один blocking finding: building-state recovery проверял source links по широкому whitelist, а не по точным composition/source/role/order/note anchors.
+
+Исправлено на head `fe893e8315f7add80ed4d0501b41d8bc39b4b0e8`.
+
+Локальный remediation recheck: **PASS**.
+
+```text
+Definitions.php lint = PASS
+Recovery.php lint = PASS
+check-military-rank-v2-loader.php lint = PASS
+MILITARY RANKS DIRECTORY V2 SOURCE CHECK PASSED
+MILITARY RANK V2 LOADER CHECK PASSED
+MILITARY RANK COMPATIBILITY SERVICE CHECK PASSED
+```
+
+Negative recovery scenarios:
+
+```text
+contradictory version source rejected
+wrong version source order rejected
+contradictory composition/source pairing rejected
+contradictory derived note rejected
+contradictory composition source role rejected
+```
+
+Source/deploy parity:
+
+```text
+Definitions.php = MATCH
+Recovery.php = MATCH
+```
+
+Повторный installer и DB regression:
+
+```text
+Применено миграций: 12
+Новых миграций нет.
+MILITARY RANKS DIRECTORY CHECK PASSED
+```
+
+Final remediation repository state:
+
+```text
+HEAD=fe893e8315f7add80ed4d0501b41d8bc39b4b0e8
+Dirty paths=0
+FINAL PR REVIEW REMEDIATION RECHECK PASSED
+```
+
+Подробное review evidence:
+
+`docs/review/MILITARY-RANKS-DIRECTORY-V2-PR-FINAL-REVIEW.md`.
+
+## 12. Финальный статус
 
 ```text
 STATIC=PASS
@@ -186,8 +241,10 @@ REGRESSION=PASS
 SOURCE_DEPLOY_PARITY=PASS
 HTTP_SMOKE=PASS
 MANUAL_DESKTOP=PASS
+FINAL_PR_REVIEW=PASS
+BLOCKING_FINDINGS_OPEN=0
 DEFECTS=NONE
 FINAL_RESULT=PASS
 ```
 
-Инкремент готов к Pull Request и Final PR Review. Merge требует отдельного явного разрешения владельца.
+Инкремент готов к отдельному явному разрешению владельца на merge. Merge не выполнять без такого разрешения. После merge требуется post-merge verification. Feature-ветку не удалять без отдельного разрешения.
