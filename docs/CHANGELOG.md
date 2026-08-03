@@ -36,20 +36,38 @@
 - feature branch удалена после отдельного owner approval;
 - DB/deploy/browser/visual/mobile testing не выполнялось в scope static-only increment.
 
-### Documentation Current-State Reconciliation v2
+### Documentation Current-State Reconciliation v2 — PR #26
 
 - выполнен read-only audit documentation baseline после PR #24/#25;
 - выявлено 0 blocking, 6 major и 1 minor finding;
 - утверждены Architecture, Specification, Formal Review и exact 29-path Markdown allowlist;
-- owner разрешил documentation-only Implementation;
 - 15 living documents актуализированы до functional PR #24, migration 012 и technical PR #25;
 - 6 operational records PR #24/#25 получили additive post-merge and branch-lifecycle closure;
 - исправлены migration count 11 → 12 и required CSS asset count 9 → 10;
 - documented static CI Stage A and explicit Stage B boundary;
 - Approval, immutable audit, Implementation and Validation evidence added;
-- semantic Documentation Validation: PASS on exact implementation head recorded in validation evidence;
-- runtime, DB, migrations, workflow, themes, deploy, branch protection and settings unchanged;
-- Pull Request, Final PR Review, merge and branch deletion of this reconciliation remain future separately gated actions.
+- semantic Documentation Validation: PASS on implementation head `7968ca979e5a37fafc93470b450d9724b3707b03`;
+- exact Final PR Review head: `7f9d0c0b04de2930abb00a0feedc5d2e375dbaea`;
+- exact-head workflow run `30846434476`: SUCCESS;
+- Final PR Review: PASS;
+- PR #26 merge commit: `d9cb74245e09d8be6cd80fc5d7972e426d0aaaf7`;
+- automatic post-merge push run `30846778001`: SUCCESS;
+- post-merge verification: PASS;
+- merged changed paths: 29 / 29 approved Markdown paths;
+- non-Markdown changes: 0;
+- original branch `docs/documentation-current-state-reconciliation-v2` удалена после отдельного owner approval;
+- runtime, DB, migrations, workflow, themes, deploy, branch protection, required checks and settings unchanged;
+- mobile: `OUT OF SCOPE / NOT RUN`.
+
+### Documentation Current-State Reconciliation v2 Closure
+
+- выполнен отдельный documentation-only closure cycle для устранения stale post-merge status самого PR #26;
+- Architecture, Specification, Formal Review и exact 13-path Markdown allowlist утверждены владельцем;
+- living index, roadmap, changelog и три process records v2 синхронизированы с completed PR #26 outcome;
+- historical pending/pre-merge facts and permission boundaries preserved;
+- runtime/settings isolation retained;
+- Documentation Validation фиксируется отдельным evidence record;
+- Pull Request, Final PR Review, merge и удаление текущей closure-ветки остаются отдельными будущими gates этого closure-инкремента.
 
 ## 2026-08-02
 
