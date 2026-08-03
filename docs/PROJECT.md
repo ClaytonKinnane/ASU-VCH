@@ -1,147 +1,104 @@
 # О проекте
 
-## Наименование
+## Наименование и назначение
 
-**Полное:** Автоматизированная система учёта военнослужащих «Войсковая часть».
+**АСУ-ВЧ** — автоматизированная система учёта военнослужащих «Войсковая часть».
 
-**Краткое:** АСУ-ВЧ.
-
-## Назначение
-
-АСУ-ВЧ предназначена для автоматизации управления доступом, нормативных справочников, организационных структур и связанных процессов войсковой части.
-
-Проект развивается инкрементально. Каждый новый доменный или технический scope проходит отдельный documentation-first цикл. В открытый репозиторий не включаются закрытые, ограниченные или фактические сведения без отдельного утверждения модели данных и защиты.
+Проект автоматизирует управление доступом, нормативные справочники, организационные структуры и связанные процессы. Он развивается инкрементально; material scope проходит documentation-first workflow. Закрытые, ограниченные и фактические сведения не включаются без отдельного утверждения data/security model.
 
 ## Основные требования
 
-- GitHub-репозиторий `ClaytonKinnane/ASU-VCH` является единственным источником истины.
-- Актуальный HEAD определяется через `origin/main`, а не хранится в living docs как самореферентный SHA.
-- Код и документация изменяются только в отдельных ветках.
-- Локальный клон используется для синхронизации, deploy и тестирования.
-- Рабочие данные приложения хранятся в MySQL; секреты и локальные параметры в Git не помещаются.
-- Материальные изменения проходят Research → Analysis → Architecture → Specification → Review → Approval до реализации.
-- Merge выполняется после Testing, Final PR Review и отдельного разрешения владельца.
-- Удаление веток выполняется только после post-merge verification, fresh inventory и отдельного разрешения.
+- GitHub repository `ClaytonKinnane/ASU-VCH` — источник истины.
+- Current HEAD определяется через `origin/main`.
+- Изменения выполняются в отдельных ветках.
+- Merge и branch deletion имеют отдельные owner gates.
+- Runtime data хранится в MySQL; secrets и local config не хранятся в Git.
+- Mobile PASS не заявляется без фактической mobile acceptance.
 
 ## Реализованное состояние
 
-### Платформа и безопасность
+### Platform и Security
 
-- последовательные migrations 001–011;
-- bootstrap единственного первого владельца;
-- отключение публичной регистрации после создания владельца;
-- вход, выход, защищённые сессии и CSRF;
-- RBAC с четырьмя системными ролями и 25 permissions;
-- полный пользовательский lifecycle;
-- обязательная смена временного пароля;
-- аудит критических пользовательских операций;
-- тематические HTTP 403 и operation-result modal.
+- migrations 001–012;
+- bootstrap первого owner и отключение public registration после его создания;
+- authentication, sessions, CSRF;
+- RBAC: 4 system roles / 25 permissions;
+- full user lifecycle и required password change;
+- audit критических user operations;
+- themed HTTP 403 и operation-result modal.
 
-### Темы
+### Themes
 
-- trusted static registry;
-- глобальная active theme в БД;
-- безопасный default/fallback `asu-blue`;
-- три встроенные темы: `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova`;
-- девять обязательных CSS-assets, включая профильный VUS stylesheet и `organization.css`;
-- локальные SVG-assets темы `Евгения Ростова`;
-- desktop acceptance затронутых интерфейсов во всех трёх темах.
+- static trusted registry;
+- global active theme;
+- default/fallback `asu-blue`;
+- 3 built-in themes;
+- 10 required CSS-assets per theme, включая `military-ranks-v2.css`;
+- 4 additional SVG-assets для `asu-evgeniya-rostova`;
+- desktop acceptance затронутых interfaces.
 
-### Справочники
+### Reference directories
 
-Реализованы owner-only read-only справочники:
+Owner-only read-only routes:
 
-- составы военнослужащих и воинские звания;
-- типы организационных элементов;
-- типовые воинские должности;
-- публичные сведения о военно-учётных специальностях.
+- military ranks: current v2 + historical v1;
+- organizational element types;
+- military positions;
+- public military occupational specialties.
 
-Общие свойства:
-
-- GET-only пользовательские маршруты;
-- prepared statements и escaped output;
-- поиск и фильтры;
-- официальные источники и evidence metadata;
-- отсутствие runtime scraping/import;
-- отсутствие mutation UI.
-
-Каталог должностей не создаёт кадровые назначения и не связывает типы автоматически со званиями. Каталог ВУС не связывается с должностями, званиями, ВВСТ или персональными данными и не заявляется как полный воинский учёт.
+Military Ranks v2 сохраняет 20 ranks, добавляет 8 version-scoped compositions/categories, 8 semantics, 2 version sources, 8 composition sources и read-only compatibility service. Staffing schema, Organization bindings, assignments и real personnel data отсутствуют.
 
 ### Organizational Structure v1
 
-- lifecycle структур и версий;
-- редактируемое draft-дерево;
-- stable elements между версиями;
-- документы-основания;
-- история и сравнение;
-- транзакции, optimistic revisions, CSRF и RBAC;
-- 7 таблиц, 16 triggers и 6 permissions `organization.structures.*`.
+Реализованы structure/version lifecycle, draft tree, stable elements, document metadata, history, compare, transactions, revisions, CSRF и RBAC.
+
+### Static CI
+
+GitHub Actions workflow `ASU-VCH Static Verification` выполняет:
+
+- PR/push/manual triggers;
+- Ubuntu 24.04 / PHP 8.5;
+- read-only permissions;
+- event-aware `git diff --check`;
+- lint tracked PHP;
+- 9 CI-safe checker'ов;
+- final clean-worktree check.
+
+Post-merge push и manual runs PR #25 завершены SUCCESS. Required status check и branch protection Stage B не включены. CI не заменяет DB/deploy/browser/manual testing.
 
 ## Контрольные точки
 
 ```text
-latest functional PR: #20
-completed baseline refresh PR: #21
-PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
-PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
-PR #20 merge / functional refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
-PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
-PR #21 merge: f5b53f2ee4453f293b58cbe486e0943ab602335b
-migrations: 11
-system roles: 4
-system permissions: 25
-built-in themes: 3
+latest functional PR: #24
+latest technical PR: #25
+PR #24 merge: feac7230616d3a8df98acb48f43a0b60f89f2255
+PR #24 runtime/manual acceptance: b44aed14ee1a54be213cbc939322ba21b02e7a58
+PR #25 merge: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+migrations: 12
+roles: 4
+permissions: 25
+themes: 3
+required CSS assets: 10
 active functional increment: none
-active documentation increment after closure: none
+active technical increment: none
 ```
-
-Documentation-only commits после tested runtime не объявляются runtime-протестированными.
-
-## Repository governance
-
-PR #21 завершил documentation baseline refresh после PR #19/#20. Repeat Documentation Validation и Final PR Review прошли, merge выполнен отдельным разрешением владельца, post-merge Git verification завершён PASS.
-
-После отдельного cleanup approval удалены три remote branches и 13 merged local feature branches. Terminal verification 2026-08-01 зафиксировала:
-
-```text
-remote branches: main only
-local branches: main only
-local main = origin/main = f5b53f2ee4453f293b58cbe486e0943ab602335b
-working tree: clean
-force deletion used: no
-```
-
-Это immutable датированный snapshot. Позднее созданные утверждённые branches имеют собственный lifecycle и не противоречат этому evidence.
-
-Текущее состояние определяется динамически:
-
-```powershell
-git fetch --prune origin
-git rev-parse origin/main
-git ls-remote --heads origin
-git branch -vv
-git status --short
-```
-
-Open Pull Requests и Issues проверяются в GitHub. Living docs не зависят от transient branch/PR state текущего документационного workflow.
-
-Evidence: [Post-PR21 Merge and Cleanup Closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md).
 
 ## Не реализовано
 
-- карточки военнослужащих и персональный воинский учёт;
-- штатные расписания и кадровые назначения;
-- общий Documents domain, файлы и универсальный workflow приказов;
-- медицинский учёт, имущество, транспорт и обучение как рабочие домены;
-- общий immutable audit log всех доменов;
-- production deployment и GitHub CI;
-- произвольная установка тем и browser-редактор CSS/JS.
+- personnel cards и full personal military accounting;
+- staffing tables/schedules и personnel assignments;
+- общий Documents domain и universal orders workflow;
+- общий immutable cross-domain audit log;
+- medical, equipment, transport и training operational domains;
+- production deployment;
+- required GitHub status check / branch protection Stage B;
+- arbitrary theme installation и browser CSS/JS editor.
 
-Metadata документов внутри Organization не считается реализацией общего Documents domain.
+## Testing boundaries
 
-## Границы тестирования
+PR #24: automated/runtime, DB, deploy/parity, HTTP smoke, manual desktop и post-merge verification — PASS.
 
-PR #19 и PR #20 прошли Automated Testing и Manual Desktop Acceptance. Mobile runtime testing было исключено из утверждённого scope.
+PR #25: exact-head PR workflow, post-merge push run и manual workflow_dispatch — SUCCESS.
 
 ```text
 mobile testing: OUT OF SCOPE / NOT RUN
