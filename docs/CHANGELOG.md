@@ -1,117 +1,100 @@
 # История изменений
 
+## 2026-08-03
+
+### Military Ranks Directory v2 — PR #24
+
+- добавлена migration `012_military_ranks_directory_v2.sql` через compatibility loader и fail-closed marker;
+- v1 переведена в historical/superseded lifecycle;
+- опубликована current v2 с 8 compositions/categories, 8 semantics, 20 неизменными ranks, 2 version sources и 8 composition sources;
+- добавлены lifecycle fields, generated guards, 2 source/semantics tables и 18 integrity/immutability triggers;
+- добавлен Reference-owned read-only compatibility service;
+- реализованы version switch, historical view, search, filters, source cards и controlled error states;
+- добавлен required theme asset `css/military-ranks-v2.css` во все 3 themes;
+- automated/runtime, DB, deploy/parity, HTTP smoke и manual desktop acceptance: PASS;
+- mobile: `OUT OF SCOPE / NOT RUN`;
+- PR #24 merge commit: `feac7230616d3a8df98acb48f43a0b60f89f2255`;
+- post-merge verification: PASS;
+- repeat installer: 12 migrations / no new migrations;
+- feature branch удалена после отдельного owner approval.
+
+### GitHub Actions Static Verification v1 — PR #25
+
+- добавлен workflow `.github/workflows/static-verification.yml`;
+- triggers: Pull Request в `main`, push в `main`, `workflow_dispatch`;
+- runner Ubuntu 24.04, PHP 8.5, `contents: read`;
+- event-aware `git diff --check`;
+- NUL-safe lint tracked PHP;
+- 9 explicit CI-safe checker'ов;
+- final clean-worktree verification;
+- exact-head Final PR Review: PASS;
+- PR #25 merge commit: `c567429b3aa4d629a4e7c11fec7e3dbae907d92e`;
+- automatic push run `30837637886`: SUCCESS;
+- manual workflow_dispatch run `30839122892`: SUCCESS;
+- branch protection и repository settings не изменялись;
+- required status check не включён;
+- feature branch удалена после отдельного owner approval;
+- DB/deploy/browser/visual/mobile testing не выполнялось в scope static-only increment.
+
+### Documentation Current-State Reconciliation v2
+
+- выполнен read-only audit documentation baseline после PR #24/#25;
+- выявлено 0 blocking, 6 major и 1 minor finding;
+- утверждены Architecture, Specification, Formal Review и exact 29-path Markdown allowlist;
+- owner разрешил documentation-only Implementation;
+- living documentation актуализируется до functional PR #24, migration 012 и technical PR #25;
+- operational records PR #24/#25 получают additive closure без переписывания historical gate verdicts;
+- runtime, DB, migrations, workflow, themes, deploy, branch protection и settings не изменяются;
+- Pull Request, Final PR Review, merge и branch deletion текущего reconciliation ещё не выполнены и требуют отдельных gates.
+
 ## 2026-08-02
 
 ### Full Documentation Consistency Reconciliation
 
 - выполнен полный read-only audit Markdown-документации относительно `main @ 1eef56b50a8d2278a62c5b70a471663b12132354` и merged PR #1–#22;
-- подтверждено соответствие канонического functional baseline: latest functional PR #20, migrations 001–011, 4 system roles, 25 system permissions и 3 built-in themes;
-- `docs/domains/README.md` актуализирован до PR #20 и четырёх реализованных специализированных Reference-каталогов;
-- `docs/migrations/README.md` актуализирован до migrations 001–011, включая compatibility packaging migrations 010 и 011;
-- введено правило semantic classification: current-state раздел обновляется вместе с baseline независимо от каталога файла;
-- `docs/DATABASE.md` явно классифицирован как target architecture, broken reference `DOMAINS.md` исправлен на `domains/README.md`, а первоначальный next-step plan обозначен как historical sequence;
-- `docs/STARTER-ADMIN-SPEC.md` обозначен как historical implemented specification functional PR #1;
-- `Admin / 12315` согласованно классифицирован как публично известный local-only development fixture, а не production или instance-specific credential;
-- production credentials, реальные temporary passwords, session data и `config/local.php` остаются запрещёнными к публикации;
-- runtime password hardening отложен в отдельный будущий Security increment;
+- подтвержден baseline PR #20 / migrations 001–011 на момент audit;
+- введено правило semantic classification;
+- domain/migration indexes обновлены;
+- target/historical framing исправлен;
 - создан immutable audit record `DOCUMENTATION-CONSISTENCY-AUDIT-2026-08-02.md`;
-- runtime, database, migrations, config, themes, public routes, deploy и tools не изменялись;
 - runtime/database/browser retesting не требовался;
-- mobile testing: `OUT OF SCOPE / NOT RUN`.
+- mobile: `OUT OF SCOPE / NOT RUN`.
 
 ## 2026-08-01
 
-### Справочник типовых воинских должностей — PR #19
+### Military Positions — PR #19
 
-- добавлена migration `010_military_positions_directory.sql`;
-- реализован owner-only read-only route `/admin/directories/military-positions.php`;
-- 14 tables, 41 DB trigger, 34 canonical types и 35 variants;
-- automatic rank relations, кадровые назначения и personal data отсутствуют;
-- Automated Testing: PASS;
-- Manual Desktop Acceptance: PASS;
-- PR #19 merged commit: `99f9f283768ca418fb7ff86d55b7d73e7a6c3510`;
-- mobile testing: `OUT OF SCOPE / NOT RUN`.
+- migration 010;
+- 14 tables, 41 triggers, 34 canonical types и 35 variants;
+- automated and manual desktop testing: PASS;
+- merge commit: `99f9f283768ca418fb7ff86d55b7d73e7a6c3510`;
+- mobile: `OUT OF SCOPE / NOT RUN`.
 
-### Публичные сведения о ВУС — PR #20
+### Public VUS — PR #20
 
-- добавлена migration `011_public_military_occupational_specialties_directory.sql`;
-- реализован owner-only read-only route `/admin/directories/military-occupational-specialties.php`;
-- 9 tables, 26 triggers, 5 legal sources, 4 official snapshots, 4 organizations, 15 training programs и 17 searchable records;
-- relations к positions, ranks, equipment и personal data отсутствуют;
-- Final PR Review remediation закрыла organization-filter composition и runner exact-scope defects;
-- Automated Testing: PASS на runtime head `9db06c4a26066ca25dc36c627c1236089a3c1238`;
-- Manual Desktop Acceptance и targeted recheck: PASS;
-- repeated Final PR Review: PASS;
-- PR #20 merged commit: `3082ec6ecbeddb92bd65e1398f05a9339abb199b`;
-- post-merge Git verification: PASS;
-- mobile testing: `OUT OF SCOPE / NOT RUN`.
+- migration 011;
+- 9 tables, 26 triggers и 17 searchable records;
+- automated, manual desktop и targeted recheck: PASS;
+- merge commit: `3082ec6ecbeddb92bd65e1398f05a9339abb199b`;
+- post-merge verification: PASS;
+- mobile: `OUT OF SCOPE / NOT RUN`.
 
 ### Post-PR20 Baseline Refresh — PR #21
 
-- создан documentation-only workflow для актуализации baseline после PR #19/#20;
-- initial scope: 22 Markdown paths;
-- initial Documentation Implementation и Validation: PASS;
-- первый Final PR Review: `CHANGES_REQUIRED`;
-- findings: incomplete operational closure PR #19, stale post-PR markers и отсутствие implementation head;
-- owner отдельно разрешил remediation и расширил allowlist с 22 до 25 Markdown-путей;
-- добавлены post-merge closures operational records PR #19;
-- living/current-state documents синхронизированы;
-- repeat Documentation Validation: PASS;
-- repeat Final PR Review attempt 2: PASS;
-- Final PR Review ID: `4835150606`;
-- owner отдельно разрешил merge;
-- PR #21 merged методом merge commit;
-- final PR head: `4d44874ef02ffb9381334acfabfa383eba3e4ead`;
+- documentation-only baseline refresh;
+- repeat Documentation Validation и Final PR Review: PASS;
 - merge commit: `f5b53f2ee4453f293b58cbe486e0943ab602335b`;
-- post-merge Git verification: PASS;
-- runtime, database, deploy, config, themes и tools не изменялись.
-
-### Post-PR21 branch cleanup
-
-После отдельного owner approval выполнен remote-first cleanup:
-
-- remote deletion set: 3 branches;
-- remote branches deleted: 3 / 3;
-- после remote cleanup на GitHub осталась только `main`;
-- local deletion set: 13 merged feature branches;
-- local branches deleted через `git branch -d`: 13 / 13;
-- после local cleanup локально осталась только `main`;
-- final local main и `origin/main`: `f5b53f2ee4453f293b58cbe486e0943ab602335b`;
-- working tree: clean;
-- force deletion: not used;
-- terminal verification: PASS;
-- незамерженные commits не потеряны.
-
-Датированный evidence: [Post-PR21 Merge and Cleanup Closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md).
-
-### Documentation closure synchronization
-
-- шесть living documents актуализированы до устойчивого post-PR21 состояния;
-- три operational records PR #21 получили post-merge and cleanup closure sections;
-- удалённая docs-ветка больше не используется как operational dependency;
-- current PR/Issue/branch state определяется динамически;
-- документационный diff не изменяет runtime-tested baseline;
-- Mobile PASS не заявляется.
+- post-merge Git verification and approved cleanup: PASS.
 
 ## 2026-07-31
 
 ### Repository cleanup closure
 
 - merged documentation reconciliation;
-- отдельно утверждён и удалён batch из 18 remote non-main branches;
-- terminal snapshot: `main only` на дату проверки;
+- approved remote/local cleanup completed;
+- dated terminal snapshot recorded;
 - runtime, deploy и database не изменялись.
-
-## 2026-07-29
-
-### Organizational Structure v1 — PR #15
-
-- migration 009;
-- 7 tables, 16 triggers и 6 permissions;
-- structures, versions, draft tree, documents metadata, history и compare;
-- Automated Testing и Manual Desktop Acceptance: PASS;
-- mobile testing: OUT OF SCOPE / NOT RUN.
 
 ## Более ранние изменения
 
-Подробные historical records ранних security, theme и directory increments находятся в `docs/design`, `docs/decisions`, `docs/testing` и merged PR #1–#18.
+Historical records ранних Security, Theme, Reference и Organization increments находятся в `docs/design`, `docs/architecture`, `docs/decisions`, `docs/review`, `docs/testing` и merged PR history.
