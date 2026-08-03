@@ -1,62 +1,55 @@
 # Test Report — Справочник воинских званий v2
 
-Дата завершения: **2026-08-03**
-
-Итог: **PASS**
-
-Ветка: `feature/military-ranks-directory-v2`
-
-Runtime/manual acceptance head: `b44aed14ee1a54be213cbc939322ba21b02e7a58`
-
-Final PR Review remediation head: `fe893e8315f7add80ed4d0501b41d8bc39b4b0e8`
-
-## 1. Целевая среда
+## Historical testing result
 
 ```text
-Windows
-Open Server Panel 6.5.1
-Apache
-PHP 8.5.4 / 8.5 branch
-MySQL 8.4.8
-PowerShell 5.1
-Local URL: https://asu-vch.local
+date: 2026-08-03
+result: PASS
+branch at test gate: feature/military-ranks-directory-v2
+runtime/manual acceptance head: b44aed14ee1a54be213cbc939322ba21b02e7a58
+Final PR Review remediation head: fe893e8315f7add80ed4d0501b41d8bc39b4b0e8
 ```
 
-## 2. Static checks
+## Target environment
 
-Результат: **PASS**.
+```text
+Windows / Open Server Panel 6.5.1 / Apache
+PHP 8.5.4 / MySQL 8.4.8 / PowerShell 5.1
+https://asu-vch.local
+```
 
-- PHP lint implementation/checker files: PASS;
-- source checker: PASS;
-- loader checker: PASS;
-- compatibility-service checker: PASS;
-- SQL UTF-8/control-byte/damaged-token scan: PASS;
-- 18 DROP TRIGGER и 18 CREATE TRIGGER declarations: PASS;
-- рабочее дерево: clean.
+## Static and source checks
 
-## 3. Migration и installer
+PASS:
 
-Результат: **PASS**.
+- PHP lint affected implementation/checkers;
+- source checker;
+- loader checker;
+- compatibility-service checker;
+- UTF-8/control-byte/damaged-token scan;
+- exact 18 DROP/CREATE trigger declarations;
+- clean worktree.
 
-До migration 012: 11 migrations, current v1 = 1, v2 отсутствовала.
+## Migration and installer
 
-После применения:
+Before migration 012: 11 migrations and current v1. After application:
 
-- migration 012 зарегистрирована;
-- всего migrations: 12;
-- повторный installer: `Новых миграций нет`;
-- v1: superseded;
-- v2: published/current;
-- duplicate publication отсутствует.
+```text
+migration 012: registered
+applied migrations: 12
+repeat installer: no new migrations
+v1: superseded
+v2: published/current
+duplicate publication: absent
+```
 
-## 4. Backup evidence и process deviation
+## Backup evidence and deviation
 
-Предмиграционная резервная копия не была создана: первый backup/preflight block остановился до `mysqldump`, а migration была применена последующими командами. Создать такую копию задним числом невозможно. Отклонение явно зафиксировано; откат не потребовался.
+Pre-migration backup was not created because the first preflight block stopped before `mysqldump`; later commands applied migration 012. This cannot be reconstructed retrospectively and remains an explicit process deviation.
 
 Post-migration backup:
 
 ```text
-BACKUP_STATUS=PASS
 DATABASE_NAME=asu_vch
 MYSQLDUMP_VERSION=8.4.8
 BACKUP_FILE=C:\Project\ASU-VCH-backups\asu_vch-20260803-095418.sql
@@ -64,90 +57,81 @@ BACKUP_SIZE_BYTES=436258
 BACKUP_SHA256=C392283F93212B1DD88DF9261C26FB741765F3E27C8B67E1F646B3F79065B7AB
 ```
 
-## 5. Integration и regression
+## Integration and regression
 
-Результат: **PASS**.
+PASS confirmed:
 
-Подтверждены:
-
-- v1: 6 compositions, 20 ranks, 0 Staffing semantics;
+- v1: 6 compositions, 20 ranks, no Staffing semantics;
 - v2: 8 compositions, 8 semantics, 20 ranks;
-- v2: 2 version sources, 8 composition sources;
-- 4 selectable categories;
-- compatibility/incompatibility и ancestry cases;
-- утверждённые filter counts;
-- все три theme assets;
-- Reference, Security, Theme и Organization regressions;
-- Organization UI polish: 64 PASS / 0 FAIL;
+- v2 sources: 2 version / 8 composition;
+- compatibility/incompatibility and ancestry cases;
+- filter counts;
+- three theme assets;
+- Reference/Security/Theme/Organization regressions;
+- Organization UI: 64 PASS / 0 FAIL;
 - Organization integration: 58 PASS / 0 FAIL;
 - source/deploy parity: 24/24;
-- HTTP smoke: PASS;
-- рабочее дерево: clean.
+- HTTP smoke and clean worktree.
 
-## 6. UI remediation и manual desktop acceptance
+## UI remediation and manual desktop acceptance
 
-Первичная проверка выявила blocking layout defect. После исправления подтверждены one-column start-aligned hierarchy, отсутствие растягивания карточек, parent/child grouping, connectors и короткие child labels.
-
-Manual desktop acceptance: **PASS**.
-
-- три темы;
-- 1920×1080 и 1366×768;
-- current v2 и historical v1;
-- version switching;
-- filter counts;
-- search и empty state;
-- read-only UI;
-- official source links;
-- non-owner HTTP 403;
-- console errors: 0;
-- HTTP/asset 404: 0;
-- defects: NONE.
-
-Подробное evidence: `docs/testing/MILITARY-RANKS-DIRECTORY-V2-MANUAL-DESKTOP-ACCEPTANCE-2026-08-03.md`.
-
-## 7. Final PR Review remediation
-
-Первый Final PR Review выявил один blocking finding: building recovery использовал широкую source whitelist вместо точных composition/source/role/order/note anchors.
-
-Исправление на head `fe893e8315f7add80ed4d0501b41d8bc39b4b0e8` прошло локальный recheck:
+Initial blocking layout defect was remediated. One-column hierarchy, parent/child grouping, connectors and concise labels were accepted in all three themes at 1920×1080 and 1366×768.
 
 ```text
-MILITARY RANKS DIRECTORY V2 SOURCE CHECK PASSED
-MILITARY RANK V2 LOADER CHECK PASSED
-MILITARY RANK COMPATIBILITY SERVICE CHECK PASSED
-Применено миграций: 12
-Новых миграций нет.
-MILITARY RANKS DIRECTORY CHECK PASSED
-FINAL PR REVIEW REMEDIATION RECHECK PASSED
+current v2: PASS
+historical v1: PASS
+version switching: PASS
+search/filters/empty state: PASS
+read-only UI: PASS
+official links: PASS
+non-owner HTTP 403: PASS
+console errors: 0
+HTTP/asset 404: 0
+defects: NONE
 ```
 
-Negative recovery scenarios отклоняются: неверные source, order, pairing, derived note и role.
+## Final PR Review remediation
 
-Подробное evidence: `docs/review/MILITARY-RANKS-DIRECTORY-V2-PR-FINAL-REVIEW.md`.
-
-## 8. Mobile scope
+Initial Final PR Review found overly broad recovery source validation. Exact version/composition source matchers and negative scenarios were added.
 
 ```text
-MOBILE=OUT_OF_SCOPE / NOT_RUN
+source checker: PASS
+loader checker: PASS
+compatibility service: PASS
+contradictory source/order/pairing/note/role: REJECTED
+repeat installer: 12 / no new migrations
+DB regression: PASS
+worktree: clean
 ```
 
-Mobile PASS не заявляется.
+## Historical merge gate
 
-## 9. Финальный статус тестирования
+At the test-report gate, merge remained prohibited without separate permission and branch deletion required a later separate permission. This statement remains historical evidence.
+
+## Post-merge and branch-lifecycle closure
 
 ```text
-STATIC=PASS
-MIGRATION_012=PASS
-REPEAT_INSTALLER=PASS
-DB_INTEGRATION=PASS
-REGRESSION=PASS
+PR: #24 CLOSED / MERGED
+FINAL_FEATURE_HEAD=2e996849ec51be4d83676aa779bf7e797e35932e
+MERGE_COMMIT=feac7230616d3a8df98acb48f43a0b60f89f2255
+POST_MERGE_VERIFICATION=PASS
+FEATURE_HEAD_INCLUDED_IN_MAIN=PASS
+MERGE_TREE_EQUALS_FEATURE_TREE=PASS
+STATIC_CHECKS=PASS
+DEPLOY=PASS
 SOURCE_DEPLOY_PARITY=PASS
+REPEAT_INSTALLER=12 / NO NEW MIGRATIONS
+DATABASE_REGRESSION=PASS
 HTTP_SMOKE=PASS
-MANUAL_DESKTOP=PASS
-FINAL_PR_REVIEW_REMEDIATION=PASS
+WORKTREE_CLEAN=PASS
+FEATURE_BRANCH=DELETED AFTER SEPARATE APPROVAL
+MOBILE=OUT OF SCOPE / NOT RUN
+```
+
+The merge commit is not relabeled as the original runtime/manual acceptance head. Post-merge verification is separate evidence.
+
+```text
+FINAL_TEST_AND_CLOSURE_RESULT=PASS
 BLOCKING_FINDINGS_OPEN=0
 DEFECTS=NONE
-FINAL_RESULT=PASS
 ```
-
-Merge не выполнять без отдельного явного разрешения владельца. После merge требуется post-merge verification. Feature-ветку не удалять без отдельного разрешения.
