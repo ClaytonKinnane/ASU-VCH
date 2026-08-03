@@ -51,15 +51,36 @@ Living docs не хранят self-referential current-main SHA или transient
 
 ## Классы документации
 
-1. **Living documentation** — текущий merged baseline.
+1. **Living documentation** — текущий durable merged baseline.
 2. **Living indexes** — current domain/migration inventories внутри target catalogs.
 3. **Target architecture** — модель, которая может быть шире runtime.
 4. **Historical implemented specifications** — исходные requirements завершённых increments.
-5. **Historical process/test artifacts** — состояние конкретного gate.
-6. **Operational increment records** — history плюс additive post-merge closure.
-7. **Immutable audit/cleanup records** — датированный snapshot.
+5. **Historical gate records** — Architecture, Specification, Formal Review, Approval, Implementation, Validation/Test Report и Final PR Review как snapshots соответствующего этапа.
+6. **Immutable audit/cleanup records** — датированный snapshot.
 
-Semantic classification overrides directory classification. Current-state section обновляется независимо от каталога файла. Historical `PENDING`, `NOT AUTHORIZED` и `NOT PERFORMED` сохраняются, если верно описывают свой gate; завершённый outcome добавляется отдельным closure.
+Semantic classification overrides directory classification. Current-state section обновляется независимо от каталога файла.
+
+Исторические `PENDING`, `NEXT GATE`, `NOT AUTHORIZED` и `NOT PERFORMED` сохраняются, если верно описывают состояние своего gate. Они не являются текущими открытыми задачами только из-за того, что позднейший gate уже завершён:
+
+```text
+HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
+```
+
+Architecture, Specification, Formal Review, Approval, Implementation, Validation и Final PR Review не переписываются лишь для копирования последующих lifecycle events.
+
+## Terminal documentation model
+
+Living documentation хранит устойчивое состояние проекта. Изменяемый repository lifecycle определяется динамически через GitHub/Git:
+
+- текущие PR и их base/head;
+- review submissions и review threads;
+- Actions runs и job logs;
+- текущий `main` SHA;
+- branch inventory и события удаления веток.
+
+Для последнего documentation PR canonical lifecycle evidence находится в GitHub PR timeline, reviews, Actions и branch inventory. Отсутствие копии его merge/run/cleanup lifecycle в Markdown само по себе не является documentation defect и не требует нового post-merge closure PR.
+
+Новый documentation increment создаётся только при реальной ошибке durable living state, broken normative rule, некорректной ссылке или ином содержательном дефекте.
 
 ## Последние завершённые increments
 
@@ -111,7 +132,7 @@ post-merge verification: PASS
 original documentation branch: deleted after separate approval
 ```
 
-### 2026-08-03 — Current-State Reconciliation v2 Closure
+### 2026-08-03 — Current-State Reconciliation v2 Closure — completed
 
 - [Architecture](architecture/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-ARCHITECTURE.md)
 - [Specification](specification/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-SPECIFICATION.md)
@@ -119,8 +140,9 @@ original documentation branch: deleted after separate approval
 - [Approval](decisions/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-APPROVAL.md)
 - [Implementation](implementation/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-IMPLEMENTATION.md)
 - [Validation](testing/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-VALIDATION.md)
+- [Final PR Review](review/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-PR-FINAL-REVIEW.md)
 
-Final PR Review record этого closure-инкремента создаётся только после отдельно разрешённого Pull Request и фактической exact-head проверки.
+Closure исправил durable living-status сведения PR #26 и сохранил исторические gate facts. Mutable lifecycle evidence PR #27 остаётся canonical в GitHub и не требует ещё одного Markdown closure.
 
 ### 2026-08-02 — Full Documentation Consistency Reconciliation
 

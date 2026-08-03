@@ -59,15 +59,17 @@
 - runtime, DB, migrations, workflow, themes, deploy, branch protection, required checks and settings unchanged;
 - mobile: `OUT OF SCOPE / NOT RUN`.
 
-### Documentation Current-State Reconciliation v2 Closure
+### Documentation Current-State Reconciliation v2 Closure — PR #27
 
-- выполнен отдельный documentation-only closure cycle для устранения stale post-merge status самого PR #26;
+- выполнен отдельный documentation-only cycle для устранения stale living-status сведений PR #26;
 - Architecture, Specification, Formal Review и exact 13-path Markdown allowlist утверждены владельцем;
-- living index, roadmap, changelog и три process records v2 синхронизированы с completed PR #26 outcome;
-- historical pending/pre-merge facts and permission boundaries preserved;
-- runtime/settings isolation retained;
-- Documentation Validation фиксируется отдельным evidence record;
-- Pull Request, Final PR Review, merge и удаление текущей closure-ветки остаются отдельными будущими gates этого closure-инкремента.
+- living index, roadmap, changelog и три process records v2 синхронизированы с durable completed outcome PR #26;
+- historical pending/pre-merge facts и permission boundaries сохранены как gate-scoped evidence;
+- Documentation Validation и exact-head Final PR Review завершены с PASS;
+- runtime, DB, migrations, workflow, themes, deploy, tools, branch protection, required checks и repository settings не изменялись;
+- closure-ветка удалена после отдельного owner approval;
+- mutable lifecycle evidence PR #27 остаётся canonical в GitHub PR timeline, reviews, Actions и branch inventory;
+- отсутствие повторной копии lifecycle последнего documentation PR в Markdown не является новой documentation task.
 
 ## 2026-08-02
 
