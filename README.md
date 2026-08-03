@@ -4,44 +4,50 @@
 
 ## Текущий merged baseline
 
-Стабильное состояние находится в `main`. Актуальный HEAD определяется через `origin/main`:
+Стабильное состояние находится в `main`. Актуальный HEAD определяется динамически:
 
 ```powershell
 git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Исторические anchors последнего функционального baseline:
+Исторические anchors последнего functional и technical baseline:
 
 ```text
-latest functional PR: #20
-PR #19 merge commit: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
-PR #19 tested runtime HEAD: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
-PR #20 merge commit / refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
-PR #20 tested runtime HEAD: 9db06c4a26066ca25dc36c627c1236089a3c1238
-migrations: 001–011
+latest functional PR: #24
+latest technical PR: #25
+PR #24 merge commit: feac7230616d3a8df98acb48f43a0b60f89f2255
+PR #24 runtime/manual acceptance head: b44aed14ee1a54be213cbc939322ba21b02e7a58
+PR #25 merge commit: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+migrations: 001–012
 system roles: 4
 system permissions: 25
 built-in themes: 3
+required CSS assets per theme: 10
 active functional increment: none
+active technical increment: none
 ```
 
-Точный SHA текущего `main` не хранится как самореферентное постоянно актуальное поле. Указанные SHA являются историческими merge/test anchors.
+Exact SHA текущего `main` не хранится как самореферентное living field. Указанные SHA являются historical merge/test anchors.
 
 ## Реализовано
 
-- установка, аутентификация, защищённые сессии и CSRF;
-- RBAC и полный пользовательский lifecycle;
+- установка, authentication, защищённые sessions и CSRF;
+- RBAC, 4 system roles, 25 permissions и полный user lifecycle;
 - обязательная смена временного пароля;
-- три встроенные доверенные темы;
+- три встроенные trusted themes;
 - owner-only read-only справочники:
-  - составы военнослужащих и воинские звания;
+  - составы военнослужащих и воинские звания — current v2 и historical v1;
   - типы организационных элементов;
   - типовые воинские должности;
   - публичные сведения о военно-учётных специальностях;
-- Organizational Structure v1: структуры, версии, draft-дерево, документы-основания, история и сравнение версий.
+- Reference-owned read-only compatibility service для version-scoped ranks/compositions;
+- Organizational Structure v1: structures, versions, draft-tree, documents metadata, history и compare;
+- GitHub Actions workflow `ASU-VCH Static Verification` для PR в `main`, push в `main` и manual diagnostics.
 
-Справочники воинских должностей и ВУС основаны только на утверждённом публичном scope. Они не создают кадровых назначений, не связываются автоматически с персональными данными и не заявляются как полный воинский учёт.
+Migration 012 сохраняет 20 воинских званий, публикует current v2 с 8 composition/category records и оставляет v1 historical/superseded. Staffing tables, Organization bindings, personnel assignments и реальные unit/personnel data не добавлены.
+
+Static CI является дополнительным signal. Он не заменяет MySQL, migrations, deploy, HTTP/browser и manual visual acceptance. Required status check и branch protection Stage B не включены.
 
 ## Локальная среда
 
@@ -52,14 +58,13 @@ Apache
 PHP 8.5.4
 MySQL 8.4.x
 Windows PowerShell 5.1
-
 repository: C:\Project\ASU-VCH
 deploy root: C:\OSPanel\home\asu-vch.local
 web root: C:\OSPanel\home\asu-vch.local\public
 URL: https://asu-vch.local
 ```
 
-GitHub является единственным источником истины. Локальный клон используется для синхронизации, deploy и тестирования. Секреты и содержимое `config/local.php` в Git не помещаются.
+GitHub является источником истины. Локальный clone используется для synchronization, deploy и testing. Secrets и содержимое `config/local.php` в Git не помещаются.
 
 ## Процесс изменений
 
@@ -70,23 +75,24 @@ Research → Analysis → Architecture → Specification → Review → Approval
 → post-merge verification → separate branch deletion approval
 ```
 
-Merge и удаление веток требуют отдельных явных разрешений владельца проекта.
+Pull Request, merge и branch deletion требуют отдельных явных разрешений владельца.
 
 ## Документация
 
 - [Индекс документации](docs/README.md)
 - [Текущее состояние проекта](docs/PROJECT-STATUS.md)
 - [О проекте](docs/PROJECT.md)
-- [Локальный runbook](docs/LOCAL-RUNBOOK.md)
 - [Текущее состояние базы данных](docs/DATABASE-CURRENT.md)
+- [Локальный runbook](docs/LOCAL-RUNBOOK.md)
 - [План разработки](docs/ROADMAP.md)
 - [История изменений](docs/CHANGELOG.md)
 
 ## Границы тестирования
 
-PR #19 и PR #20 прошли Automated Testing и Manual Desktop Acceptance. Для PR #20 также завершены targeted manual recheck, Final PR Review и post-merge Git verification.
+PR #24 прошёл automated/runtime, DB, deploy/parity, HTTP smoke и manual desktop acceptance; post-merge verification — PASS. PR #25 прошёл exact-head PR workflow и post-merge push/manual runs.
 
 ```text
 mobile testing: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
+required status check: NOT ENABLED
 ```

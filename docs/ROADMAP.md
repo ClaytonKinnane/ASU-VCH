@@ -1,131 +1,99 @@
 # План разработки
 
-## Stable functional baseline
-
-Функциональные PR #1–#9, #12, #15, #19 и #20 merged в `main`. Последний functional baseline — PR #20.
+## Stable baseline
 
 ```text
 repository pointer: origin/main
-latest functional PR: #20
-completed baseline refresh PR: #21
-PR #19 merge: 99f9f283768ca418fb7ff86d55b7d73e7a6c3510
-PR #19 tested runtime: 0455f0120c881bb9ba6e9df8f80ea0af89819be9
-PR #20 merge / functional refresh baseline: 3082ec6ecbeddb92bd65e1398f05a9339abb199b
-PR #20 tested runtime: 9db06c4a26066ca25dc36c627c1236089a3c1238
-PR #21 merge: f5b53f2ee4453f293b58cbe486e0943ab602335b
-migrations: 001–011
+latest functional PR: #24
+latest technical PR: #25
+PR #24 merge: feac7230616d3a8df98acb48f43a0b60f89f2255
+PR #25 merge: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+migrations: 001–012
 system roles: 4
 system permissions: 25
 built-in themes: 3
+required CSS assets: 10
 ```
 
-## Завершённые functional этапы
+## Завершённые functional stages
 
-- [x] базовый сайт, authentication, sessions и CSRF;
+- [x] initial site, authentication, sessions и CSRF;
 - [x] RBAC и user lifecycle;
 - [x] required password change, rejection audit и archive/restore;
-- [x] theme management и три built-in themes;
+- [x] theme management и 3 built-in themes;
 - [x] directory landing, ranks и organizational element types;
 - [x] Organizational Structure v1;
-- [x] PR #19 — public military positions catalog;
-- [x] PR #19 Automated Testing и Manual Desktop Acceptance;
-- [x] PR #19 merge;
-- [x] PR #20 — public military occupational specialties catalog;
-- [x] PR #20 Automated Testing, Manual Desktop Acceptance и targeted recheck;
-- [x] PR #20 repeated Final PR Review PASS;
-- [x] PR #20 merge и post-merge Git verification.
+- [x] public military positions catalog — migration 010;
+- [x] public VUS catalog — migration 011;
+- [x] Military Ranks Directory v2 — migration 012;
+- [x] current v2 / historical v1;
+- [x] automated/runtime/DB/deploy/HTTP testing PR #24;
+- [x] manual desktop acceptance PR #24;
+- [x] Final PR Review and separate merge approval PR #24;
+- [x] PR #24 merge, post-merge verification and separately approved branch cleanup.
 
-## Завершённый documentation baseline refresh — PR #21
+## Завершённый technical Stage A — PR #25
+
+- [x] Architecture, Specification, Review and Approval;
+- [x] workflow implementation;
+- [x] PR exact-head static verification;
+- [x] Final PR Review and separate merge approval;
+- [x] merge commit;
+- [x] post-merge push run `30837637886` — SUCCESS;
+- [x] post-merge workflow_dispatch `30839122892` — SUCCESS;
+- [x] separately approved feature-branch cleanup.
 
 ```text
-classification: documentation only
-initial allowlist: 22 Markdown paths
-final approved allowlist: 25 Markdown paths
-runtime changes: none
+GitHub Actions static verification: implemented
+required status check: not enabled
+branch protection Stage B: not implemented / separately gated
 ```
 
-Завершённые milestones:
+## Documentation Current-State Reconciliation v2
 
-- [x] Research и Analysis;
-- [x] Architecture, Specification и pre-implementation Review;
+- [x] read-only audit;
+- [x] Architecture;
+- [x] Specification;
+- [x] Formal Review;
 - [x] owner Approval;
-- [x] initial Documentation Implementation и Validation;
-- [x] PR #21 created;
-- [x] Final PR Review attempt 1 — CHANGES REQUIRED;
-- [x] owner-approved scope expansion 22 → 25;
-- [x] PR #19 operational closure;
-- [x] current-state remediation;
-- [x] repeat Documentation Validation PASS;
-- [x] repeat Final PR Review PASS;
-- [x] separate owner merge approval;
-- [x] PR #21 merge commit `f5b53f2ee4453f293b58cbe486e0943ab602335b`;
-- [x] post-merge Git verification PASS;
-- [x] fresh remote/local inventory;
-- [x] exact cleanup approval;
-- [x] remote-first cleanup: 3 / 3 remote branches deleted;
-- [x] safe local cleanup: 13 / 13 local feature branches deleted;
-- [x] terminal verification PASS;
-- [x] dated terminal snapshot: remote `main only`, local `main only`, working tree clean;
-- [x] force deletion not used.
+- [x] documentation-only Implementation;
+- [x] semantic Documentation Validation;
+- [ ] separate permission for Pull Request;
+- [ ] Pull Request;
+- [ ] Final PR Review;
+- [ ] separate merge approval;
+- [ ] merge and post-merge verification;
+- [ ] separate branch deletion approval.
 
-Evidence: [Post-PR21 Merge and Cleanup Closure 2026-08-01](POST-PR21-MERGE-CLEANUP-CLOSURE-2026-08-01.md).
+Validation status and exact head are recorded in `testing/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-VALIDATION.md`. The current reconciliation does not claim its own future PR, merge or cleanup.
 
-## Последние catalogs
-
-### Military Positions — migration 010
-
-```text
-tables: 14
-triggers: 41
-canonical types: 34
-variants: 35
-automated testing: PASS
-manual desktop acceptance: PASS
-mobile testing: OUT OF SCOPE / NOT RUN
-```
-
-### Public VUS — migration 011
-
-```text
-tables: 9
-triggers: 26
-searchable records: 17
-automated testing: PASS
-manual desktop acceptance: PASS
-targeted manual recheck: PASS
-final PR review: PASS
-post-merge verification: PASS
-mobile testing: OUT OF SCOPE / NOT RUN
-```
-
-## Текущее плановое состояние
+## Current planning state
 
 ```text
 active functional increment: none
-active documentation increment after closure: none
-open implementation task: none
+active technical increment: none
 next functional increment: not selected / not approved
 ```
 
-Текущее состояние PRs, Issues и branches определяется динамически через GitHub/Git, а не хранится здесь как неизменяемый snapshot.
+## Possible future directions
 
-## Возможные будущие направления
+Each requires a separate Research → Approval cycle:
 
-Каждое направление требует отдельного Research → Approval cycle:
+- personnel card;
+- staffing structure and personnel assignments;
+- common Documents domain;
+- common Audit domain;
+- production deployment infrastructure;
+- branch protection Stage B / required status check;
+- separate mobile verification increment.
 
-- карточка военнослужащего;
-- штатные структуры и кадровые назначения;
-- общий Documents domain;
-- общий Audit domain;
-- production/CI infrastructure;
-- отдельный mobile verification increment.
+Static CI Stage A is already implemented and is not repeated as future scope.
 
-Ни одно направление не выбрано и не утверждено.
+## Permanent constraints
 
-## Постоянные ограничения
-
-- Public catalogs не являются кадровым или персональным воинским учётом.
-- Mobile PASS не заявляется без фактической acceptance.
-- PR creation, merge и branch deletion требуют отдельных approvals.
-- `SAFE TO DELETE` не является deletion authorization.
-- Датированный `main only` terminal snapshot не запрещает создание будущей утверждённой ветки.
+- Public catalogs are not staffing or personal military accounting.
+- Static CI does not replace DB/deploy/browser/manual testing.
+- Required status check is not enabled.
+- Mobile PASS is not claimed without actual acceptance.
+- PR creation, merge and branch deletion require separate approvals.
+- `SAFE TO DELETE` is not deletion authorization.

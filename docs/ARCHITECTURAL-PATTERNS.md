@@ -1,287 +1,188 @@
 # Architectural Patterns
 
-## Purpose
+## Purpose and priority
 
-This document defines recurring architectural patterns used across ASU-VCH. It complements domain documents and ADRs but does not replace them.
-
-Priority when documents conflict:
+Этот документ определяет recurring patterns АСУ-ВЧ. Priority при конфликте:
 
 1. accepted ADR;
-2. domain architecture approval;
-3. domain specification and ERD;
+2. approved domain architecture;
+3. approved specification/ERD;
 4. this document;
 5. implementation notes.
 
 ## Documentation First
 
-Every material change follows:
-
 ```text
-Research
-→ Analysis
-→ Architecture
-→ Specification
-→ Review
-→ Approval
-→ Implementation
-→ Testing
-→ Commit
-→ Push
-→ Pull Request
-→ Final PR Review
-→ separate merge approval
-→ Merge
-→ post-merge verification
-→ separate branch deletion approval
+Research → Analysis → Architecture → Specification → Review → Approval
+→ Implementation → Testing → Commit → Push → Pull Request
+→ Final PR Review → separate merge approval → Merge
+→ post-merge verification → separate branch deletion approval
 ```
 
-No material database, runtime, documentation-baseline or repository-cleanup implementation begins before the relevant scope is reviewed and approved.
+Material implementation не начинается до relevant Approval. Pull Request, merge и branch deletion имеют отдельные owner gates.
 
-## Current state versus historical evidence
+## Documentation semantic classes
 
-Documentation belongs to the following semantic classes:
-
-1. **Living documentation** — describes the current merged baseline and must be refreshed after material merges.
-2. **Living indexes** — current inventories embedded in catalogs that may also contain target documents, such as `docs/domains/README.md` and `docs/migrations/README.md`.
-3. **Target architecture** — approved or researched future model that may be wider than implemented runtime.
-4. **Historical implemented specifications** — original requirements of completed increments, preserved with explicit temporal framing.
-5. **Historical process artifacts** — Architecture, Specification, Review, Approval and dated Test Evidence preserving the state of their gate.
-6. **Operational increment records** — may contain both attempt history and a current-status section; post-merge closure updates current framing without deleting history.
-7. **Immutable audit/cleanup records** — dated snapshots that do not impose a permanent future repository state.
+1. Living documentation.
+2. Living indexes.
+3. Target architecture.
+4. Historical implemented specifications.
+5. Historical process/test artifacts.
+6. Operational increment records with additive closure.
+7. Immutable audit/cleanup snapshots.
 
 ### Semantic classification overrides directory classification
 
-A document or section is treated as living/current-state whenever it asserts any of the following, regardless of its folder:
-
-- current functional or documentation baseline;
-- current migration numbering;
-- current map of implemented domains or catalogs;
-- current roles, permissions, themes, routes or runtime capabilities;
-- current repository, PR, Issue or branch state.
-
-A mixed document must label its current-state, target and historical sections explicitly. A file is not exempt from baseline refresh merely because most neighboring files are target specifications or historical evidence.
-
-Baseline refresh scope must therefore include every semantically living document and living index affected by the merged change. The refresh audit records the evaluated current-state document set and explains any exclusion.
+Section является living/current-state, если сообщает current functional/technical baseline, migrations, domains, routes, roles, permissions, themes/assets, CI capability или repository state.
 
 Rules:
 
-- current repository HEAD is resolved dynamically through `origin/main`;
-- exact SHA values are stored as historical merge/test/refresh anchors;
-- documentation-only commits are never presented as runtime-tested heads;
-- stale current-state fields must not remain in living documentation or living indexes;
-- target architecture must point to current-state sources rather than imply complete implementation;
-- historical specifications receive status banners or closure addenda without rewriting original requirements;
-- historical `NOT AUTHORIZED`, `NOT CREATED` or `RECHECK REQUIRED` markers are preserved when they accurately describe the recorded moment;
-- links in target/historical documents must still resolve unless explicitly marked as obsolete evidence;
-- current PR/Issue/branch state is not persisted as a permanent living field.
+- current HEAD определяется dynamically through `origin/main`;
+- exact SHA stored only as historical anchors;
+- documentation-only head не объявляется runtime-tested;
+- target architecture не представляется как current schema;
+- historical gate markers сохраняются;
+- completed outcome добавляется отдельным closure;
+- current PR/branch inventory не сохраняется как permanent living field;
+- links должны resolve либо быть явно historical/obsolete evidence.
 
 ## Domain ownership
 
-Each business concept has one owning domain. The owner defines invariants, owns writes and lifecycle rules, publishes events and exposes explicit contracts. Other domains do not duplicate or mutate its model.
+Каждая business concept имеет один owning domain. Owner определяет invariants, writes, lifecycle и contracts. Другие domains не мутируют его model напрямую.
 
-## Aggregate pattern
+## Aggregate and immutable history
 
-An aggregate has one root. External commands target the root; child entities are not modified independently; cross-child invariants are enforced in the aggregate transaction; direct table access must not bypass aggregate rules.
+Aggregate commands адресуются root; child invariants enforced transactionally. Published catalogs, audit facts, source snapshots и historical versions immutable; corrections создают new version/event, а не overwrite history.
 
-## Immutable historical entities
-
-Historical facts should be append-only when correction must preserve original state. Typical examples include audit records, published catalog versions, source snapshots, document versions and assignment history.
-
-Immutable tables normally omit `updated_at` and `deleted_at`. UPDATE/DELETE should be rejected by triggers or permissions where practical. Corrections create a new record or explicit compensating event.
-
-## Versioned public catalog
-
-Public normative/reference catalogs use version roots and immutable published children.
-
-Approved patterns:
+## Versioned public catalogs
 
 ### Whole-catalog versioning
 
-Used when one coherent normative set is published as a unit.
-
 - one current published version;
-- child rows belong to exactly one version;
-- publication freezes all child rows;
-- lifecycle transitions are explicit and forward-only;
-- evidence rows cannot cross versions.
-
-Example: military position types catalog.
+- children belong to one version;
+- publication freezes child data;
+- lifecycle explicit and forward-only;
+- evidence cannot cross versions.
 
 ### Source-centric catalog
 
-Used when public disclosures from heterogeneous official sources must remain distinguishable.
+- version defines release boundary;
+- sources/snapshots are first-class;
+- every record keeps evidence context;
+- normalization does not exceed source;
+- incomplete public coverage stated explicitly.
 
-- catalog version defines the public release boundary;
-- legal sources and official snapshots are first-class records;
-- each disclosed record retains source/evidence context;
-- semantic normalization does not exceed what the source supports;
-- incomplete public coverage is stated explicitly;
-- published records are immutable.
+### Catalog evolution with superseded history and application semantics
 
-Example: public military occupational specialties catalog.
+PR #24 adds a reusable evolution pattern:
 
-For both patterns:
+- existing published version may become `superseded` with explicit validity end;
+- one new version becomes `published/current` atomically;
+- historical version remains visible/read-only;
+- application-specific categories are stored as version-scoped semantics rather than rewriting normative history;
+- derived categories must be explicitly marked and sourced;
+- compatibility checks use same-version ancestry;
+- published/superseded child data immutable;
+- recovery accepts only exact known building state and fails closed on contradiction.
 
-- runtime scraping/import is not implied;
-- no completeness claim without evidence;
-- no automatic cross-domain relation merely because identifiers look similar;
-- source URLs are validated and output escaped;
-- owner-only read-only UI may reuse `system.*.*` without adding permissions.
+Military Ranks v2 applies this pattern while preserving 20 rank codes/names/order and separating derived staffing scopes from normative compositions.
 
-## Evidence-bounded identifiers
+## Evidence-bounded identifiers and relations
 
-An identifier is decomposed only when an authoritative source supports the decomposition.
-
-Rules:
-
-- raw identifiers are preserved;
-- parsed components may be nullable;
-- identifiers from different source regimes are not forced into one semantic format;
-- unknown structure is represented explicitly rather than guessed;
-- UI labels distinguish normative examples, complete codes and official program identifiers.
-
-## Filter composition policy
-
-When a filter applies only to one record subtype, result composition must be explicit and testable.
-
-Example pattern:
-
-- organization applies to training programs;
-- selecting organization excludes unrelated direct-disclosure records;
-- selecting an incompatible record type and organization yields a valid empty state;
-- policy is implemented in a testable repository/application function and covered by integration plus manual checks.
-
-## Soft deletion
-
-Soft deletion is used only for mutable aggregate roots where removal from active use is required without destroying history.
-
-```text
-deleted_at DATETIME(6) NULL
-```
-
-Historical child entities are not independently soft-deleted. Registered or legally significant records use lifecycle statuses. FK behavior defaults to RESTRICT. Restoration is explicit.
+Identifiers are decomposed only when authoritative evidence supports it. Raw values preserved; unknown semantics stay explicit. Similar identifiers do not imply cross-domain relation.
 
 ## Reference data
 
-Reusable classifications belong to the Reference domain unless they are true internal constants.
+Reusable classifications belong to Reference domain. Use stable lowercase codes, no MySQL ENUM, version-aware relations and critical DB guards. Owner-only read-only catalogs may reuse `system.*.*` without adding permissions.
 
-- no MySQL ENUM;
-- lowercase immutable codes;
-- group membership validated by domain logic and critical DB guards;
-- system values cannot have machine codes changed or be deleted.
+## Foreign keys and lifecycle
 
-## Identity pattern
-
-Internal relational identity:
-
-```text
-id BIGINT UNSIGNED AUTO_INCREMENT
-```
-
-Externally exposed aggregates may additionally use immutable UUIDs. Business identifiers remain separate from technical identifiers and are not reused without explicit specification.
-
-## Foreign keys
-
-Default policy:
+Default:
 
 ```text
 ON DELETE RESTRICT
 ON UPDATE RESTRICT
 ```
 
-Cascade deletion requires a dedicated approved decision. Nullable FK requires documented absence semantics.
+Lifecycle documents initial state, allowed transitions, prohibited reverse transitions, required data, terminal states and restoration/cancellation semantics.
 
-## Domain events and Audit
+## Transactions and database guards
 
-Domains publish past-tense facts after successful commit. Event payloads contain stable identifiers and sufficient historical context but no secrets or unnecessary sensitive content. Audit consumes events through infrastructure contracts.
-
-## Actor references
-
-Domains may store technical actor references without acquiring business ownership of Security. Nullable actors are allowed only when documented. Audit retains independent actor snapshots where required.
-
-## Transactions and concurrency
-
-Commands modifying an aggregate run in a database transaction. Use `SELECT ... FOR UPDATE` for sequential or exclusive state. Database constraints remain final race protection.
-
-## External resource coordination
-
-Database transactions cannot atomically include filesystem/network operations. Approved sequence: stage, validate, begin transaction, persist metadata, finalize external operation, commit, compensate on failure, publish events after commit. Reconciliation is required for failed compensation.
-
-## Generated columns and uniqueness
-
-Generated nullable columns may enforce conditional uniqueness when the expression depends only on the same row. Cross-table semantics must be materialized, trigger-protected or redesigned.
-
-## Database triggers
-
-Triggers are appropriate for invariants that must hold regardless of application entry point:
-
-- reference-group membership;
-- immutable published data;
-- lifecycle restrictions;
-- cross-version relation guards;
-- conditional uniqueness support.
-
-Trigger errors must be deterministic and tested. Application code should also validate for clear user feedback.
-
-## Status lifecycles
-
-Each domain documents initial status, allowed transitions, prohibited reverse transitions, required data, terminal states and restoration/cancellation semantics.
-
-## Security boundaries
-
-Permissions never bypass validation, CSRF, domain invariants, audit, transactions or secret handling. Infrastructure resources are not exposed directly when application authorization is required.
-
-Publicly documented local-only development fixtures are not production secrets, but must be explicitly scoped to local environments, require replacement on first use and never be reused as instance-specific credentials. Real temporary passwords, production credentials, session data, private keys, tokens and local configuration remain secret.
+Material commands run in transactions. Use `SELECT ... FOR UPDATE` where required. Constraints/triggers provide final race and invariant protection. Trigger errors deterministic and tested.
 
 ## Migration packaging and compatibility
 
-When transport/parser constraints prevent storing one executable canonical SQL file directly:
+When transport constraints prevent direct canonical SQL:
 
-- keep a small marker migration;
-- package canonical SQL deterministically;
-- split only at transport layer, not semantic SQL boundaries;
-- verify archive hash, canonical SQL hash, part order and byte count before execution;
+- marker migration;
+- deterministic package/loader;
+- exact part/order/hash/byte checks where packaging is used;
 - fail closed on mismatch;
-- test repeat installer and source/deploy parity.
+- repeat installer and parity verification.
 
-Packaging is a compatibility mechanism, not a second schema source of truth.
+Migrations 010–011 use gzip/base64 packaging. Migration 012 uses a separate compatibility loader with a fail-closed marker and versioned DDL/publication/recovery modules; it must not be falsely described as gzip/base64 packaging.
 
-## Migration specifications
+## Security boundaries
 
-Every domain schema requires an approved migration specification covering order, tables, columns, keys, FK actions, triggers, seed, packaging, rollback policy and verification tests. Executable migrations must not introduce undocumented decisions.
+Permissions never bypass validation, CSRF, invariants, audit, transactions or secret handling.
+
+Public local-only development fixtures are not production secrets only when explicitly scoped, replaced on first use and never reused as instance credentials. Production/instance credentials, real temporary user passwords, sessions, tokens, private keys and local config remain secret.
 
 ## Testing obligations
 
-Critical invariants require integration tests against MySQL. Tests should cover FK actions, unique constraints, trigger rejection, lifecycle, cross-version guards, transaction rollback, immutable records, source/deploy parity and security regressions.
+Critical invariants require applicable MySQL integration tests, rejection paths, lifecycle/cross-version guards, repeat installer, parity and security regressions. Manual acceptance required for user-visible Specification behavior. Mobile PASS requires actual mobile acceptance.
 
-Manual acceptance is required for user-visible behavior defined by Specification. Mobile PASS is not claimed without actual mobile acceptance.
+## Static CI Stage A pattern
+
+GitHub Actions Static Verification is an additional early/final signal:
+
+- untrusted PR code runs with `contents: read`;
+- no secrets, environments or write permissions;
+- immutable action SHA;
+- exact event-aware diff;
+- tracked PHP lint;
+- explicit CI-safe checker allowlist;
+- final tracked/untracked worktree guard;
+- push and workflow_dispatch post-merge diagnostics.
+
+Static CI does **not** replace MySQL, migration, deploy, HTTP/browser, source/deploy parity or manual visual acceptance.
+
+Stage B is separate:
+
+```text
+required status check: not enabled
+branch protection mutation: not performed
+conversation-resolution rule: separately gated
+```
+
+Changing stable job/check identity after Stage B would be operationally breaking and requires review.
 
 ## Repository cleanup pattern
-
-Branch cleanup is a separate administrative operation after merge.
 
 Required sequence:
 
 1. post-merge verification;
-2. documentation baseline refresh when current docs are stale;
-3. fresh remote and local inventory;
-4. reachability/unique-commit checks against current `origin/main`;
-5. exact cleanup batch;
+2. documentation refresh when needed;
+3. fresh remote/local inventory;
+4. reachability/unique-commit check;
+5. exact deletion batch;
 6. separate owner approval;
-7. remote deletion first when possible;
-8. local deletion only within approved scope;
-9. final inventory and `main` integrity verification.
+7. remote deletion first;
+8. approved local deletion;
+9. final main/inventory verification.
 
-`SAFE TO DELETE` is a technical classification, never an authorization.
-
-## Change control
-
-A recurring pattern changes only when the limitation, affected domains, migration/compatibility effects and required ADR updates are documented and approved.
+`SAFE TO DELETE` is classification, not authorization.
 
 ## Status
 
 ```text
 ARCHITECTURAL PATTERNS: APPROVED
 APPLICABILITY: PROJECT-WIDE
-CURRENT BASELINE COVERAGE: THROUGH PR #20 / MIGRATION 011
+FUNCTIONAL BASELINE COVERAGE: THROUGH PR #24 / MIGRATION 012
+TECHNICAL BASELINE COVERAGE: THROUGH PR #25
+SYSTEM ROLES: 4
+SYSTEM PERMISSIONS: 25
+BUILT-IN THEMES: 3
+REQUIRED CSS ASSETS PER THEME: 10
+REQUIRED STATUS CHECK: NOT ENABLED
 ```

@@ -2,50 +2,56 @@
 
 ## Назначение и классификация
 
-Каталог `docs/domains` содержит целевые спецификации предметных областей АСУ-ВЧ. Они определяют границы ответственности, инварианты, зависимости, аудит, безопасность и критерии готовности.
+Каталог содержит target domain specifications. Этот `README.md` — living domain index. Факт implementation подтверждается `../PROJECT-STATUS.md`, `../DATABASE-CURRENT.md`, executable migrations и Test Evidence.
 
-Этот `README.md` является **living domain index**, поскольку содержит текущую карту реализации. Документы отдельных доменов являются архитектурными требованиями и могут описывать целевую модель шире runtime.
-
-Реализованное состояние фиксируется в `../PROJECT-STATUS.md`, `../DATABASE-CURRENT.md`, executable migrations и профильных Test Report. Наличие решения в целевой доменной спецификации само по себе не доказывает существование runtime-функции.
-
-## Текущая фаза проекта
-
-Проект находится в фазе **incremental implementation**:
+## Текущая фаза
 
 ```text
 Project architecture        — APPROVED
 Domain modeling             — CONTINUES PER INCREMENT
 Implementation              — STARTED
-Functional increments       — PR #1–#9, #12, #15, #19, #20 MERGED
-Latest functional PR        — #20
+Functional increments       — PR #1–#9, #12, #15, #19, #20, #24 MERGED
+Latest functional PR        — #24
+Latest technical PR         — #25
 Active functional increment — NONE
+Active technical increment  — NONE
 ```
 
-Фундаментальные решения изменяются только через отдельный Review и Approval с анализом влияния.
+## Current domain map
 
-## Карта доменов
-
-| Домен | Текущее состояние |
+| Domain | Current state |
 |---|---|
-| Security | Реализован базовый runtime: пользователи, аутентификация, RBAC, approval, password change, rejection, archive/restore |
-| Reference | Реализованы четыре специализированных owner-only read-only каталога: воинские звания, типы организационных элементов, типовые воинские должности и публичные сведения о ВУС; универсальный reference runtime не заявлен |
-| Organization | Частично реализован runtime Organizational Structure v1: structures, versions, draft tree, document metadata, history и compare |
-| Audit | Аудит критических операций реализован внутри Security и Organization; общий доменный журнал ещё не реализован |
-| Infrastructure | Реализованы installer, migrations, local deploy, theme registry, health и CLI checker'ы |
-| Documents | Общий Documents runtime не реализован; Organization хранит только собственную document metadata и связи с версиями |
+| Security | users, authentication, RBAC, approval, password change, rejection, archive/restore |
+| Reference | four owner-only read-only routes; Military Ranks has current v2/historical v1 and compatibility service |
+| Organization | Organizational Structure v1: structures, versions, draft tree, document metadata, history, compare |
+| Audit | critical operation audit inside Security/Organization; common domain log not implemented |
+| Infrastructure | installer, migrations, deploy, theme registry, health, CLI checkers and static CI Stage A |
+| Documents | common Documents runtime not implemented; Organization owns only its document metadata |
 
-### Реализованные специализированные Reference-каталоги
+## Specialized Reference catalogs
 
-| Functional PR | Каталог | Migration |
+| Functional PR | Catalog | Migrations |
 |---:|---|---:|
-| #8 | Составы военнослужащих и воинские звания | 007 |
-| #9 | Типы организационных элементов | 008 |
-| #19 | Типовые воинские должности | 010 |
-| #20 | Публичные сведения о военно-учётных специальностях | 011 |
+| #8 / #24 | Military personnel compositions and ranks: v1 → current v2 + historical v1 | 007 + 012 |
+| #9 | Organizational element types | 008 |
+| #19 | Public military position types | 010 |
+| #20 | Public military occupational specialty information | 011 |
 
-Каталоги PR #19 и PR #20 основаны только на утверждённом public-source scope. Они не создают кадровые назначения, штатные позиции конкретной организации или связи с персональными данными.
+### Military Ranks v2 Reference contract
 
-Будущие направления:
+- v1 remains visible as superseded historical version;
+- v2 is the single current published version;
+- 20 rank codes/names/order preserved;
+- 8 version-scoped compositions/categories;
+- 8 semantic records;
+- 2 version sources and 8 composition sources;
+- derived categories explicitly distinguished from normative compositions;
+- Reference-owned read-only compatibility service uses same-version ancestry;
+- no Organization dependency, Staffing schema or personnel assignments.
+
+The four user-facing directories remain owner-only/read-only. Universal editable Reference runtime is not claimed.
+
+## Future directions
 
 ```text
 Personnel
@@ -59,55 +65,27 @@ Archive domain
 Notifications
 ```
 
-`Staff positions and personnel assignments` означает будущую кадровую/штатную модель и не дублирует уже реализованный публичный каталог типов воинских должностей.
+Future Staffing model does not duplicate public military position types or Military Ranks application semantics. It requires a separate approved increment.
 
-Будущие направления не являются активными задачами и требуют полного documentation-first цикла.
+## Domain ownership
 
-## Владение данными
+Each business concept has one owning domain. The owner defines invariants, write operations, lifecycle and contracts. Reading another domain's data does not grant write ownership.
 
-Каждая бизнес-концепция имеет один owning domain. Домен:
+## Organization boundary
 
-- определяет инварианты;
-- владеет write-операциями;
-- управляет lifecycle;
-- публикует согласованные контракты;
-- не допускает скрытого изменения чужих таблиц.
+Organizational Structure v1 implements structure/version lifecycle, stable elements, version-scoped tree, draft mutation, catalog-version bindings, document metadata, immutable change events, history and compare.
 
-Чтение справочных данных не даёт права изменять владеющий домен.
+Not implemented:
 
-## Реализованные границы Organization
+- personnel cards;
+- organization-specific staffing slots;
+- personnel assignments;
+- actual strength, equipment or restricted operational data;
+- common Documents and Audit domains.
 
-Organizational Structure v1 реализует:
+Public catalogs and Military Ranks v2 semantics do not remove these boundaries.
 
-- aggregate root организационной структуры;
-- stable organizational elements;
-- version lifecycle `draft`, `approved`, `active`, `cancelled`;
-- version-scoped дерево узлов;
-- создание новой версии на основе действующей либо последней отменённой;
-- изменение дерева только в draft;
-- catalog-version binding к Reference;
-- metadata документов и version-document links внутри Organization;
-- immutable change events, history и compare;
-- RBAC, CSRF, revision checks и транзакционные операции.
-
-Migration 009 создаёт 7 таблиц и 16 DB triggers. Домен использует 6 permissions `organization.structures.*`.
-
-## Ограничения Organization
-
-Не реализованы:
-
-- карточки военнослужащих;
-- штатные позиции конкретной организации;
-- кадровые назначения;
-- численность, вооружение и иные закрытые сведения;
-- общий Documents domain и document files;
-- общий Audit domain.
-
-Публичный каталог типов воинских должностей не снимает эти ограничения: он не является штатным расписанием и не содержит фактических назначений.
-
-Metadata документов внутри Organization не передаёт домену владение универсальными документами. Реализованная структура не должна наполняться закрытыми или фактическими сведениями без отдельного утверждения scope и защиты.
-
-## Допустимые зависимости
+## Allowed dependencies
 
 ```text
 Security       → Audit
@@ -115,40 +93,22 @@ Security       → Reference
 Organization   → Reference
 Organization   → Audit
 Documents      → Security / Reference / Organization / Audit
-Infrastructure → внешние технические системы
+Infrastructure → external technical systems
 ```
 
-Фактически Organizational Structure v1 читает Reference catalog и хранит actor references на Security users, не меняя Security domain. `Reference` не зависит от прикладных доменов. `Security` не зависит от `Organization` для входа и авторизации.
+Reference does not depend on Organization. Static CI belongs to Infrastructure and does not change domain ownership.
 
-## Порядок нового доменного инкремента
+## New domain increment workflow
 
 ```text
-Research
-→ Analysis
-→ Architecture
-→ Specification
-→ Review
-→ Approval
-→ Implementation
-→ Testing
-→ Commit
-→ Push
-→ Pull Request
-→ Final PR Review
-→ separate merge approval
-→ Merge
-→ post-merge verification
-→ separate branch deletion approval
+Research → Analysis → Architecture → Specification → Review → Approval
+→ Implementation → Testing → Commit → Push → Pull Request
+→ Final PR Review → separate merge approval → Merge
+→ post-merge verification → separate branch deletion approval
 ```
 
-Для DB-инкремента ERD и Migration Specification включаются в Architecture/Specification до Implementation. Migration и runtime-код не создаются до утверждения соответствующей документации.
+For DB increments, ERD/Migration Specification are included before Implementation. Runtime and migrations are prohibited before approval.
 
-## Существующие архитектурные документы
+## Target documents
 
-- `SECURITY.md` и `SECURITY-REVIEW.md`;
-- `REFERENCE.md`, review и approval;
-- `ORGANIZATION.md`, review и Organizational Structure v1 addenda;
-- `DOCUMENTS.md`, review и approval;
-- ERD и migration specifications в соседних каталогах.
-
-Эти документы могут описывать целевую модель шире текущей реализации и не должны трактоваться как доказательство существования runtime-функции.
+Security, Reference, Organization and Documents architecture files may describe a broader target. They are not proof that a runtime capability exists.

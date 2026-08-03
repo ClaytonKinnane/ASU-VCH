@@ -1,121 +1,102 @@
 # Правила разработки
 
-## Источник истины
+## Source of truth
 
-Репозиторий `ClaytonKinnane/ASU-VCH` на GitHub является единственным источником истины для кода и документации проекта.
+Repository `ClaytonKinnane/ASU-VCH` on GitHub is the source of truth. Changes are made in separate branches. Local clone is used for synchronization, deploy and testing, not unapproved source editing.
 
-Изменения выполняются в отдельной GitHub-ветке. Локальный клон не используется для разработки, создания commit или push; он используется для синхронизации, deploy и тестирования.
-
-## Обязательный процесс
-
-Материальный инкремент проходит этапы:
+## Mandatory process
 
 ```text
-Research
-→ Analysis
-→ Architecture
-→ Specification
-→ Review
-→ Approval
-→ Implementation
-→ Testing
-→ Commit
-→ Push
-→ Pull Request
-→ Final PR Review
-→ separate merge approval
-→ Merge
-→ post-merge verification
-→ separate branch deletion approval
+Research → Analysis → Architecture → Specification → Review → Approval
+→ Implementation → Testing → Commit → Push → Pull Request
+→ Final PR Review → separate merge approval → Merge
+→ post-merge verification → separate branch deletion approval
 ```
 
-Нельзя переходить к Implementation без утверждённых Architecture, Specification, Review и явного Approval владельца проекта.
+Implementation is prohibited before approved Architecture, Specification, Review and explicit owner Approval.
 
-Pull Request создаётся только после завершения утверждённого scope и требуемого Testing. Merge выполняется только после Final PR Review и отдельного явного разрешения. Удаление веток не входит автоматически ни в создание PR, ни в merge approval.
+Pull Request creation, merge and branch deletion are separate gates. Merge approval does not include deletion approval.
 
-## Классификация изменений
+## Change classes
 
-### Runtime-инкремент
+### Runtime increment
 
-Требует применимых проверок:
+Applicable evidence includes exact scope preflight, backup for schema/data changes, deploy preserving local config, PHP lint, installer/repeat installer, integration/regression checks, parity, HTTP smoke and Specification-defined manual acceptance.
 
-- repository/scope preflight;
-- backup перед schema/data migration;
-- deploy с сохранением `config/local.php`;
-- PHP lint;
-- installer и repeat installer;
-- профильные integration checker'ы и regressions;
-- source/deploy parity;
-- HTTP smoke;
-- предусмотренную Specification manual acceptance.
+### Documentation-only increment
 
-### Documentation-only инкремент
+Required:
 
-Не требует deploy/runtime retest, если diff ограничен утверждёнными Markdown-путями. Обязательны:
-
-- exact path allowlist;
-- отсутствие runtime/config/database/theme/tool diff;
-- проверка текущих baseline facts и historical anchors;
-- Markdown link validation;
+- exact approved path allowlist;
+- Markdown-only diff;
+- no runtime/config/database/migration/workflow/theme/tool diff;
+- current baseline and historical-anchor review;
+- relative-link validation;
 - stale-current-state scan;
-- secret scan;
-- Final PR Review перед merge.
+- secret/mobile claim review;
+- Final PR Review before merge.
 
-Documentation-only commit не объявляется runtime-протестированным.
+Documentation-only commit is not a runtime-tested head.
 
-## Ветки
+## GitHub Actions Static Verification
 
-- `main` содержит стабильное объединённое состояние.
-- Функциональность разрабатывается в `feature/...`.
-- Исправления выполняются в `bugfix/...` либо в активной feature-ветке до merge.
-- Документационные обновления выполняются в `docs/...`.
-- Постоянной feature-ветки проекта нет.
-- Завершённая ветка сохраняется до отдельного cleanup gate.
+Stage A is implemented through `.github/workflows/static-verification.yml`.
 
-Перед удалением каждой remote или local ветки обязательны:
+When applicable, it provides an additional signal for:
+
+- Pull Requests to `main`;
+- pushes to `main`;
+- manual `workflow_dispatch` diagnostics;
+- `git diff --check`;
+- tracked PHP lint;
+- 9 explicit CI-safe checkers;
+- final clean-worktree verification.
+
+Security boundary:
+
+```text
+permissions: contents read
+secrets/environments: none
+write permissions: none
+required status check: not enabled
+branch protection mutation: not performed
+```
+
+Static CI does not replace local MySQL, migrations, installer, deploy, source/deploy parity, HTTP/browser or manual visual acceptance. A successful static run cannot be used to claim unperformed functional tests as PASS.
+
+Stage B — required check, conversation-resolution rule or other branch-protection settings — requires separate Architecture, Specification, Review and Approval.
+
+## Branches
+
+- `main` is stable merged state;
+- `feature/...` for functional work;
+- `bugfix/...` for fixes;
+- `docs/...` for documentation;
+- no permanent feature branch;
+- completed branch retained until separately approved cleanup.
+
+Before deletion:
 
 1. fresh inventory;
-2. подтверждение, что tip достижим из актуального `origin/main` либо иным образом доказано отсутствие уникальных данных;
-3. проверка связанного PR и post-merge состояния;
-4. отдельное явное разрешение владельца;
-5. безопасное удаление без force, когда это применимо;
-6. итоговая проверка `main`, remote inventory и local branch set.
+2. reachability/unique-commit proof;
+3. PR and post-merge state;
+4. exact owner-approved batch;
+5. safe deletion without force when applicable;
+6. final main/inventory verification.
 
-Техническая классификация `SAFE TO DELETE` не является разрешением на удаление.
+`SAFE TO DELETE` is not authorization.
 
-## Локальный тестовый клон
+## Local test clone
 
 ```text
 C:\Project\ASU-VCH
 ```
 
-Допустимые операции:
+Allowed: fetch/prune, approved branch switch, SHA/divergence/worktree checks, controlled deploy, installer, lint, checkers, HTTP/browser testing and separately approved cleanup.
 
-- `git fetch --prune`;
-- переключение на утверждённую ветку или `main`;
-- проверка SHA, divergence и чистоты рабочего дерева;
-- controlled deploy в Open Server Panel;
-- installer, lint, CLI checker'ы, HTTP/browser testing;
-- Git CLI cleanup только после отдельного утверждения точного набора веток.
+Without scope approval prohibited: local source/doc editing, project commit/push, secret disclosure and force branch deletion.
 
-Перед синхронизацией:
-
-```powershell
-Set-Location -LiteralPath 'C:\Project\ASU-VCH'
-git status --short
-git fetch --prune origin
-git switch main
-git pull --ff-only origin main
-```
-
-Локально запрещены без отдельного scope:
-
-- ручное редактирование исходников и документации;
-- `git add`, `git commit` и `git push` проектных изменений;
-- раскрытие `config/local.php`, credentials, session data или временных паролей;
-- `git branch -D` либо force-update refs для обычного cleanup.
-
-## Разделение репозитория и web root
+## Repository versus web root
 
 ```text
 Git clone:   C:\Project\ASU-VCH
@@ -123,26 +104,19 @@ Deploy root: C:\OSPanel\home\asu-vch.local
 Apache root: C:\OSPanel\home\asu-vch.local\public
 ```
 
-Deploy выполняется контролируемым PowerShell-сценарием. `config/local.php` сохраняется; перед schema/data migration создаётся SQL backup.
+Deploy preserves `config/local.php`. SQL backup is required before schema/data migration, subject to explicit documented deviations.
 
-## Коммиты
+## Commit prefixes
 
-Используются понятные префиксы:
+`feat:`, `fix:`, `style:`, `docs:`, `refactor:`, `test:`, `chore:`.
 
-- `feat:` — новая функциональность;
-- `fix:` — исправление;
-- `style:` — оформление;
-- `docs:` — документация;
-- `refactor:` — переработка без изменения назначения;
-- `test:` — проверки;
-- `chore:` — служебные изменения.
-
-## Технологические ограничения
+## Technology constraints
 
 - Windows PowerShell 5.1;
-- PHP 8.5.4;
+- local PHP 8.5.4;
 - MySQL 8.4.x;
-- сторонние зависимости только после обоснования и Approval;
-- секреты и локальные параметры не хранятся в Git;
-- архитектурные решения не вводятся скрыто в коде или migration;
-- мобильная версия не объявляется проверенной без фактической мобильной приёмки.
+- GitHub static runner uses PHP 8.5.x independently;
+- third-party dependencies require justification and Approval;
+- secrets/local parameters are not stored in Git;
+- architecture decisions are not introduced silently;
+- mobile is not declared tested without actual acceptance.
