@@ -91,7 +91,7 @@ Semantic classification overrides directory classification. Current-state sectio
 
 ## Documentation consistency records
 
-### 2026-08-03 — Current-State Reconciliation v2
+### 2026-08-03 — Current-State Reconciliation v2 — completed
 
 - [Immutable audit](DOCUMENTATION-CURRENT-STATE-AUDIT-2026-08-03.md)
 - [Architecture](architecture/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-ARCHITECTURE.md)
@@ -100,8 +100,27 @@ Semantic classification overrides directory classification. Current-state sectio
 - [Approval](decisions/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-APPROVAL.md)
 - [Implementation](implementation/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-IMPLEMENTATION.md)
 - [Validation](testing/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-VALIDATION.md)
+- [Final PR Review](review/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-PR-FINAL-REVIEW.md)
 
-Final PR Review record создаётся только после разрешённого Pull Request и фактической exact-head проверки.
+```text
+PR: #26 CLOSED / MERGED
+exact reviewed head: 7f9d0c0b04de2930abb00a0feedc5d2e375dbaea
+merge commit: d9cb74245e09d8be6cd80fc5d7972e426d0aaaf7
+post-merge push run: 30846778001 / SUCCESS
+post-merge verification: PASS
+original documentation branch: deleted after separate approval
+```
+
+### 2026-08-03 — Current-State Reconciliation v2 Closure
+
+- [Architecture](architecture/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-ARCHITECTURE.md)
+- [Specification](specification/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-SPECIFICATION.md)
+- [Formal Review](review/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-FORMAL-REVIEW.md)
+- [Approval](decisions/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-APPROVAL.md)
+- [Implementation](implementation/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-IMPLEMENTATION.md)
+- [Validation](testing/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-VALIDATION.md)
+
+Final PR Review record этого closure-инкремента создаётся только после отдельно разрешённого Pull Request и фактической exact-head проверки.
 
 ### 2026-08-02 — Full Documentation Consistency Reconciliation
 
