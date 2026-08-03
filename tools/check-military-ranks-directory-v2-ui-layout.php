@@ -26,7 +26,10 @@ try {
     $hierarchyClassNeedle = <<<'PHP'
 directory-composition-card<?= $composition['parent_id'] !== null ? ' is-child' : '' ?>
 PHP;
-    $hierarchyPathNeedle = <<<'PHP'
+    $shortNameNeedle = <<<'PHP'
+<strong><?= e($composition['name']) ?></strong>
+PHP;
+    $fullPathNeedle = <<<'PHP'
 <strong><?= e($composition['path']) ?></strong>
 PHP;
 
@@ -35,8 +38,12 @@ PHP;
         'composition hierarchy class is data-driven'
     );
     military_rank_ui_layout_check(
-        str_contains($page, $hierarchyPathNeedle),
-        'composition hierarchy path remains explicit'
+        str_contains($page, $shortNameNeedle),
+        'composition cards use concise names'
+    );
+    military_rank_ui_layout_check(
+        !str_contains($page, $fullPathNeedle),
+        'composition cards do not duplicate parent path'
     );
 
     foreach (['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'] as $theme) {
