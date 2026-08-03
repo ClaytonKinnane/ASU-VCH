@@ -23,14 +23,12 @@ PR_STATE=OPEN
 PR_DRAFT=NO
 PR_MERGEABLE=YES
 BASE_SHA=c567429b3aa4d629a4e7c11fec7e3dbae907d92e
-HEAD_SHA=638bcd7d0b1b542a4752dc7349cf7fa8e
+HEAD_SHA=638bcd7d0b1b1afe27ee2034de3eb0184e515240
 CHANGED_PATHS=28
 APPROVED_PATHS_AT_THIS_GATE=28
 NON_MARKDOWN_PATHS=0
 UNRESOLVED_REVIEW_THREADS=0
 ```
-
-Historical note: the canonical pre-record head is `638bcd7d0b1b1afe27ee2034de3eb0184e515240`; the abbreviated field above is preserved only as part of the original prepared-record context.
 
 ## 3. Initial Pull Request workflow evidence
 
