@@ -7,7 +7,7 @@ BEGIN
     END IF;
 END;
 
-CREATE TRIGGGER trg_military_compositions_before_insert
+CREATE TRIGGER trg_military_compositions_before_insert
 BEFORE INSERT ON military_personnel_compositions
 FOR EACH ROW
 BEGIN
@@ -16,7 +16,7 @@ BEGIN
     END IF;
 END;
 
-CREATE TRIGGGER trg_military_compositions_before_update
+CREATE TRIGGER trg_military_compositions_before_update
 BEFORE UPDATE ON military_personnel_compositions
 FOR EACH ROW
 BEGIN
@@ -26,7 +26,7 @@ BEGIN
     END IF;
 END;
 
-CREATE TRIGGGER trg_military_compositions_before_delete
+CREATE TRIGGER trg_military_compositions_before_delete
 BEFORE DELETE ON military_personnel_compositions
 FOR EACH ROW
 BEGIN
@@ -34,4 +34,3 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'MILITARY_RANK_COMPOSITION_DELETE_FORBIDDEN';
     END IF;
 END;
-
