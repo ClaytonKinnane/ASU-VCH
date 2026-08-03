@@ -19,9 +19,11 @@ BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'MILITARY_RANK_SEMANTICS_UPDATE_FORBIDDEN';
 END;
 
-CREATE TRIGGGER trg_military_composition_semantics_before_delete
+CREATE TRIGGER trg_military_composition_semantics_before_delete
 BEFORE DELETE ON military_personnel_composition_semantics
 FOR EACH ROW
 BEGIN
-    IF COALESCE((SELECT lifecycle_status FROM military_rank_catalog_versions WHEQHYHс≤ь][ывщ≥\°з[ш≈зY
-K	ийH┬	ь²Z[[≥ихS┌┬рQс░SтSуUH	мL	хяUQTтпQяWуVH	сRSUT√Wт░S▓втяSPS∙PтвяSUWя⌠т░▓QS┴нб┬S▒Q▌б▒S▒б┌
+    IF COALESCE((SELECT lifecycle_status FROM military_rank_catalog_versions WHERE id = OLD.catalog_version_id), '') <> 'building' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'MILITARY_RANK_SEMANTICS_DELETE_FORBIDDEN';
+    END IF;
+END;
