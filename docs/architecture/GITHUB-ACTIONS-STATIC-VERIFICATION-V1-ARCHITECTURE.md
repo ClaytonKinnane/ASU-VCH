@@ -1,7 +1,7 @@
 # GitHub Actions Static Verification v1 — Architecture
 
-**Статус:** Approved for Implementation  
-**Дата утверждения:** 2026-08-03  
+**Статус:** Approved for Implementation
+**Дата утверждения:** 2026-08-03
 **Утверждённый baseline:** `main @ feac7230616d3a8df98acb48f43a0b60f89f2255`
 
 ## 1. Назначение
