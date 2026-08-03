@@ -2,216 +2,154 @@
 
 ## Назначение и классификация
 
-Каталог `docs/migrations` содержит целевые физические спецификации по доменам. Исполняемые migrations находятся в `database/migrations`.
-
-Этот `README.md` является **living migration index**, поскольку сообщает текущую последовательность executable migrations. Целевые migration specifications могут быть шире реализованной схемы; физический baseline подтверждается `../DATABASE-CURRENT.md`, executable migrations, installer и профильными checker'ами.
+Каталог содержит target physical specifications; executable migrations находятся в `database/migrations`. Этот `README.md` — living migration index.
 
 ```text
 Architecture / Domain Specification
 → ERD or Increment Specification
 → Migration Specification
-→ Review
-→ Approval
-→ database/migrations/NNN_description.sql
+→ Review → Approval
+→ executable migration
 → Integration Tests
 ```
 
-Migration не должна вводить скрытое архитектурное решение, отсутствующее в утверждённой документации.
+Migration не вводит hidden architecture decisions.
 
-## Текущая нумерация
+## Current numbering
 
-Исполняемые migrations используют последовательное имя:
-
-```text
-NNN_lowercase_description.sql
-```
-
-В текущем functional baseline зарегистрированы migrations `001–011`:
+В current functional baseline зарегистрированы migrations `001–012`:
 
 | № | Файл | Назначение |
 |---:|---|---|
-| 001 | `001_starter_security.sql` | минимальная Security-модель и bootstrap владельца |
-| 002 | `002_security_users_management.sql` | роли, permissions и управление пользователями |
-| 003 | `003_security_user_approval.sql` | audit metadata подтверждения |
-| 004 | `004_security_user_rejection_audit.sql` | отклонение пользователя и аудит |
-| 005 | `005_security_user_archive_restore.sql` | архивирование и восстановление |
-| 006 | `006_theme_management.sql` | глобальная активная тема и audit actor |
-| 007 | `007_military_ranks_directory.sql` | версионируемый справочник воинских званий |
-| 008 | `008_organizational_element_types_directory.sql` | версионируемый справочник типов организационных элементов |
-| 009 | `009_organizational_structure_v1.sql` | структуры, версии, дерево, metadata документов, change events и DB guards |
-| 010 | `010_military_positions_directory.sql` | версионируемый публичный каталог типов воинских должностей |
-| 011 | `011_public_military_occupational_specialties_directory.sql` | source-centric каталог публичных сведений о военно-учётных специальностях |
+| 001 | `001_starter_security.sql` | starter Security/bootstrap |
+| 002 | `002_security_users_management.sql` | users/RBAC |
+| 003 | `003_security_user_approval.sql` | approval audit |
+| 004 | `004_security_user_rejection_audit.sql` | rejection audit |
+| 005 | `005_security_user_archive_restore.sql` | archive/restore |
+| 006 | `006_theme_management.sql` | active theme |
+| 007 | `007_military_ranks_directory.sql` | Military Ranks v1 baseline |
+| 008 | `008_organizational_element_types_directory.sql` | element types |
+| 009 | `009_organizational_structure_v1.sql` | Organization Structure v1 |
+| 010 | `010_military_positions_directory.sql` | public military position types |
+| 011 | `011_public_military_occupational_specialties_directory.sql` | public VUS information |
+| 012 | `012_military_ranks_directory_v2.sql` | rank catalog lifecycle, semantics, sources and v2 publication |
 
-Источник истины для фактического порядка — таблица `migrations` и файлы `database/migrations` в актуальном `main`.
+Source of truth: executable files, compatibility loaders, installer registry and profile checkers.
 
-## Migration 009
-
-Migration 009 реализует утверждённые документы:
-
-```text
-docs/design/ORGANIZATIONAL-STRUCTURE-V1-DESIGN.md
-docs/design/ORGANIZATIONAL-STRUCTURE-V1-REVIEW.md
-docs/decisions/ORGANIZATIONAL-STRUCTURE-V1-APPROVAL.md
-docs/migrations/ORGANIZATIONAL-STRUCTURE-V1-MIGRATION.md
-docs/domains/ORGANIZATION-STRUCTURE-V1-ADDENDUM.md
-docs/erd/ERD-020-ORGANIZATIONAL-STRUCTURE-V1-ADDENDUM.md
-```
-
-Она создаёт:
+## Migration 009 — Organizational Structure v1
 
 ```text
-7 tables
-16 triggers
-6 organization.structures.* permissions
+tables: 7
+triggers: 16
+permissions added: 6
+system permissions after 009: 25
 ```
 
-Итоговый system permission baseline после migration 009 — `25`.
-
-Основные физические решения:
-
-- structure aggregate root;
-- stable organizational elements;
-- version-scoped tree;
-- catalog-version binding;
-- metadata документов и version links;
-- immutable change events;
-- DB-level lifecycle и ownership guards;
-- stable codes вместо фиксированных seed ID;
-- совместимость с MySQL 8.4.
-
-## Migration 010 — типовые воинские должности
-
-Migration 010 реализует approved public normative scope PR #19:
+## Migration 010 — Military Positions
 
 ```text
-docs/architecture/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
-docs/specification/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
-docs/review/MILITARY-POSITIONS-DIRECTORY-V1-FORMAL-REVIEW.md
-docs/decisions/MILITARY-POSITIONS-DIRECTORY-V1-IMPLEMENTATION-APPROVAL.md
-docs/implementation/MILITARY-POSITIONS-DIRECTORY-V1-IMPLEMENTATION.md
+compatibility loader: database/MilitaryPositionMigrationCompatibility.php
+transport: 5 ordered gzip/base64 parts
+tables: 14
+triggers: 41
+canonical types: 34
+variants: 35
+new permissions: 0
 ```
 
-Compatibility packaging:
+## Migration 011 — Public VUS
 
 ```text
-database/MilitaryPositionMigrationCompatibility.php
-database/migrations/010_military_positions_directory.sql
-5 ordered gzip/base64 parts
-archive SHA-256 verification
-canonical SQL SHA-256 verification
+compatibility loader: database/MilitaryOccupationalSpecialtyMigrationCompatibility.php
+transport: 2 ordered gzip/base64 parts
+tables: 9
+triggers: 26
+searchable records: 17
+new permissions: 0
 ```
 
-Physical outcome:
+## Migration 012 — Military Ranks Directory v2
+
+Approved records:
 
 ```text
-14 tables
-41 triggers
-34 canonical position types
-35 normative variants
-new system permissions: 0
+docs/design/MILITARY-RANKS-DIRECTORY-V2-DESIGN.md
+docs/review/MILITARY-RANKS-DIRECTORY-V2-FORMAL-REVIEW.md
+docs/decisions/MILITARY-RANKS-DIRECTORY-V2-APPROVAL.md
+docs/implementation/MILITARY-RANKS-DIRECTORY-V2-IMPLEMENTATION.md
+docs/testing/MILITARY-RANKS-DIRECTORY-V2-TEST-REPORT.md
 ```
 
-Каталог не является штатным расписанием, не содержит фактических назначений и не создаёт автоматических связей с воинскими званиями.
-
-## Migration 011 — публичные сведения о ВУС
-
-Migration 011 реализует approved public-source scope PR #20:
+Mechanism:
 
 ```text
-docs/architecture/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-ARCHITECTURE.md
-docs/specification/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-SPECIFICATION.md
-docs/review/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-FORMAL-REVIEW.md
-docs/decisions/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-IMPLEMENTATION-APPROVAL.md
-docs/implementation/PUBLIC-MILITARY-OCCUPATIONAL-SPECIALTIES-V1-IMPLEMENTATION.md
+marker: database/migrations/012_military_ranks_directory_v2.sql
+loader: database/MilitaryRankDirectoryV2MigrationCompatibility.php
+canonical modules: database/MilitaryRankDirectoryV2/*
+transport packaging: not gzip/base64
+marker bypass: fail closed
 ```
 
-Compatibility packaging:
+Migration 012 adds lifecycle columns/guards, two tables for version-scoped semantics and composition sources, exact publication/recovery contracts and 18 lifecycle/integrity/immutability triggers.
+
+Published outcome:
 
 ```text
-database/MilitaryOccupationalSpecialtyMigrationCompatibility.php
-database/migrations/011_public_military_occupational_specialties_directory.sql
-2 ordered gzip/base64 parts
-archive SHA-256 verification
-canonical SQL SHA-256 verification
+v1: superseded / valid_to 2026-08-02
+v2: published/current / valid_from 2026-08-03
+compositions/categories: 8
+semantic records: 8
+rank records: 20 unchanged codes/names/order
+version sources: 2
+composition sources: 8
+new permissions: 0
 ```
 
-Physical outcome:
-
-```text
-9 tables
-26 triggers
-17 public disclosure records
-new system permissions: 0
-```
-
-Source/evidence context сохраняется; полнота закрытого или ведомственного классификатора не заявляется. Каталог не связывается автоматически с должностями, званиями, оборудованием или персональными данными.
+Recovery supports fresh v1, DDL-only partial, exact valid building cleanup/recreate, contradictory building fail-closed and exact published-without-registry recovery.
 
 ## Permission baseline
 
-Migrations 010 и 011 используют owner-only read access через существующий `system.*.*` и не добавляют permissions.
+Migrations 010–012 add no permissions. Current baseline:
 
 ```text
 system roles: 4
-system permissions after migration 011: 25
+system permissions: 25
 ```
 
-## Требования к спецификации
+## Specification requirements
 
-Перед реализацией фиксируются:
+Before implementation fix:
 
-- порядок создания объектов;
-- точные типы и collation;
-- nullable/default-правила;
-- PK, FK, UNIQUE, CHECK и индексы;
-- generated columns;
-- допустимые FK actions;
-- triggers;
-- seed-данные и стабильные коды;
-- идемпотентность и восстановление после частичного отказа;
-- rollback/recovery policy;
-- автоматические проверки;
-- необходимость SQL backup;
-- packaging и integrity verification для migration, превышающей безопасный размер обычной доставки.
+- object order and types/collation;
+- PK/FK/UNIQUE/CHECK/indexes;
+- generated columns and triggers;
+- seed and stable codes;
+- idempotency/recovery;
+- rollback and backup policy;
+- packaging/loader contract;
+- exact verification and rejection scenarios.
 
-## Общие правила
+## Common rules
 
-- MySQL 8.4.x и InnoDB;
-- основная кодировка `utf8mb4`;
-- migration seed использует `utf8mb4_unicode_ci`;
-- MySQL `ENUM` не используется;
-- FK по умолчанию используют `ON DELETE RESTRICT ON UPDATE RESTRICT`, если иное не утверждено;
-- критические идентификаторы не задаются фиксированными числовыми ID;
-- seed работает по стабильным кодам;
-- повторный installer не создаёт дубликаты;
-- секреты и instance-specific credentials в migration отсутствуют;
-- первый владелец не создаётся статической production-migration.
+- MySQL 8.4 / InnoDB / utf8mb4;
+- no MySQL ENUM;
+- restrictive FK by default;
+- no fixed numeric IDs for critical references;
+- repeat installer creates no duplicates;
+- no production/instance credentials in migrations;
+- first owner is not created by static production migration.
 
-## Выполнение
+## Execution baseline
 
-Перед новой migration выполняются:
+Before material migration: clean exact SHA, SQL backup, deploy-file backup, review, deploy preserving `config/local.php`, installer, repeat installer, profile checkers, regressions, parity, HTTP/browser acceptance.
 
-1. проверка чистоты и точного GitHub SHA;
-2. SQL backup;
-3. backup изменяемых deploy-файлов;
-4. PHP/SQL review;
-5. deploy с сохранением `config/local.php`;
-6. installer;
-7. повторный installer с `Новых миграций нет.`;
-8. профильный integration checker;
-9. регрессионные checker'ы;
-10. browser-проверка затронутого интерфейса.
+PR #24 had a documented pre-migration-backup deviation; post-migration backup was created and checked. This deviation is not hidden or generalized as normal policy.
 
-Для migration 009 дополнительно используются:
+Current post-merge expectation:
 
 ```text
-database/OrganizationalStructureMigrationCompatibility.php
-tools/check-organizational-structure-migration-compatibility.php
-tools/check-organizational-structure.php
-database/check-organizational-structure.php
+Применено миграций: 12
+Новых миграций нет.
 ```
 
-Для migrations 010–011 дополнительно проверяются ordered archive parts, archive hash, canonical SQL hash и совместимость с installer/MySQL 8.4.
-
-## Статус целевых доменных спецификаций
-
-Файлы `SECURITY-MIGRATIONS.md`, `REFERENCE-MIGRATIONS.md` и `DOCUMENTS-MIGRATIONS.md` описывают целевые доменные решения и могут быть шире фактического schema baseline. Текущее состояние схемы документируется в `../DATABASE-CURRENT.md`.
+Target files `SECURITY-MIGRATIONS.md`, `REFERENCE-MIGRATIONS.md` and `DOCUMENTS-MIGRATIONS.md` may be broader than current physical schema.
