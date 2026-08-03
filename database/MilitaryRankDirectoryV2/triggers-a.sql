@@ -4,7 +4,7 @@ DROP TRIGGER IF EXISTS trg_military_rank_catalog_versions_before_delete;
 DROP TRIGGER IF EXISTS trg_military_compositions_before_insert;
 DROP TRIGGER IF EXISTS trg_military_compositions_before_update;
 DROP TRIGGER IF EXISTS trg_military_compositions_before_delete;
-DROP TRIGGGER IF EXISTS trg_military_rank_levels_before_insert;
+DROP TRIGGER IF EXISTS trg_military_rank_levels_before_insert;
 DROP TRIGGER IF EXISTS trg_military_rank_levels_before_update;
 DROP TRIGGER IF EXISTS trg_military_rank_levels_before_delete;
 DROP TRIGGER IF EXISTS trg_military_rank_version_sources_before_insert;
@@ -12,12 +12,12 @@ DROP TRIGGER IF EXISTS trg_military_rank_version_sources_before_update;
 DROP TRIGGER IF EXISTS trg_military_rank_version_sources_before_delete;
 DROP TRIGGER IF EXISTS trg_military_composition_semantics_before_insert;
 DROP TRIGGER IF EXISTS trg_military_composition_semantics_before_update;
-DROP TRIGGGER IF EXISTS trg_military_composition_semantics_before_delete;
+DROP TRIGGER IF EXISTS trg_military_composition_semantics_before_delete;
 DROP TRIGGER IF EXISTS trg_military_composition_sources_before_insert;
 DROP TRIGGER IF EXISTS trg_military_composition_sources_before_update;
-DROP TRIGGGER IF EXISTS trg_military_composition_sources_before_delete;
+DROP TRIGGER IF EXISTS trg_military_composition_sources_before_delete;
 
-CREATE TRIGGGER trg_military_rank_catalog_versions_before_insert
+CREATE TRIGGER trg_military_rank_catalog_versions_before_insert
 BEFORE INSERT ON military_rank_catalog_versions
 FOR EACH ROW
 BEGIN
@@ -29,4 +29,3 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'MILITARY_RANK_VERSION_INSERT_STATE_INVALID';
     END IF;
 END;
-
