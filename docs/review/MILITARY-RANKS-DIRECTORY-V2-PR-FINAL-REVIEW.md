@@ -1,9 +1,13 @@
 # Final PR Review — Составы военнослужащих и воинские звания v2
 
-Дата: **2026-08-03**  
-Pull Request: **#24**  
-Base: `main` @ `5f97ed4237cca6fed314952e0c19716d98e7f459`  
-Runtime/manual acceptance head: `b44aed14ee1a54be213cbc939322ba21b02e7a58`  
+Дата: **2026-08-03**
+
+Pull Request: **#24**
+
+Base: `main` @ `5f97ed4237cca6fed314952e0c19716d98e7f459`
+
+Runtime/manual acceptance head: `b44aed14ee1a54be213cbc939322ba21b02e7a58`
+
 Remediation recheck head: `fe893e8315f7add80ed4d0501b41d8bc39b4b0e8`
 
 ## 1. Итог
