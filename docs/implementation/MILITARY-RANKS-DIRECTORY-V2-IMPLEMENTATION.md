@@ -1,7 +1,9 @@
 # Implementation — Составы военнослужащих и воинские звания v2
 
-Статус: **IMPLEMENTED**  
-Ветка: `feature/military-ranks-directory-v2`  
+Статус: **IMPLEMENTED**
+
+Ветка: `feature/military-ranks-directory-v2`
+
 Runtime/manual acceptance head: `b44aed14ee1a54be213cbc939322ba21b02e7a58`
 
 ## 1. Application layer
