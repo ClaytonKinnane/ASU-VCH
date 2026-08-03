@@ -1,19 +1,19 @@
 # Documentation Current-State Reconciliation v2 — Implementation
 
-## 1. Status
+## 1. Historical implementation status
 
 ```text
-stage: Implementation
-status: COMPLETE / VALIDATION REQUIRED
+stage at this gate: Implementation
+status at this gate: COMPLETE / VALIDATION REQUIRED
 classification: documentation-only
 baseline: main @ c567429b3aa4d629a4e7c11fec7e3dbae907d92e
-branch: docs/documentation-current-state-reconciliation-v2
+branch at this gate: docs/documentation-current-state-reconciliation-v2
 date: 2026-08-03
 ```
 
-## 2. Pre-implementation guard
+Этот статус корректно описывает исходный Implementation gate. Текущий завершённый outcome приведён в разделе closure ниже.
 
-Immediately before implementation:
+## 2. Pre-implementation guard
 
 ```text
 expected main: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
@@ -46,7 +46,7 @@ Updated 15 living paths:
 14. `docs/DEVELOPMENT.md`
 15. `docs/ACCESS.md`
 
-The living baseline now consistently states:
+The living baseline was reconciled to:
 
 ```text
 latest functional PR: #24
@@ -61,130 +61,68 @@ required status check: not enabled
 branch protection changed by PR #25: no
 ```
 
-## 4. Functional baseline reconciliation
+## 4. Functional, theme and CI reconciliation
 
-Military Ranks Directory v2 is described as:
+Military Ranks Directory v2 was documented as migration 012, v1 superseded/historical, v2 published/current, 8 compositions/categories, 8 semantic records, 20 unchanged rank codes/names/order, 2 version sources, 8 composition sources and 18 lifecycle/integrity/immutability triggers.
 
-- migration 012;
-- v1 superseded/historical;
-- v2 published/current;
-- 8 compositions/categories;
-- 8 semantic records;
-- 20 unchanged rank codes/names/order;
-- 2 version sources;
-- 8 composition sources;
-- 18 lifecycle/integrity/immutability triggers;
-- Reference-owned read-only compatibility service;
-- no Staffing tables, Organization bindings or personnel assignments.
+Theme documentation was reconciled to 10 required CSS assets per theme, including `css/military-ranks-v2.css`.
 
-Migration 012 is correctly documented as compatibility-loader/marker based, not gzip/base64 packaged.
+Static CI Stage A was documented with PR/push/manual triggers, read-only permissions, tracked PHP lint, 9 CI-safe checkers and final worktree guard. Required status check / branch protection Stage B remained separately gated and not enabled.
 
-## 5. Theme reconciliation
+## 5. Operational closure implemented at that stage
 
-Theme documentation now matches `config/themes.php`:
+Six PR #24/#25 records received additive post-merge and branch-lifecycle closure. Original tested heads, pending markers and permission boundaries were preserved as historical evidence.
+
+## 6. Original changed-path model
 
 ```text
-required CSS assets per theme: 10
-new profile asset: css/military-ranks-v2.css
-Evgeniya Rostova additional SVG assets: 4
+approved final allowlist: 29 Markdown paths
+pre-Final-PR-Review expected paths: 28
+Final PR Review reserved path: 1
 ```
 
-## 6. CI reconciliation
+The 29th path was correctly added only after the separately authorized Pull Request existed.
 
-Living docs now record Stage A:
+## 7. Runtime isolation
 
-- workflow `ASU-VCH Static Verification`;
-- job `asu-vch-static-verification`;
-- PR/push/manual triggers;
-- Ubuntu 24.04 / PHP 8.5;
-- read-only permission model;
-- exact diff check;
-- tracked PHP lint;
-- 9 CI-safe checkers;
-- final worktree guard;
-- exact-head PR run PASS;
-- post-merge push/manual runs SUCCESS.
-
-Explicit boundary retained:
+No application, database, migration, workflow, theme/config, route, deploy, tool/checker, branch-protection, required-check or repository-setting change was made.
 
 ```text
-required status check: not enabled
-branch protection Stage B: separately gated
-CI replaces DB/deploy/browser/manual testing: no
-```
-
-## 7. Operational closure
-
-Updated six records:
-
-- three Military Ranks Directory v2 records;
-- three GitHub Actions Static Verification v1 records.
-
-Original pre-merge verdicts and pending markers remain explicitly historical. Separate closure sections record final PR heads, merge commits, post-merge evidence and separately approved branch deletion.
-
-## 8. New audit and process records
-
-Created:
-
-- immutable audit `DOCUMENTATION-CURRENT-STATE-AUDIT-2026-08-03.md`;
-- owner Approval record;
-- this Implementation record;
-- Validation record to be added after exact-head validation.
-
-Architecture, Specification and Formal Review were created before owner Approval and preserved unchanged.
-
-## 9. Changed-path model
-
-Approved final allowlist: 29 Markdown paths.
-
-Pre-Final-PR-Review expected state:
-
-```text
-changed paths: 28
-Markdown paths: 28
-non-Markdown paths: 0
-missing approved future path: docs/review/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-PR-FINAL-REVIEW.md
-```
-
-The 29th path is intentionally reserved for actual Final PR Review after separate Pull Request permission. It must not be created prematurely.
-
-## 10. Runtime isolation
-
-No changes were made to:
-
-- application code;
-- database code or migrations;
-- workflow;
-- `config/themes.php` or theme assets;
-- public routes;
-- deploy scripts;
-- tools/checkers;
-- branch protection or repository settings;
-- secrets, environments or permissions;
-- production/local database.
-
-## 11. Test classification
-
-```text
-semantic documentation validation: required
-relative link validation: required
-stale assertion scan: required
-historical anchor review: required
-secret/mobile boundary review: required
-git diff check: required
-runtime/DB/deploy/browser retest: not required
 mobile: OUT OF SCOPE / NOT RUN
 ```
 
-## 12. Remaining gates
+## 8. Historical remaining gates
 
-After Validation PASS:
+At the Implementation gate the process correctly stopped before Pull Request. PR creation, Final PR Review, merge and branch deletion required later separate permissions. These statements remain historical facts.
 
-1. stop before Pull Request;
-2. request separate owner permission for PR creation;
-3. create PR only after permission;
-4. obtain workflow evidence;
-5. add the 29th path during Final PR Review;
-6. request separate merge approval;
-7. merge/post-merge verification only after approval;
-8. branch deletion only after another separate approval.
+## 9. Post-merge and branch-lifecycle closure
+
+```text
+PR=26
+PR_STATE=CLOSED / MERGED
+APPROVED_PR_HEAD=7f9d0c0b04de2930abb00a0feedc5d2e375dbaea
+FINAL_PR_REVIEW=PASS
+FINAL_PR_WORKFLOW_RUN=30846434476 / SUCCESS
+MERGE_COMMIT=d9cb74245e09d8be6cd80fc5d7972e426d0aaaf7
+POST_MERGE_PUSH_RUN=30846778001 / SUCCESS
+POST_MERGE_JOB=91796908488 / SUCCESS
+POST_MERGE_VERIFICATION=PASS
+MERGED_CHANGED_PATHS=29 / 29 APPROVED
+MERGED_MARKDOWN_PATHS=29
+MERGED_NON_MARKDOWN_PATHS=0
+ORIGINAL_BRANCH=docs/documentation-current-state-reconciliation-v2
+ORIGINAL_BRANCH_STATUS=DELETED AFTER SEPARATE APPROVAL
+BRANCH_PROTECTION_CHANGED=NO
+REQUIRED_STATUS_CHECK_ENABLED=NO
+REPOSITORY_SETTINGS_CHANGED=NO
+MOBILE=OUT OF SCOPE / NOT RUN
+```
+
+Merge был выполнен только после отдельного exact-head разрешения. Автоматический `push` run подтвердил merge commit на `main`. Удаление исходной ветки было выполнено позже, также после отдельного разрешения.
+
+Merge commit не объявляется исходным implementation или validation head.
+
+```text
+CURRENT_INCREMENT_OUTCOME=IMPLEMENTED / VALIDATED / FINAL_REVIEWED / MERGED / POST_MERGE_VERIFIED / BRANCH_CLEANED
+CURRENT_STATUS=COMPLETE
+```
