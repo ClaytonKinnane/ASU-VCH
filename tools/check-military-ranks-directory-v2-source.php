@@ -17,6 +17,16 @@ function source_check(bool $condition, string $message): void
 }
 
 try {
+    $triggerFiles = [
+        'database/MilitaryRankDirectoryV2/triggers-a.sql',
+        'database/MilitaryRankDirectoryV2/triggers-b.sql',
+        'database/MilitaryRankDirectoryV2/triggers-c.sql',
+        'database/MilitaryRankDirectoryV2/triggers-d.sql',
+        'database/MilitaryRankDirectoryV2/triggers-e.sql',
+        'database/MilitaryRankDirectoryV2/triggers-f.sql',
+        'database/MilitaryRankDirectoryV2/triggers-g.sql',
+    ];
+
     $required = [
         'app/Directory/MilitaryRankCompatibilityService.php',
         'app/Directory/MilitaryRankCatalogRepository.php',
@@ -33,6 +43,7 @@ try {
         'themes/asu-blue/assets/css/military-ranks-v2.css',
         'themes/asu-light-blue/assets/css/military-ranks-v2.css',
         'themes/asu-evgeniya-rostova/assets/css/military-ranks-v2.css',
+        ...$triggerFiles,
     ];
     foreach ($required as $path) {
         source_check(is_file($root . '/' . $path), "Отсутствует файл {$path}.");
@@ -44,6 +55,30 @@ try {
 
     $marker = file_get_contents($root . '/database/migrations/012_military_ranks_directory_v2.sql');
     source_check(is_string($marker) && str_contains($marker, 'COMPATIBILITY_LOADER_REQUIRED'), 'Migration marker 012 повреждён.');
+
+    $triggerSql = '';
+    foreach ($triggerFiles as $relative) {
+        $content = file_get_contents($root . '/' . $relative);
+        source_check(is_string($content), "Не удалось прочитать {$relative}.");
+        source_check(preg_match('//u', $content) === 1, "SQL-шаблон {$relative} содержит некорректный UTF-8.");
+        source_check(
+            preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $content) !== 1,
+            "SQL-шаблон {$relative} содержит управляющие байты."
+        );
+        source_check(!str_contains($content, 'TRIGGGER'), "SQL-шаблон {$relative} содержит опечатку TRIGGGER.");
+        source_check(!str_contains($content, 'WHEQH'), "SQL-шаблон {$relative} содержит повреждённый SQL token.");
+        $triggerSql .= "\n" . $content;
+    }
+    source_check(substr_count($triggerSql, 'DROP TRIGGER IF EXISTS ') === 18, 'Ожидалось 18 DROP TRIGGER declarations.');
+    source_check(substr_count($triggerSql, 'CREATE TRIGGER ') === 18, 'Ожидалось 18 CREATE TRIGGER declarations.');
+
+    $publicationSql = file_get_contents($root . '/database/MilitaryRankDirectoryV2/publication.sql');
+    source_check(is_string($publicationSql) && preg_match('//u', $publicationSql) === 1, 'Publication SQL содержит некорректный UTF-8.');
+    source_check(
+        preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $publicationSql) !== 1,
+        'Publication SQL содержит управляющие байты.'
+    );
+    source_check(str_contains($publicationSql, 'START TRANSACTION;') && str_contains($publicationSql, 'COMMIT;'), 'Publication SQL не содержит транзакционные границы.');
 
     $themes = require $root . '/config/themes.php';
     foreach (['asu-blue', 'asu-light-blue', 'asu-evgeniya-rostova'] as $theme) {
