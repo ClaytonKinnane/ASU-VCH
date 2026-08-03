@@ -94,7 +94,10 @@ function military_rank_v2_assert_recoverable_building_state(PDO $pdo, int $versi
         }
     }
 
-    $legalCodes = ['federal-law-53-fz-article-46', 'presidential-decree-1237-article-20'];
+    $expectedVersionSources = [];
+    foreach (military_rank_v2_expected_version_sources() as $expectedSource) {
+        $expectedVersionSources[$expectedSource['source_code']] = $expectedSource;
+    }
     $sourceStmt = $pdo->prepare(
         'SELECT s.code, vs.source_role, vs.sort_order '
         . 'FROM military_rank_catalog_version_sources vs '
@@ -103,13 +106,19 @@ function military_rank_v2_assert_recoverable_building_state(PDO $pdo, int $versi
     );
     $sourceStmt->execute(['version_id' => $versionId]);
     foreach ($sourceStmt->fetchAll() as $row) {
-        if (!in_array((string) $row['code'], $legalCodes, true)
-            || !in_array((string) $row['source_role'], ['primary-list', 'equivalence-and-order'], true)
-            || (int) $row['sort_order'] < 1 || (int) $row['sort_order'] > 2) {
+        $sourceCode = (string) $row['code'];
+        $expectedSource = $expectedVersionSources[$sourceCode] ?? null;
+        if (!is_array($expectedSource)
+            || (string) $row['source_role'] !== $expectedSource['source_role']
+            || (int) $row['sort_order'] !== $expectedSource['sort_order']) {
             throw new RuntimeException('Migration 012 recovery: building v2 содержит неожиданный version source.');
         }
     }
 
+    $expectedCompositionSources = [];
+    foreach (military_rank_v2_expected_composition_sources() as $expectedSource) {
+        $expectedCompositionSources[$expectedSource['composition_code']] = $expectedSource;
+    }
     $compositionSourceStmt = $pdo->prepare(
         'SELECT cs.composition_id, s.code, cs.source_role, cs.sort_order, cs.note '
         . 'FROM military_personnel_composition_sources cs '
@@ -119,15 +128,16 @@ function military_rank_v2_assert_recoverable_building_state(PDO $pdo, int $versi
     $compositionSourceStmt->execute(['version_id' => $versionId]);
     foreach ($compositionSourceStmt->fetchAll() as $row) {
         $compositionCode = $compositionCodesById[(int) $row['composition_id']] ?? null;
-        if ($compositionCode === null
-            || !in_array((string) $row['code'], $legalCodes, true)
-            || !in_array((string) $row['source_role'], ['normative-definition', 'rank-list', 'derived-classification-basis'], true)
-            || (int) $row['sort_order'] !== 1
-            || ((string) $row['source_role'] === 'derived-classification-basis'
-                && (!is_string($row['note']) || trim($row['note']) === ''))) {
+        $expectedSource = is_string($compositionCode)
+            ? ($expectedCompositionSources[$compositionCode] ?? null)
+            : null;
+        $actualNote = $row['note'] !== null ? (string) $row['note'] : null;
+        if (!is_array($expectedSource)
+            || (string) $row['code'] !== $expectedSource['source_code']
+            || (string) $row['source_role'] !== $expectedSource['source_role']
+            || (int) $row['sort_order'] !== $expectedSource['sort_order']
+            || $actualNote !== $expectedSource['note']) {
             throw new RuntimeException('Migration 012 recovery: building v2 содержит неожиданный composition source.');
         }
     }
 }
-
-/** @return list<string> */
