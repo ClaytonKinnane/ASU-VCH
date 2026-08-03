@@ -1,6 +1,6 @@
 # Управление доступом
 
-## Текущее состояние
+## Current baseline
 
 ```text
 system roles: 4
@@ -8,72 +8,34 @@ system permissions: 25
 owner wildcard: system.*.*
 ```
 
-Системные роли:
+System roles: `system_owner`, `administrator`, `operator`, `viewer`.
 
-- `system_owner` — владелец установки с абсолютным доступом через wildcard;
-- `administrator` — административные операции в пределах назначенных permissions;
-- `operator` — ограниченные рабочие операции;
-- `viewer` — ограниченный просмотр с privacy-защитой.
+## First owner
 
-## Первый владелец
+First user of an empty installation is created through bootstrap registration and transactionally receives `system_owner`. Public registration closes after successful owner creation.
 
-Первый пользователь пустой установки создаётся через bootstrap-регистрацию и транзакционно получает `system_owner`. После успешного создания владельца публичная регистрация отключается.
+Invariants:
 
-Инварианты:
+- one active owner;
+- last active owner cannot be blocked, archived or deprived of critical access;
+- ordinary role management cannot assign `system_owner`;
+- later users do not receive owner automatically.
 
-- допускается только один active owner;
-- последнего active owner нельзя заблокировать, архивировать или лишить критического доступа;
-- обычное управление ролями не назначает `system_owner`;
-- последующие пользователи не получают owner автоматически.
+## Authorization
 
-## Авторизация
+Permission never bypasses authentication/status, required password change, CSRF, validation, transactions, DB invariants, revisions, audit, privacy or last-owner protection.
 
-Permission не отменяет:
+Unauthorized authenticated access returns themed HTTP 403. Anonymous admin access redirects to login.
 
-- authentication и user status checks;
-- required password change;
-- CSRF для POST;
-- server validation;
-- transaction/DB invariants;
-- optimistic revisions;
-- audit и privacy;
-- last-owner protection.
+## User lifecycle
 
-Прямой доступ без permission возвращает themed HTTP 403. Anonymous access к admin перенаправляется на login.
-
-## Пользовательский lifecycle
-
-Реализованы:
-
-- `pending` creation с обязательным основанием;
-- approval и activation;
-- rejection с основанием и audit;
-- block/unblock;
-- archive/restore с audit;
-- required temporary-password change;
-- login prohibition для inactive/rejected/archived records;
-- privacy restrictions для чувствительного audit.
-
-Restore не активирует пользователя автоматически.
+Implemented: pending creation with reason, approval/activation, rejection audit, block/unblock, archive/restore, required temporary-password change and status-based login prohibition. Restore does not activate automatically.
 
 ## Organizational Structure permissions
 
-Migration 009 добавляет:
+Migration 009 added six `organization.structures.*` permissions. They are not auto-assigned to ordinary roles; owner access is via wildcard.
 
-```text
-organization.structures.view
-organization.structures.create
-organization.structures.update
-organization.structures.publish
-organization.structures.archive
-organization.structures.history
-```
-
-Они не назначаются автоматически ordinary system roles. `system_owner` получает доступ через `system.*.*`.
-
-## Owner-only directories
-
-Следующие read-only routes защищены существующим wildcard `system.*.*`:
+## Owner-only Reference directories
 
 ```text
 /admin/directories/military-ranks.php
@@ -82,44 +44,50 @@ organization.structures.history
 /admin/directories/military-occupational-specialties.php
 ```
 
-Migrations 010 и 011 не добавляют permissions. Общее количество остаётся 25.
+Current behavior:
 
-Для этих каталогов:
+- owner-only through `system.*.*`;
+- GET-only/read-only user routes;
+- prepared statements and escaped output;
+- safe official external links;
+- no mutation controls/endpoints;
+- ordinary roles without wildcard receive HTTP 403.
 
-- owner получает доступ;
-- ordinary role без wildcard получает themed HTTP 403;
-- пользовательские routes — GET-only;
-- mutation controls и mutation endpoints отсутствуют;
-- filters/search используют prepared statements;
-- output escaped;
-- official external links проходят safe URL validation.
+### Military Ranks v2
 
-Каталог должностей не предоставляет кадровые назначения. Каталог ВУС не предоставляет персональный воинский учёт и не связан с users/personnel.
+Migration 012 adds no permissions. Route supports current v2, historical/superseded v1, version switch, search/filtering and source evidence.
 
-## Безопасность изменяющих операций
+Reference-owned compatibility service is read-only and evaluates same-version composition/rank compatibility. It does not grant Staffing or Organization write access.
 
-Изменяющие операции других доменов:
+Migrations 010, 011 and 012 add no permissions; total remains 25.
 
-- POST-only;
-- permission protected;
-- CSRF protected;
-- identifiers и aggregate ownership validated;
-- lifecycle и DB invariants повторно проверяются в service layer;
-- expected revision применяется, где предусмотрено;
-- transactions + prepared statements;
-- change events и safe result messages.
+## Scope boundaries
 
-## Последняя проверка
+- Military Positions is not a staffing schedule and creates no assignments.
+- Public VUS is not personal military accounting and is not automatically linked to positions/ranks/equipment/personnel.
+- Military Ranks v2 derived semantics do not create Staffing tables, slots or Organization bindings.
+
+## Mutating operation security
+
+Other domain mutations are POST-only, permission + CSRF protected, validate ownership/lifecycle/revision, run in transactions, use prepared statements and record audit/events as specified.
+
+## Latest verification
 
 ```text
 system roles: 4
 system permissions: 25
 organization permissions: 6
 ordinary automatic organization assignments: 0
-owner access to PR #19/#20 directories: PASS
+owner access to current directories: PASS
 ordinary-role HTTP 403: PASS
-read-only boundary: PASS
+Military Ranks current/historical read-only boundary: PASS
+new permissions from migration 012: 0
 security regressions: PASS
+mobile: OUT OF SCOPE / NOT RUN
 ```
 
-Секреты, временные пароли и `config/local.php` не включаются в документацию и logs.
+## Secret terminology
+
+Production/instance credentials, session data, tokens, private keys, `config/local.php` and real temporary user passwords are prohibited in documentation/logs.
+
+The approved public `Admin / 12315` local-only fixture is not a production/instance secret, is restricted to local bootstrap, requires first-login replacement and must not be reused for other accounts/environments.
