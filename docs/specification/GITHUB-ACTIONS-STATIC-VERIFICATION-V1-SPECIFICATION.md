@@ -1,6 +1,6 @@
 # GitHub Actions Static Verification v1 — Specification
 
-**Статус:** Approved for Implementation  
+**Статус:** Approved for Implementation
 **Baseline:** `main @ feac7230616d3a8df98acb48f43a0b60f89f2255`
 
 ## 1. Repository contract
