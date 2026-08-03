@@ -1,184 +1,95 @@
 # GitHub Actions Static Verification v1 — Test Report
 
-**Статус:** PR WORKFLOW PASS
-**Дата:** 2026-08-03
-**PR:** #25
-**Base:** `feac7230616d3a8df98acb48f43a0b60f89f2255`
-**Validated implementation/remediation head:** `7bc170d4673b1143e4b7d149738a4c081e2af476`
+## Historical PR test gate
 
-## 1. Scope
+```text
+date: 2026-08-03
+PR: #25
+base: feac7230616d3a8df98acb48f43a0b60f89f2255
+validated implementation head: 7bc170d4673b1143e4b7d149738a4c081e2af476
+status then: PR WORKFLOW PASS / FINAL REVIEW PENDING
+```
 
-Проверялись только утверждённые static CI capabilities:
+The pending marker was correct at that gate. Later outcomes are recorded separately below.
 
-- workflow registration и `pull_request` trigger;
-- runner и PHP runtime;
-- token permissions;
-- immutable Action references;
-- event-aware `git diff --check`;
-- tracked PHP lint;
-- девять CI-safe checker’ов;
-- final repository integrity.
+## Scope
 
-DB, migrations, installer, deploy, HTTP, browser, visual и mobile testing не выполнялись и не входят в scope.
+Tested static workflow registration, triggers, runner/PHP, read-only permissions, immutable Action references, event-aware diff check, tracked PHP lint, 9 CI-safe checker entrypoints and final repository integrity.
 
-## 2. Pre-PR validation
+Database, installer, deploy, HTTP/browser, visual and mobile checks were outside this static-only increment.
 
-До записи workflow выполнены:
+## Attempt history
 
-- YAML parsing: PASS;
-- `bash -n` для пяти shell steps: PASS;
-- review команды PHP lint: первоначальная форма `php -l -- <file>` отклонена до commit, поскольку локальная проверка показала зависание; реализована корректная форма `php -l <file>`;
-- changed-path allowlist review: PASS;
-- immutable SHA review: PASS.
+```text
+attempt 1 run: 30836352719
+attempt 1 result: FAILURE
+cause: Markdown trailing whitespace detected by git diff --check
+assessment: correct fail-closed behavior
+```
 
-## 3. Attempt 1 — expected fail-closed evidence
+Only trailing whitespace was remediated.
 
-Workflow run:
+```text
+successful run: 30836630576
+job: 91763264596
+head: 7bc170d4673b1143e4b7d149738a4c081e2af476
+result: SUCCESS
+runner: Ubuntu 24.04.4
+PHP: 8.5.9
+tracked PHP: 124 / 0 errors
+CI-safe checkers: 9 / PASS
+final worktree: PASS
+```
 
-- run ID: `30836352719`;
-- run number: `1`;
-- head: `973d952a3d2310aa307117310cec530854e63760`;
-- job: `asu-vch-static-verification`;
-- result: `FAILURE`.
+A later synchronization run also completed successfully before Final PR Review.
 
-Успешно до failure:
+## Non-blocking platform annotation
 
-- runner: `ubuntu-24.04`;
-- token permissions: `contents: read`, metadata read;
-- checkout immutable SHA: PASS;
-- setup-php immutable SHA: PASS;
-- PHP installed: `8.5.9`;
-- coverage disabled: PASS;
-- Composer tools disabled: PASS;
-- initial checkout clean: PASS.
+GitHub reported that the pinned checkout revision targeted Node.js 20 and executed it on Node.js 24. Checkout and all workflow steps succeeded. Updating the pinned revision is a separate maintenance increment.
 
-Failure step:
+## Final PR Review and merge closure
 
-`Event-aware git diff check`
+```text
+EXACT_FINAL_PR_HEAD=0c6f7338f912e8797868d02d54fc015df7533ad6
+FINAL_EXACT_HEAD_RUN=30836965091 / SUCCESS
+FINAL_PR_REVIEW=PASS
+PR_STATE=CLOSED / MERGED
+MERGE_COMMIT=c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+```
 
-Причина:
+## Post-merge verification
 
-`git diff --check` обнаружил Markdown hard-break trailing spaces в пяти документах.
+```text
+PUSH_RUN=30837637886 / SUCCESS
+WORKFLOW_DISPATCH_RUN=30839122892 / SUCCESS
+POST_MERGE_VERIFICATION=PASS
+RUNNER=Ubuntu 24.04.4
+PHP=8.5.9
+PERMISSIONS=contents read
+DIFF_BASE=feac7230616d3a8df98acb48f43a0b60f89f2255
+DIFF_HEAD=c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+GIT_DIFF_CHECK=PASS
+TRACKED_PHP=124 / 0 ERRORS
+CI_SAFE_CHECKERS=9 / PASS
+ORGANIZATION_UI=64 PASS / 0 FAIL
+FINAL_WORKTREE=PASS
+ALL_STEPS=SUCCESS
+```
 
-Это подтвердило fail-closed behavior до PHP lint и checker execution.
+## Settings and branch lifecycle
 
-## 4. Remediation
+```text
+BRANCH_PROTECTION_CHANGED=NO
+REQUIRED_STATUS_CHECK_ENABLED=NO
+REPOSITORY_SETTINGS_CHANGED=NO
+FEATURE_BRANCH=DELETED AFTER SEPARATE APPROVAL
+DATABASE_DEPLOY_BROWSER_VISUAL_MOBILE=OUT OF SCOPE / NOT RUN
+```
 
-Исправлены только trailing spaces в:
+No unperformed functional check is claimed as PASS.
 
-- Architecture;
-- Specification;
-- Formal Review;
-- Approval;
-- Implementation.
-
-Workflow logic, runtime files и checker files не изменялись.
-
-Remediation выполнена отдельными fast-forward commits. Не применялись force-push, rebase или squash.
-
-## 5. Successful Pull Request run
-
-Workflow run:
-
-- run ID: `30836630576`;
-- run number: `6`;
-- job ID: `91763264596`;
-- workflow: `ASU-VCH Static Verification`;
-- job: `asu-vch-static-verification`;
-- validated head: `7bc170d4673b1143e4b7d149738a4c081e2af476`;
-- merge test ref: `5beb8a5f9f3ac9bcdc0472c496644234eabe2edc`;
-- conclusion: `SUCCESS`.
-
-## 6. Environment evidence
-
-- runner image: `ubuntu-24.04`;
-- OS: Ubuntu 24.04.4 LTS;
-- PHP: `8.5.9`;
-- coverage: none;
-- tools: none;
-- GitHub token: contents read, metadata read;
-- checkout credentials removed after checkout;
-- secrets used by repository commands: none.
-
-## 7. Step results
-
-- Checkout: PASS
-- Setup PHP 8.5: PASS
-- Verify PHP runtime and clean checkout: PASS
-- Event-aware git diff check: PASS
-- Lint tracked PHP files: PASS
-- Run CI-safe checkers: PASS
-- Verify final repository integrity: PASS
-- Post Checkout: PASS
-
-## 8. Event-aware diff evidence
-
-- event: `pull_request`;
-- exact base SHA: `feac7230616d3a8df98acb48f43a0b60f89f2255`;
-- exact head SHA: `7bc170d4673b1143e4b7d149738a4c081e2af476`;
-- result marker: `GIT_DIFF_CHECK_STATUS=PASS`.
-
-## 9. PHP lint evidence
-
-- source: tracked Git files only;
-- NUL-safe enumeration: PASS;
-- PHP files checked: `124`;
-- syntax errors: `0`;
-- result marker: `PHP_LINT_STATUS=PASS`.
-
-## 10. CI-safe checker evidence
-
-Executed count: `9`.
-
-1. `database/check-theme-asset-failure.php` — PASS
-2. `tools/check-all-theme-directory-assets.php` — PASS
-3. `tools/check-organizational-structure-migration-compatibility.php` — PASS
-4. `tools/check-organizational-structure-ui-polish.php` — PASS, 64 PASS / 0 FAIL
-5. `tools/check-military-occupational-specialties-ui.php` — PASS
-6. `tools/check-military-rank-compatibility-service.php` — PASS
-7. `tools/check-military-rank-v2-loader.php` — PASS
-8. `tools/check-military-ranks-directory-v2-source.php` — PASS
-9. `tools/check-military-ranks-directory-v2-ui-layout.php` — PASS
-
-Result marker: `CI_SAFE_CHECKERS_STATUS=PASS`.
-
-## 11. Repository integrity
-
-Final command checked tracked and untracked state.
-
-Result marker:
-
-`REPOSITORY_WORKTREE_STATUS=PASS`
-
-No checker left repository modifications.
-
-## 12. Warnings
-
-GitHub runner emitted a non-blocking platform warning that `actions/checkout` targets Node.js 20 and was forced to run on Node.js 24 by the current runner platform.
-
-Assessment:
-
-- action was pinned to the approved immutable SHA;
-- checkout completed successfully;
-- warning did not affect workflow result;
-- no workflow change is required in this increment.
-
-## 13. Documentation synchronization note
-
-This Test Report is a documentation-only commit after the validated implementation/remediation head. Therefore its resulting PR head must receive a fresh successful `pull_request` run before Final PR Review.
-
-## 14. Boundaries
-
-- DB testing: OUT OF SCOPE / NOT RUN
-- Deploy testing: OUT OF SCOPE / NOT RUN
-- HTTP/browser testing: OUT OF SCOPE / NOT RUN
-- Visual desktop acceptance: OUT OF SCOPE / NOT RUN
-- Mobile testing: OUT OF SCOPE / NOT RUN
-- Branch protection mutation: NOT PERFORMED
-- Merge: NOT PERFORMED
-
-## 15. Verdict
-
-`PULL_REQUEST_WORKFLOW_TESTING_STATUS=PASS`
-
-Final PR Review remains pending until the documentation synchronization run on the current PR head succeeds.
+```text
+PULL_REQUEST_WORKFLOW_TESTING_STATUS=PASS
+POST_MERGE_VERIFICATION_STATUS=PASS
+CURRENT_CLOSURE_STATUS=COMPLETE
+```
