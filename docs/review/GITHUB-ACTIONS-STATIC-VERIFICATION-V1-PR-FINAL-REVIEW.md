@@ -1,169 +1,92 @@
 # GitHub Actions Static Verification v1 — Final PR Review
 
-**Статус:** REVIEW RECORD PREPARED / EXACT-HEAD VERDICT PENDING
-**Дата:** 2026-08-03
-**PR:** #25
-**Base:** `main @ feac7230616d3a8df98acb48f43a0b60f89f2255`
-**Reviewed content head before this record:** `e745213c7966f444bc53bafa85604a42f697aad8`
+## Historical record preparation state
 
-## 1. Review scope
+```text
+date: 2026-08-03
+PR: #25
+base: main @ feac7230616d3a8df98acb48f43a0b60f89f2255
+reviewed content head before record: e745213c7966f444bc53bafa85604a42f697aad8
+status then: RECORD PREPARED / EXACT-HEAD VERDICT PENDING
+```
 
-Final PR Review проверяет:
+This pending state was correct because adding the record changed the PR head. The exact-head verdict is preserved below.
 
-- exact PR base и head;
-- merge-base и divergence;
-- changed-path allowlist;
-- workflow security model;
-- immutable Action references;
-- trigger, concurrency, runner и timeout;
-- event-aware diff implementation;
-- tracked PHP lint implementation;
-- CI-safe checker allowlist;
-- фактические Pull Request workflow runs;
-- documentation consistency;
-- отсутствие runtime, DB, migration, UI, theme, deploy и settings changes;
-- отсутствие unresolved review findings.
+## Reviewed scope
 
-## 2. Scope review
+The review covered exact base/head and divergence, 8-path allowlist, workflow identity/security, immutable Actions, triggers/concurrency/runtime, event-aware diff, tracked PHP lint, 9-checker allowlist, workflow evidence, documentation consistency, settings isolation and unresolved findings.
 
-До добавления этого record PR содержал семь approved paths:
+## Security and static verification result
 
-1. `.github/workflows/static-verification.yml`
-2. Architecture
-3. Specification
-4. Formal Review
-5. Approval
-6. Implementation
-7. Test Report
+PASS confirmed:
 
-Этот record является восьмым и последним approved path.
+- `pull_request_target` absent;
+- top-level `contents: read`;
+- no write permissions, secrets, environments or OIDC;
+- pinned checkout/setup PHP revisions;
+- checkout credentials not persisted;
+- no DB/deploy commands;
+- exact event payload SHA;
+- NUL-safe tracked PHP lint;
+- explicit checker allowlist;
+- final repository integrity guard;
+- no `continue-on-error`.
 
-Ни один existing runtime, database, checker, UI, theme или deploy file не изменён.
+## Attempt and synchronization history
 
-## 3. Workflow review
+```text
+initial failure run: 30836352719
+cause: trailing whitespace
+assessment: correct fail-closed behavior
+successful remediation run: 30836630576
+Test Report synchronization run: 30836882814
+```
 
-- workflow name: `ASU-VCH Static Verification` — PASS
-- job ID: `asu-vch-static-verification` — PASS
-- job name: `asu-vch-static-verification` — PASS
-- runner: `ubuntu-24.04` — PASS
-- timeout: 10 minutes — PASS
-- PHP: `8.5.x` — PASS
-- Composer: disabled with `tools: none` — PASS
-- coverage: none — PASS
-- services/cache/artifacts: absent — PASS
+## Historical exact-head completion rule
 
-## 4. Security review
+The record originally required a new run on the final head, unchanged 8-path scope, mergeability, zero unresolved threads and a recorded exact-head verdict. Until then merge remained prohibited. This rule was subsequently satisfied.
 
-- `pull_request_target`: absent — PASS
-- top-level permission `contents: read` — PASS
-- write permissions: absent — PASS
-- repository secrets in commands: absent — PASS
-- environments/OIDC: absent — PASS
-- checkout immutable SHA — PASS
-- setup-php immutable SHA — PASS
-- checkout `persist-credentials: false` — PASS
-- checkout `fetch-depth: 0` — PASS
-- deploy/DB/network-dependent repository commands: absent — PASS
-- final tracked/untracked integrity check: present — PASS
+## Exact-head Final PR Review verdict
 
-## 5. Static verification review
+```text
+EXACT_REVIEWED_HEAD=0c6f7338f912e8797868d02d54fc015df7533ad6
+FINAL_RUN=30836965091 / SUCCESS
+RUNNER=ubuntu-24.04
+PHP=8.5.9
+TRACKED_PHP=124 / 0 ERRORS
+CI_SAFE_CHECKERS=9 / PASS
+FINAL_WORKTREE=PASS
+UNRESOLVED_THREADS=0
+BLOCKING_FINDINGS=0
+MAJOR_FINDINGS=0
+MINOR_FINDINGS=0
+FINAL_PR_REVIEW_STATUS=PASS
+MERGE_AUTHORIZED_BY_REVIEW=NO
+```
 
-- exact event payload SHA used for Pull Request diff — PASS
-- push and root fallback defined — PASS
-- manual parent/root fallback defined — PASS
-- tracked PHP enumeration via `git ls-files -z` — PASS
-- NUL-safe Bash array — PASS
-- absence of tracked PHP fails closed — PASS
-- explicit checker allowlist — PASS
-- checker discovery by glob absent — PASS
-- DB/hybrid/Windows/deploy checker execution absent — PASS
-- `continue-on-error` absent — PASS
+Review did not authorize merge; a later separate owner permission was required.
 
-## 6. Testing evidence review
+## Post-merge and branch-lifecycle closure
 
-Attempt 1:
+```text
+PR_STATE=CLOSED / MERGED
+MERGE_METHOD=MERGE COMMIT
+MERGE_COMMIT=c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+PUSH_RUN=30837637886 / SUCCESS
+WORKFLOW_DISPATCH_RUN=30839122892 / SUCCESS
+POST_MERGE_VERIFICATION=PASS
+BRANCH_PROTECTION_CHANGED=NO
+REQUIRED_STATUS_CHECK_ENABLED=NO
+REPOSITORY_SETTINGS_CHANGED=NO
+FEATURE_BRANCH=DELETED AFTER SEPARATE APPROVAL
+DATABASE_DEPLOY_BROWSER_VISUAL_MOBILE=OUT OF SCOPE / NOT RUN
+```
 
-- run `30836352719`;
-- result: FAILURE;
-- exact cause: trailing whitespace found by event-aware `git diff --check`;
-- assessment: correct fail-closed behavior.
+Both post-merge runs confirmed PHP 8.5.9, 124 tracked PHP files without syntax errors, 9 CI-safe checker'ов, Organization UI 64 PASS / 0 FAIL, successful diff check and clean final worktree.
 
-Remediation:
+The Node.js 20 deprecation annotation was non-blocking. Any action revision update remains separately gated.
 
-- only trailing whitespace removed;
-- separate fast-forward commits;
-- no force-push, rebase or squash.
-
-Successful implementation/remediation run:
-
-- run `30836630576`;
-- validated head `7bc170d4673b1143e4b7d149738a4c081e2af476`;
-- conclusion: SUCCESS;
-- PHP 8.5.9;
-- tracked PHP files: 124;
-- CI-safe checker count: 9;
-- final worktree: PASS.
-
-Test Report synchronization run:
-
-- run `30836882814`;
-- head `e745213c7966f444bc53bafa85604a42f697aad8`;
-- conclusion: SUCCESS;
-- all workflow steps: PASS.
-
-## 7. Non-blocking warning
-
-GitHub reported that the pinned checkout Action targets Node.js 20 and the runner forced Node.js 24.
-
-Assessment:
-
-- immutable SHA remained unchanged;
-- checkout completed successfully in all relevant runs;
-- warning is external platform compatibility information;
-- no blocking defect demonstrated;
-- future Action SHA refresh must be a separately reviewed maintenance change.
-
-## 8. Testing boundaries
-
-- MySQL: OUT OF SCOPE / NOT RUN
-- migrations/installer: OUT OF SCOPE / NOT RUN
-- Open Server/deploy: OUT OF SCOPE / NOT RUN
-- source/deploy parity: OUT OF SCOPE / NOT RUN
-- HTTP/browser: OUT OF SCOPE / NOT RUN
-- visual desktop: OUT OF SCOPE / NOT RUN
-- mobile: OUT OF SCOPE / NOT RUN
-
-No unperformed check is claimed as PASS.
-
-## 9. Settings and lifecycle review
-
-- GitHub Actions settings changed: NO
-- branch protection changed: NO
-- required status check enabled: NO
-- merge performed: NO
-- feature branch deleted: NO
-
-Stage B remains separately gated.
-
-## 10. Findings
-
-- blocking findings: 0
-- major findings: 0
-- minor findings: 0
-- open findings: 0
-
-## 11. Exact-head completion rule
-
-Adding this record changes the PR head and triggers a final synchronization run. Final PR Review may be declared PASS only after:
-
-1. the final PR head is read back from GitHub;
-2. the final workflow run on that exact head concludes SUCCESS;
-3. the exact changed-path set remains the eight approved paths;
-4. the PR remains mergeable with no unresolved review threads;
-5. an exact-head review verdict is recorded in the PR conversation.
-
-Until those checks complete:
-
-`FINAL_PR_REVIEW_STATUS=PENDING_EXACT_HEAD_VERIFICATION`
-
-Merge remains prohibited without separate explicit owner permission.
+```text
+CURRENT_INCREMENT_OUTCOME=FINAL_REVIEWED / MERGED / POST_MERGE_VERIFIED / BRANCH_CLEANED
+STAGE_B_REQUIRED_STATUS_CHECK=NOT ENABLED
+```
