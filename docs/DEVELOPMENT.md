@@ -38,6 +38,65 @@ Required:
 
 Documentation-only commit is not a runtime-tested head.
 
+## Terminal documentation model
+
+### Documentation classes
+
+**Living documentation** describes durable current merged project state. It must be updated when that durable state changes or when a real living-content defect is found.
+
+**Historical gate records** capture evidence, permissions, decisions and status at a specific stage. They include:
+
+- Architecture;
+- Specification;
+- Formal Review;
+- Approval;
+- Implementation;
+- Validation/Test Report;
+- Final PR Review.
+
+**GitHub lifecycle evidence** is the canonical source for mutable repository state:
+
+- current `main` and PR base/head SHA;
+- open, closed and merged PR state;
+- review submissions and review threads;
+- Actions runs, jobs and logs;
+- current branch inventory;
+- merge and branch-deletion timeline events.
+
+### Historical interpretation
+
+A gate-scoped statement remains historical evidence after later gates complete. Historical `PENDING`, `NEXT GATE`, `NOT AUTHORIZED`, `NOT PERFORMED` and equivalent markers do not become current tasks merely because they are present in a repository file.
+
+Canonical rule:
+
+```text
+HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
+```
+
+Before declaring documentation stale or a task open, an audit must determine:
+
+1. the semantic class of the document or section;
+2. the date/gate to which the statement applies;
+3. the current canonical source of truth;
+4. whether the statement is currently actionable;
+5. whether a later canonical source supersedes it.
+
+Directory placement alone does not determine semantics.
+
+### Terminal invariant
+
+The lifecycle of the newest documentation Pull Request is not copied back into living Markdown solely to record its own review, merge, Actions run or branch cleanup.
+
+Architecture, Specification, Formal Review, Approval, Implementation, Validation and Final PR Review are not rewritten merely because later gates complete.
+
+A missing Markdown copy of the newest documentation PR lifecycle is not a documentation defect when the authoritative evidence exists in GitHub PR timeline, reviews, Actions and branch inventory.
+
+Recursive post-merge documentation closure is prohibited when the only missing information is that lifecycle copy.
+
+A new documentation increment remains valid for a genuine durable living-state error, broken normative rule, incorrect link, security/claim defect or other substantive content problem.
+
+This terminal model changes documentation interpretation only. It does not weaken or bypass the mandatory owner-gated process, Final PR Review, separate merge approval, post-merge verification or separately approved branch cleanup.
+
 ## GitHub Actions Static Verification
 
 Stage A is implemented through `.github/workflows/static-verification.yml`.
@@ -49,7 +108,7 @@ When applicable, it provides an additional signal for:
 - manual `workflow_dispatch` diagnostics;
 - `git diff --check`;
 - tracked PHP lint;
-- 9 explicit CI-safe checkers;
+- 9 explicit CI-safe checker'ов;
 - final clean-worktree verification.
 
 Security boundary:
