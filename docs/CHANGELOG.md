@@ -42,10 +42,14 @@
 - выявлено 0 blocking, 6 major и 1 minor finding;
 - утверждены Architecture, Specification, Formal Review и exact 29-path Markdown allowlist;
 - owner разрешил documentation-only Implementation;
-- living documentation актуализируется до functional PR #24, migration 012 и technical PR #25;
-- operational records PR #24/#25 получают additive closure без переписывания historical gate verdicts;
-- runtime, DB, migrations, workflow, themes, deploy, branch protection и settings не изменяются;
-- Pull Request, Final PR Review, merge и branch deletion текущего reconciliation ещё не выполнены и требуют отдельных gates.
+- 15 living documents актуализированы до functional PR #24, migration 012 и technical PR #25;
+- 6 operational records PR #24/#25 получили additive post-merge and branch-lifecycle closure;
+- исправлены migration count 11 → 12 и required CSS asset count 9 → 10;
+- documented static CI Stage A and explicit Stage B boundary;
+- Approval, immutable audit, Implementation and Validation evidence added;
+- semantic Documentation Validation: PASS on exact implementation head recorded in validation evidence;
+- runtime, DB, migrations, workflow, themes, deploy, branch protection and settings unchanged;
+- Pull Request, Final PR Review, merge and branch deletion of this reconciliation remain future separately gated actions.
 
 ## 2026-08-02
 
@@ -74,7 +78,7 @@
 
 - migration 011;
 - 9 tables, 26 triggers и 17 searchable records;
-- automated, manual desktop и targeted recheck: PASS;
+- automated, manual desktop and targeted recheck: PASS;
 - merge commit: `3082ec6ecbeddb92bd65e1398f05a9339abb199b`;
 - post-merge verification: PASS;
 - mobile: `OUT OF SCOPE / NOT RUN`.
@@ -82,7 +86,7 @@
 ### Post-PR20 Baseline Refresh — PR #21
 
 - documentation-only baseline refresh;
-- repeat Documentation Validation и Final PR Review: PASS;
+- repeat Documentation Validation and Final PR Review: PASS;
 - merge commit: `f5b53f2ee4453f293b58cbe486e0943ab602335b`;
 - post-merge Git verification and approved cleanup: PASS.
 
@@ -93,8 +97,8 @@
 - merged documentation reconciliation;
 - approved remote/local cleanup completed;
 - dated terminal snapshot recorded;
-- runtime, deploy и database не изменялись.
+- runtime, deploy and database unchanged.
 
-## Более ранние изменения
+## Earlier changes
 
-Historical records ранних Security, Theme, Reference и Organization increments находятся в `docs/design`, `docs/architecture`, `docs/decisions`, `docs/review`, `docs/testing` и merged PR history.
+Historical Security, Theme, Reference and Organization records are retained in `docs/design`, `docs/architecture`, `docs/decisions`, `docs/review`, `docs/testing` and merged PR history.
