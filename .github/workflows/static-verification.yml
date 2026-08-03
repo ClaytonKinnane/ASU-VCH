@@ -1,0 +1,188 @@
+name: ASU-VCH Static Verification
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asu-vch-static-verification-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  asu-vch-static-verification:
+    name: asu-vch-static-verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup PHP 8.5
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: none
+
+      - name: Verify PHP runtime and clean checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          php --version
+          php -r '
+          if (PHP_MAJOR_VERSION !== 8 || PHP_MINOR_VERSION !== 5) {
+              fwrite(STDERR, sprintf(
+                  "Expected PHP 8.5.x, actual %s.%s.%s\n",
+                  PHP_MAJOR_VERSION,
+                  PHP_MINOR_VERSION,
+                  PHP_RELEASE_VERSION
+              ));
+              exit(1);
+          }
+          '
+
+          status="$(git status --porcelain=v1 --untracked-files=all)"
+          if [[ -n "${status}" ]]; then
+            printf '%s\n' "${status}"
+            echo 'Checkout is not clean.' >&2
+            exit 1
+          fi
+
+          echo 'PHP_RUNTIME_STATUS=PASS'
+          echo 'INITIAL_REPOSITORY_WORKTREE_STATUS=PASS'
+
+      - name: Event-aware git diff check
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          EVENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          empty_tree="$(git hash-object -t tree /dev/null)"
+
+          case "${EVENT_NAME}" in
+            pull_request)
+              base="${PR_BASE_SHA}"
+              head="${PR_HEAD_SHA}"
+              ;;
+            push)
+              base="${PUSH_BEFORE_SHA}"
+              head="${EVENT_SHA}"
+              if [[ "${base}" =~ ^0{40}$ ]]; then
+                base="${empty_tree}"
+              fi
+              ;;
+            workflow_dispatch)
+              head="${EVENT_SHA}"
+              if git rev-parse --verify "${head}^" >/dev/null 2>&1; then
+                base="$(git rev-parse "${head}^")"
+              else
+                base="${empty_tree}"
+              fi
+              ;;
+            *)
+              echo "Unsupported event: ${EVENT_NAME}" >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ -z "${base}" || -z "${head}" ]]; then
+            echo 'Diff range is incomplete.' >&2
+            exit 1
+          fi
+
+          if [[ "${base}" != "${empty_tree}" ]]; then
+            git cat-file -e "${base}^{commit}"
+          fi
+          git cat-file -e "${head}^{commit}"
+
+          echo "DIFF_BASE_SHA=${base}"
+          echo "DIFF_HEAD_SHA=${head}"
+          git diff --check "${base}" "${head}"
+          echo 'GIT_DIFF_CHECK_STATUS=PASS'
+
+      - name: Lint tracked PHP files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' php_files < <(git ls-files -z -- '*.php')
+
+          if (( ${#php_files[@]} == 0 )); then
+            echo 'No tracked PHP files found.' >&2
+            exit 1
+          fi
+
+          for file in "${php_files[@]}"; do
+            echo "PHP_LINT_FILE=${file}"
+            php -l "${file}"
+          done
+
+          echo "PHP_LINT_FILE_COUNT=${#php_files[@]}"
+          echo 'PHP_LINT_STATUS=PASS'
+
+      - name: Run CI-safe checkers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          checkers=(
+            'database/check-theme-asset-failure.php'
+            'tools/check-all-theme-directory-assets.php'
+            'tools/check-organizational-structure-migration-compatibility.php'
+            'tools/check-organizational-structure-ui-polish.php'
+            'tools/check-military-occupational-specialties-ui.php'
+            'tools/check-military-rank-compatibility-service.php'
+            'tools/check-military-rank-v2-loader.php'
+            'tools/check-military-ranks-directory-v2-source.php'
+            'tools/check-military-ranks-directory-v2-ui-layout.php'
+          )
+
+          for checker in "${checkers[@]}"; do
+            if [[ ! -f "${checker}" ]]; then
+              echo "Checker not found: ${checker}" >&2
+              exit 1
+            fi
+
+            echo "CHECKER=${checker}"
+            php "${checker}"
+          done
+
+          echo "CI_SAFE_CHECKER_COUNT=${#checkers[@]}"
+          echo 'CI_SAFE_CHECKERS_STATUS=PASS'
+
+      - name: Verify final repository integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          status="$(git status --porcelain=v1 --untracked-files=all)"
+          if [[ -n "${status}" ]]; then
+            printf '%s\n' "${status}"
+            echo 'Repository was modified by verification commands.' >&2
+            exit 1
+          fi
+
+          echo 'REPOSITORY_WORKTREE_STATUS=PASS'
