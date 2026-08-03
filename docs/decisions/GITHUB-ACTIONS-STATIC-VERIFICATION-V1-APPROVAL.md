@@ -1,7 +1,7 @@
 # GitHub Actions Static Verification v1 — Approval
 
-**Статус:** APPROVED  
-**Дата:** 2026-08-03  
+**Статус:** APPROVED
+**Дата:** 2026-08-03
 **Approved baseline:** `main @ feac7230616d3a8df98acb48f43a0b60f89f2255`
 
 ## 1. Approval evidence
