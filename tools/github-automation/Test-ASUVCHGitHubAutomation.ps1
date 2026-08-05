@@ -121,49 +121,115 @@ try {
 
     Write-AsciiFile -Path (Join-Path $mockBin 'git.cmd') -Content @'
 @echo off
-if "%1"=="--version" echo git version mock&exit /b 0
-if "%1"=="rev-parse" if "%2"=="--is-inside-work-tree" echo true&exit /b 0
-if "%1"=="remote" echo https://github.com/ClaytonKinnane/ASU-VCH.git&exit /b 0
-if "%1"=="status" if exist "%ASUVCH_TEST_STATE%\dirty" echo  M mock.txt&exit /b 0
-if "%1"=="status" exit /b 0
+if "%1"=="--version" goto version
+if "%1"=="rev-parse" if "%2"=="--is-inside-work-tree" goto inside
+if "%1"=="remote" goto remote
+if "%1"=="status" goto status
 if "%1"=="fetch" exit /b 0
-if "%1"=="rev-parse" type "%ASUVCH_TEST_STATE%\sha"&exit /b 0
-if "%1"=="branch" echo main&exit /b 0
+if "%1"=="rev-parse" goto sha
+if "%1"=="branch" goto branch
+exit /b 0
+:version
+echo git version mock
+exit /b 0
+:inside
+echo true
+exit /b 0
+:remote
+echo https://github.com/ClaytonKinnane/ASU-VCH.git
+exit /b 0
+:status
+if exist "%ASUVCH_TEST_STATE%\dirty" echo  M mock.txt
+exit /b 0
+:sha
+type "%ASUVCH_TEST_STATE%\sha"
+exit /b 0
+:branch
+echo main
 exit /b 0
 '@
 
     Write-AsciiFile -Path (Join-Path $mockBin 'gh.cmd') -Content @'
 @echo off
-if "%1"=="--version" echo gh version mock&exit /b 0
-if "%1"=="auth" if "%2"=="status" if exist "%ASUVCH_TEST_STATE%\gh.auth" echo authenticated 1>&2&exit /b 0
-if "%1"=="auth" if "%2"=="status" echo not logged in 1>&2&exit /b 1
-if "%1"=="auth" if "%2"=="login" echo yes>"%ASUVCH_TEST_STATE%\gh.auth"&exit /b 0
+if "%1"=="--version" goto version
+if "%1"=="auth" if "%2"=="status" goto authstatus
+if "%1"=="auth" if "%2"=="login" goto authlogin
 if "%1"=="auth" if "%2"=="setup-git" exit /b 0
-if "%1"=="api" echo {"full_name":"ClaytonKinnane/ASU-VCH","default_branch":"main","permissions":{"push":true}}&exit /b 0
+if "%1"=="api" goto api
 exit /b 1
+:version
+echo gh version mock
+exit /b 0
+:authstatus
+if exist "%ASUVCH_TEST_STATE%\gh.auth" goto authenticated
+echo not logged in 1>&2
+exit /b 1
+:authenticated
+echo authenticated 1>&2
+exit /b 0
+:authlogin
+echo yes>"%ASUVCH_TEST_STATE%\gh.auth"
+exit /b 0
+:api
+echo {"full_name":"ClaytonKinnane/ASU-VCH","default_branch":"main","permissions":{"push":true}}
+exit /b 0
 '@
 
-    Write-AsciiFile -Path (Join-Path $mockBin 'winget.cmd') -Content "@echo off`r`nif \"%1\"==\"--info\" echo winget mock&exit /b 0`r`nexit /b 0`r`n"
+    Write-AsciiFile -Path (Join-Path $mockBin 'winget.cmd') -Content @'
+@echo off
+if "%1"=="--info" goto info
+exit /b 0
+:info
+echo winget mock
+exit /b 0
+'@
+
     Write-AsciiFile -Path (Join-Path $mockBin 'node.cmd') -Content "@echo off`r`necho v24.0.0`r`nexit /b 0`r`n"
 
     Write-AsciiFile -Path (Join-Path $mockBin 'codex-template.cmd') -Content @'
 @echo off
 setlocal EnableDelayedExpansion
-if "%1"=="--version" echo codex-cli mock&exit /b 0
-if "%1"=="login" if "%2"=="status" if exist "%ASUVCH_TEST_STATE%\codex.mode" set /p M=<"%ASUVCH_TEST_STATE%\codex.mode"&echo Logged in using !M! 1>&2&exit /b 0
-if "%1"=="login" if "%2"=="status" echo Not logged in 1>&2&exit /b 1
-if "%1"=="login" if "%2"=="--with-api-key" set /p K=&echo API_KEY>"%ASUVCH_TEST_STATE%\codex.mode"&exit /b 0
-if "%1"=="login" echo CHATGPT>"%ASUVCH_TEST_STATE%\codex.mode"&exit /b 0
+if "%1"=="--version" goto version
+if "%1"=="login" if "%2"=="status" goto status
+if "%1"=="login" if "%2"=="--with-api-key" goto apilogin
+if "%1"=="login" goto chatlogin
 exit /b 1
+:version
+echo codex-cli mock
+exit /b 0
+:status
+if exist "%ASUVCH_TEST_STATE%\codex.mode" goto loggedin
+echo Not logged in 1>&2
+exit /b 1
+:loggedin
+set /p M=<"%ASUVCH_TEST_STATE%\codex.mode"
+echo Logged in using !M! 1>&2
+exit /b 0
+:apilogin
+set /p K=
+echo API_KEY>"%ASUVCH_TEST_STATE%\codex.mode"
+exit /b 0
+:chatlogin
+echo CHATGPT>"%ASUVCH_TEST_STATE%\codex.mode"
+exit /b 0
 '@
     Copy-Item -LiteralPath (Join-Path $mockBin 'codex-template.cmd') -Destination (Join-Path $mockBin 'codex.cmd')
 
     Write-AsciiFile -Path (Join-Path $mockBin 'npm.cmd') -Content @'
 @echo off
-if "%1"=="--version" echo 11.0.0&exit /b 0
-if "%1"=="prefix" echo %ASUVCH_TEST_BIN%&exit /b 0
-if "%1"=="install" copy /y "%ASUVCH_TEST_BIN%\codex-template.cmd" "%ASUVCH_TEST_BIN%\codex.cmd" >nul&exit /b 0
+if "%1"=="--version" goto version
+if "%1"=="prefix" goto prefix
+if "%1"=="install" goto install
 exit /b 1
+:version
+echo 11.0.0
+exit /b 0
+:prefix
+echo %ASUVCH_TEST_BIN%
+exit /b 0
+:install
+copy /y "%ASUVCH_TEST_BIN%\codex-template.cmd" "%ASUVCH_TEST_BIN%\codex.cmd" >nul
+exit /b 0
 '@
 
     $env:ASUVCH_TEST_STATE = $state
