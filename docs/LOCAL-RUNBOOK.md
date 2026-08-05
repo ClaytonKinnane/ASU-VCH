@@ -2,7 +2,7 @@
 
 ## 1. Назначение
 
-Runbook описывает synchronization, deploy, functional verification, static CI inspection, documentation validation и branch cleanup gates.
+Runbook описывает synchronization, deploy, functional verification, static CI inspection, local automation и branch cleanup gates.
 
 ```text
 repository: C:\Project\ASU-VCH
@@ -14,11 +14,12 @@ URL: https://asu-vch.local
 ## 2. Current anchors
 
 ```text
-latest functional PR: #24
-latest technical PR: #25
-PR #24 merge: feac7230616d3a8df98acb48f43a0b60f89f2255
-PR #24 runtime/manual acceptance: b44aed14ee1a54be213cbc939322ba21b02e7a58
-PR #25 merge: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+latest functional runtime baseline: PR #24 / migration 012
+static CI baseline: PR #25
+documentation governance baseline: PR #28
+local automation foundation: PR #29
+local automation corrected baseline: PR #30
+durable technical capability coverage: through PR #30
 migrations: 001–012
 system roles: 4
 system permissions: 25
@@ -102,18 +103,66 @@ GitHub UI:
 4. для manual diagnostics использовать **Run workflow** на `main`;
 5. не считать `Re-run all jobs` новым `workflow_dispatch` event.
 
-Post-merge evidence PR #25:
+Historical evidence:
 
 ```text
-push run: 30837637886 / SUCCESS
-workflow_dispatch run: 30839122892 / SUCCESS
+PR #25 push run: 30837637886 / SUCCESS
+PR #25 workflow_dispatch run: 30839122892 / SUCCESS
+PR #30 exact-head PR run: 31024419654 / SUCCESS
+PR #30 post-merge push run: 31025264683 / SUCCESS
 required status check: NOT ENABLED
 branch protection/settings changed: NO
 ```
 
 Static CI не заменяет local MySQL, deploy, HTTP/browser или manual visual testing.
 
-## 7. Documentation-only validation
+## 7. GitHub Local Automation
+
+Canonical guide:
+
+- [GitHub Local Automation](../tools/github-automation/README.md)
+
+Installer modes:
+
+```text
+Install
+Doctor
+Repair
+```
+
+Cleanup modes:
+
+```text
+Doctor
+Verify
+Delete
+```
+
+Cleanup exact gates:
+
+```text
+main exact SHA
+merged PR exact head
+exact merge commit
+successful post-merge push run/job/steps
+canonical post-merge PASS evidence
+remote branch exact SHA
+branch ahead of main = 0
+unique unmerged commits = 0
+ApprovalToken == BranchName case-sensitive
+```
+
+`Delete` разрешён только после отдельного owner approval. Единственная разрешённая destructive-команда helper:
+
+```text
+git push origin --delete <approved-branch>
+```
+
+Helper удаляет только утверждённую remote-ветку. Local branch cleanup остаётся отдельным controlled local step после `fetch --prune`. Force deletion запрещён.
+
+Native PR #30 evidence (`58 PASS / 0 FAIL`) не является доказательством реальной GitHub/Codex authentication, account verification или paid API request.
+
+## 8. Documentation-only validation
 
 Для approved documentation branch:
 
@@ -141,13 +190,13 @@ git status --short
 - stale current assertions;
 - migration 001–012 consistency;
 - required CSS asset count 10;
-- PR #24 functional / PR #25 technical classification;
-- CI Stage A/Stage B boundary;
+- separated functional/CI/governance/local-automation baseline;
+- terminal anti-recursion invariant;
 - production/instance secret boundary;
 - no Mobile PASS claim;
 - absence of runtime/config/database/migration/workflow/theme/deploy/tool diff.
 
-## 8. Branch inventory and cleanup
+## 9. Branch inventory and cleanup
 
 ```powershell
 git fetch --prune origin
@@ -158,15 +207,23 @@ git branch --merged origin/main
 
 Для каждой branch проверяются exact tip, reachability, unique commits, PR/post-merge state и exact owner-approved deletion batch.
 
-`SAFE TO DELETE` не является permission. Remote deletion выполняется первой, затем `git fetch --prune` и approved local deletion через `git branch -d`. Force deletion запрещён для обычного cleanup.
+`SAFE TO DELETE` не является permission. Remote deletion выполняется первой, затем `git fetch --prune` и отдельно approved local deletion через `git branch -d`.
 
-PR #24 и PR #25 feature branches были удалены после отдельных approvals. Это dated completed outcome, а не permanent future branch inventory.
+Current branch inventory не хранится как permanent living field.
 
-## 9. Historical governance snapshots
+## 10. Historical governance snapshots
 
 PR #21 cleanup и PR #23 documentation audit сохраняются как immutable dated evidence. Их `main only` snapshots не запрещают позднейшие approved branches.
 
-## 10. Security boundaries
+Historical gate markers не являются текущими задачами:
+
+```text
+HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
+```
+
+Lifecycle новейшего documentation PR остаётся в GitHub и не требует recursive post-merge Markdown closure.
+
+## 11. Security boundaries
 
 Не публикуются:
 
@@ -175,7 +232,11 @@ PR #21 cleanup и PR #23 documentation audit сохраняются как immut
 - real temporary user passwords;
 - session identifiers/data;
 - `config/local.php`;
-- tokens, private keys и другие secrets.
+- GitHub tokens;
+- OpenAI API keys;
+- OAuth/device codes;
+- cookies;
+- private keys.
 
 Existing public local-only fixture:
 
@@ -188,7 +249,7 @@ must_change_password: true
 
 Он не является production/instance secret, запрещён для production и иных accounts/environments, требует смены при первом входе и не отменяет запрет публикации real temporary passwords.
 
-## 11. Permanent gates
+## 12. Permanent gates
 
 ```text
 Pull Request: separate owner permission
@@ -196,4 +257,5 @@ merge: separate owner permission
 branch deletion: separate post-merge owner permission
 required status check: not enabled
 mobile PASS: not claimed
+recursive lifecycle-only Markdown closure: prohibited
 ```
