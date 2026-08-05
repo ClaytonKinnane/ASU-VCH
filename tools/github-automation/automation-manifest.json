@@ -8,12 +8,12 @@
     {
       "path": "tools/github-automation/Invoke-ASUVCHBranchCleanup.ps1",
       "installName": "Invoke-ASUVCHBranchCleanup.ps1",
-      "sha256": "794a161ab528e8b33144186011405ab9fd4781b160ee05879b7afd621bd8ee89"
+      "sha256": "000e6d242498905dcd70b7839373bfa9170704c55dfa5fbc61b8295b5e166b55"
     },
     {
       "path": "tools/github-automation/CODEX-INSTRUCTIONS.md",
       "installName": "CODEX-INSTRUCTIONS.md",
-      "sha256": "808177da4c52d3b7bc99d4f97aa4aae886a64b2eb369d23b1618e35b3ddd176c"
+      "sha256": "7ff8162fa41123e633262390844dd001951de85db31965880c8d31f1dcaa8d6a"
     }
   ]
 }
