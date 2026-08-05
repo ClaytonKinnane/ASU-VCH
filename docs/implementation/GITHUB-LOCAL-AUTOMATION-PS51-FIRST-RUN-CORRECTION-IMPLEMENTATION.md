@@ -18,6 +18,7 @@ initial harness correction commit: 90cefd28d500da0861545caa782b6325ef1a2a62
 initial pre-native branch head: 7e8a552bdb5a50d252624cf9591906473128d593
 native-attempt-1 harness correction commit: d943ad1850225d483d01cdf2bc8f894f35d98a8e
 PS5.1 constructor correction commit: 449cd1f92e5454b952d8378cb5d4ea3ba0cb861f
+Codex API mock wording correction commit: 3cb3f83b3d325e4589e5a10ebb4269382fbca528
 merge-base: 375f941be3f50f9f1f264da244f0dc31496e2a6f
 behind main: 0
 ```
@@ -130,12 +131,13 @@ Correction commits:
 ```text
 d943ad1850225d483d01cdf2bc8f894f35d98a8e
 449cd1f92e5454b952d8378cb5d4ea3ba0cb861f
+3cb3f83b3d325e4589e5a10ebb4269382fbca528
 ```
 
 Corrected Git blob:
 
 ```text
-739f89661fae310aa49569eac006821796551477
+701f02733060380912d9110f42f7ac1954775355
 ```
 
 The corrected harness now:
@@ -151,6 +153,7 @@ The corrected harness now:
 - records missing state as a failed assertion instead of terminating diagnostics;
 - reports infrastructure errors and the complete final status block;
 - uses a Windows PowerShell 5.1-compatible `[Regex]::new(...)` constructor;
+- emits `API key` from mock status while retaining `API_KEY` as independent state evidence;
 - requires at least twenty-five passes and zero failures;
 - checks the real repository is clean before and after;
 - performs no real network request, package installation, Merge or branch deletion.
