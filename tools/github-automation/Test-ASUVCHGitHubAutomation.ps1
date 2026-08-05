@@ -1,6 +1,6 @@
 #requires -Version 5.1
 # ASUVCH_PR30_REMOTE_LOADER=1
-# ASUVCH_PR30_REMOTE_LOADER_REVISION=5
+# ASUVCH_PR30_REMOTE_LOADER_REVISION=6
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -134,9 +134,31 @@ $secondPatch = $changedRegex.Replace(
     1
 )
 
+$gitAddPattern = '(?m)^& \$GitExe add -- \$ExpectedChangedPaths\s*$'
+$gitAddRegex = New-Object Text.RegularExpressions.Regex($gitAddPattern)
+$gitAddMatches = @($gitAddRegex.Matches($secondPatch))
+
+if (@($gitAddMatches).Count -ne 1) {
+    throw (
+        'Corrective git-add anchor count mismatch: ' +
+        @($gitAddMatches).Count
+    )
+}
+
+$gitAddEvaluator = [Text.RegularExpressions.MatchEvaluator]{
+    param($match)
+    return '& $GitExe add -A -- $ExpectedChangedPaths'
+}
+
+$thirdPatch = $gitAddRegex.Replace(
+    $secondPatch,
+    $gitAddEvaluator,
+    1
+)
+
 [IO.File]::WriteAllText(
     $temporaryScript,
-    $secondPatch,
+    $thirdPatch,
     (New-Object Text.UTF8Encoding($true))
 )
 
@@ -163,6 +185,7 @@ if (@($errors).Count -ne 0) {
 }
 
 Write-Host 'REMOTE_ORCHESTRATOR_ENCODING=UTF8_BOM' -ForegroundColor Green
+Write-Host 'REMOTE_ORCHESTRATOR_GIT_ADD_MODE=ALL' -ForegroundColor Green
 Write-Host 'REMOTE_ORCHESTRATOR_PARSER=PASS' -ForegroundColor Green
 
 try {
