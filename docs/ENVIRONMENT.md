@@ -1,6 +1,6 @@
 # Среда разработки и запуска
 
-## Поддерживаемая локальная среда
+## Поддерживаемая application-среда
 
 ```text
 ОС: Windows 10/11
@@ -11,7 +11,40 @@ MySQL: 8.4.x
 Shell: Windows PowerShell 5.1
 ```
 
-Последний полный functional post-merge прогон PR #24 выполнен в локальной Windows/Open Server/MySQL среде. GitHub-hosted static runs PR #25 использовали Ubuntu 24.04.4 и PHP 8.5.9; это CI evidence, а не изменение local runtime requirement.
+Последний полный functional post-merge прогон PR #24 выполнен в локальной Windows/Open Server/MySQL среде. GitHub-hosted static runs используют Ubuntu 24.04 и PHP 8.5.x; это CI evidence, а не изменение local runtime requirement.
+
+## Local repository tooling
+
+Local automation package through PR #30 поддерживает:
+
+```text
+Git for Windows
+WinGet
+GitHub CLI
+Node.js LTS
+npm
+Codex CLI
+Windows PowerShell 5.1
+```
+
+Canonical guide:
+
+- [GitHub Local Automation](../tools/github-automation/README.md)
+
+Tooling является repository-only и не публикуется как application deploy. Installer может проверять или устанавливать approved components, выполнять staged interactive login flows, проверять manifest и атомарно устанавливать helpers.
+
+Границы evidence:
+
+```text
+native PowerShell 5.1 regression PR #30: 58 PASS / 0 FAIL
+real GitHub authentication acceptance: NOT CLAIMED
+real Codex authentication acceptance: NOT CLAIMED
+account verification: NOT CLAIMED
+paid OpenAI API request: NOT RUN
+complete target-machine installation acceptance: NOT CLAIMED
+```
+
+Browser ChatGPT не получает прямого доступа к локальному компьютеру.
 
 ## Разделение каталогов
 
@@ -20,6 +53,7 @@ Git clone:   C:\Project\ASU-VCH
 deploy root: C:\OSPanel\home\asu-vch.local
 web root:    C:\OSPanel\home\asu-vch.local\public
 local URL:   https://asu-vch.local
+local helpers: C:\Tools\ASU-VCH
 ```
 
 Git clone не является web root. Существующий `C:\OSPanel\home\asu.local` не относится к АСУ-ВЧ.
@@ -128,8 +162,10 @@ manual desktop: PASS
 Workflow `ASU-VCH Static Verification` runs on PR/push/manual events with Ubuntu 24.04 and PHP 8.5. It checks whitespace, tracked PHP syntax, 9 CI-safe checker'ов and final repository integrity.
 
 ```text
-post-merge push run: 30837637886 / SUCCESS
-post-merge manual run: 30839122892 / SUCCESS
+PR #25 post-merge push run: 30837637886 / SUCCESS
+PR #25 post-merge manual run: 30839122892 / SUCCESS
+PR #30 exact-head PR run: 31024419654 / SUCCESS
+PR #30 post-merge push run: 31025264683 / SUCCESS
 required status check: NOT ENABLED
 branch protection changed: NO
 ```
@@ -138,12 +174,13 @@ CI does not execute MySQL, deploy, HTTP/browser or visual acceptance.
 
 ## Configuration protection
 
-Нельзя публиковать production/instance credentials, DB password, session data, `config/local.php`, real temporary user passwords, tokens или private keys. Existing public local-only fixture имеет отдельные approved restrictions.
+Нельзя публиковать production/instance credentials, DB password, session data, `config/local.php`, real temporary user passwords, tokens, API keys или private keys. Authentication secrets не передаются через command arguments, environment variables или logs.
 
 ## Testing boundaries
 
 ```text
-mobile testing PR #24: OUT OF SCOPE / NOT RUN
-mobile testing PR #25: OUT OF SCOPE / NOT RUN
+functional mobile testing: OUT OF SCOPE / NOT RUN
+local automation real authentication acceptance: NOT CLAIMED
+paid API request: NOT RUN
 mobile PASS: NOT CLAIMED
 ```

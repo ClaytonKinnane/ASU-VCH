@@ -2,7 +2,7 @@
 
 ## Актуальные документы
 
-Living documentation описывает текущий merged baseline:
+Living documentation описывает текущий durable merged baseline:
 
 - [Текущее состояние проекта](PROJECT-STATUS.md)
 - [О проекте](PROJECT.md)
@@ -17,14 +17,19 @@ Living documentation описывает текущий merged baseline:
 - [Архитектурные паттерны](ARCHITECTURAL-PATTERNS.md)
 - [Текущая карта доменов](domains/README.md)
 - [Текущий index migrations](migrations/README.md)
+- [GitHub Local Automation](../tools/github-automation/README.md)
 
 Каноническое functional состояние фиксируют `PROJECT-STATUS.md` и `DATABASE-CURRENT.md`. Фактическую schema определяют executable migrations, installer и профильные checker'ы. Live Git state определяется через GitHub/Git.
 
 ## Current baseline
 
 ```text
-latest functional PR: #24
-latest technical PR: #25
+latest functional runtime baseline: PR #24 / migration 012
+static CI baseline: PR #25
+documentation governance baseline: PR #28
+local automation foundation: PR #29
+local automation corrected baseline: PR #30
+durable technical capability coverage: through PR #30
 migrations: 001–012
 system roles: 4
 system permissions: 25
@@ -32,13 +37,13 @@ built-in themes: 3
 required CSS assets per theme: 10
 GitHub Actions Static Verification: implemented
 required status check: not enabled
-branch protection mutation by PR #25: not performed
+branch protection: not enabled
 active functional increment: none
-active technical increment: none
+active material technical increment: none
 mobile testing: OUT OF SCOPE / NOT RUN
 ```
 
-PR #24 добавил Military Ranks Directory v2 и migration 012. PR #25 добавил static CI Stage A. Technical PR #25 не объявляется новым database/runtime baseline и не заменяет local DB/deploy/browser testing.
+PR #24 добавил Military Ranks Directory v2 и migration 012. PR #25 добавил static CI Stage A. PR #28 закрепил terminal documentation model. PR #29 добавил local Git/GitHub/Codex automation package, а PR #30 исправил и усилил Windows PowerShell 5.1 first-run path и native regression harness.
 
 Current HEAD определяется динамически:
 
@@ -78,11 +83,11 @@ Living documentation хранит устойчивое состояние про
 - текущий `main` SHA;
 - branch inventory и события удаления веток.
 
-Для последнего documentation PR canonical lifecycle evidence находится в GitHub PR timeline, reviews, Actions и branch inventory. Отсутствие копии его merge/run/cleanup lifecycle в Markdown само по себе не является documentation defect и не требует нового post-merge closure PR.
+Lifecycle новейшего documentation reconciliation PR не копируется обратно в living Markdown. Его номер, head SHA, merge commit, Actions run и cleanup остаются canonical в GitHub. Отсутствие такой копии после merge не является documentation defect и не требует post-merge Markdown closure.
 
-Новый documentation increment создаётся только при реальной ошибке durable living state, broken normative rule, некорректной ссылке или ином содержательном дефекте.
+Новый documentation increment создаётся только при реальной ошибке durable living state, broken normative rule, некорректной ссылке, security/testing claim defect или ином содержательном изменении.
 
-## Последние завершённые increments
+## Последние завершённые durable increments
 
 ### Functional PR #24 — Military Ranks Directory v2
 
@@ -97,18 +102,50 @@ Living documentation хранит устойчивое состояние про
 - post-merge verification: PASS;
 - mobile: OUT OF SCOPE / NOT RUN.
 
-### Technical PR #25 — GitHub Actions Static Verification v1
+### Static CI PR #25 — GitHub Actions Static Verification v1
 
 - workflow `ASU-VCH Static Verification`;
 - PR/push/manual triggers;
 - Ubuntu 24.04 / PHP 8.5;
 - read-only token;
 - `git diff --check`, tracked PHP lint, 9 CI-safe checker'ов и clean-worktree guard;
-- exact-head PR run: PASS;
 - post-merge push run `30837637886`: SUCCESS;
 - post-merge workflow_dispatch run `30839122892`: SUCCESS;
 - required status check: not enabled;
 - branch protection/settings: unchanged.
+
+### Documentation governance PR #28 — Terminal Documentation Consistency
+
+- terminal documentation model;
+- GitHub/Git as canonical source for mutable lifecycle evidence;
+- `HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK`;
+- recursive closure solely for copying PR lifecycle: prohibited;
+- runtime, database, workflow, tools and settings: unchanged.
+
+### Local automation PR #29 — GitHub Local Automation Bootstrap
+
+- one-command Windows PowerShell 5.1 bootstrap;
+- Git, GitHub CLI, Node.js LTS and Codex setup flows;
+- Codex authentication modes;
+- integrity manifest and atomic helper installation;
+- fail-closed remote branch cleanup helper;
+- user guide and local Codex instructions;
+- repository/static validation boundary preserved.
+
+### Corrective PR #30 — PowerShell 5.1 First-Run Hardening
+
+- authoritative native exit-code handling;
+- separated stdout/stderr;
+- safe `.cmd`/`.bat` invocation through `%ComSpec%`;
+- collection normalization and bounded process timeouts;
+- explicit ChatGPT/API-key mode enforcement;
+- API key through secure stdin only;
+- Cleanup Doctor gating;
+- native Windows PowerShell 5.1 validation: `58 PASS / 0 FAIL`;
+- exact-head PR workflow and post-merge push verification: SUCCESS;
+- runtime, DB, migrations, themes, deploy, workflow and repository settings: unchanged.
+
+Real GitHub/Codex authentication, paid API requests and complete target-machine installation acceptance are not inferred from mock/native regression evidence.
 
 ## Documentation consistency records
 
@@ -142,7 +179,7 @@ original documentation branch: deleted after separate approval
 - [Validation](testing/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-VALIDATION.md)
 - [Final PR Review](review/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-V2-CLOSURE-PR-FINAL-REVIEW.md)
 
-Closure исправил durable living-status сведения PR #26 и сохранил исторические gate facts. Mutable lifecycle evidence PR #27 остаётся canonical в GitHub и не требует ещё одного Markdown closure.
+Closure исправил durable living-status сведения PR #26 и сохранил исторические gate facts. Позднее PR #28 заменил recursive closure terminal documentation model.
 
 ### 2026-08-02 — Full Documentation Consistency Reconciliation
 

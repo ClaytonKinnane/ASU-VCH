@@ -1,5 +1,46 @@
 # История изменений
 
+## 2026-08-05
+
+### Terminal Documentation Consistency — PR #28
+
+- закреплён terminal documentation model;
+- GitHub/Git определены canonical source для mutable PR/SHA/run/branch lifecycle;
+- historical gate records сохраняются как snapshots;
+- закреплено правило `HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK`;
+- recursive post-merge Markdown closure solely for copying documentation-PR lifecycle запрещён;
+- runtime, database, migrations, workflow, themes, deploy, tools и repository settings не изменялись.
+
+### GitHub Local Automation Bootstrap — PR #29
+
+- добавлен one-command Windows PowerShell 5.1 bootstrap package;
+- добавлены setup flows для Git, GitHub CLI, Node.js LTS и Codex CLI;
+- добавлены Codex authentication modes `Auto`, `ChatGPT`, `ApiKey`, `Skip`;
+- добавлены integrity manifest, user guide и local Codex instructions;
+- добавлен fail-closed remote branch cleanup helper с режимами `Doctor`, `Verify`, `Delete`;
+- repository/static validation отделена от реальной target-machine installation/authentication acceptance;
+- merge commit: `375f941be3f50f9f1f264da244f0dc31496e2a6f`;
+- runtime, database, migrations, themes, deploy, workflow и repository settings не изменялись.
+
+### PowerShell 5.1 First-Run Hardening — PR #30
+
+- native process exit code сделан authoritative source of truth;
+- stdout и stderr разделены, stderr сам по себе не считается failure;
+- `.cmd`/`.bat` запускаются через `%ComSpec%`;
+- исправлена PowerShell 5.1 collection normalization;
+- добавлены bounded process timeouts;
+- усилены staged GitHub/Codex first-run authentication flows;
+- explicit ChatGPT/API-key mode enforcement предотвращает silent mode mismatch;
+- API key передаётся через secure stdin без args/env/logs;
+- усилены atomic helper installation и rollback;
+- Cleanup Doctor обязателен для `Verify` и `Delete`;
+- native Windows PowerShell 5.1 regression harness: `58 PASS / 0 FAIL`;
+- exact-head workflow run `31024419654`: SUCCESS;
+- post-merge push run `31025264683`: SUCCESS;
+- merge commit: `35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77`;
+- реальные GitHub/Codex authentication, account verification и paid API request не объявлены PASS;
+- runtime, DB, migrations, themes, deploy, application checkers, workflow и repository settings unchanged.
+
 ## 2026-08-03
 
 ### Military Ranks Directory v2 — PR #24
@@ -46,36 +87,26 @@
 - исправлены migration count 11 → 12 и required CSS asset count 9 → 10;
 - documented static CI Stage A and explicit Stage B boundary;
 - Approval, immutable audit, Implementation and Validation evidence added;
-- semantic Documentation Validation: PASS on implementation head `7968ca979e5a37fafc93470b450d9724b3707b03`;
-- exact Final PR Review head: `7f9d0c0b04de2930abb00a0feedc5d2e375dbaea`;
-- exact-head workflow run `30846434476`: SUCCESS;
-- Final PR Review: PASS;
+- semantic Documentation Validation: PASS;
 - PR #26 merge commit: `d9cb74245e09d8be6cd80fc5d7972e426d0aaaf7`;
 - automatic post-merge push run `30846778001`: SUCCESS;
 - post-merge verification: PASS;
-- merged changed paths: 29 / 29 approved Markdown paths;
-- non-Markdown changes: 0;
-- original branch `docs/documentation-current-state-reconciliation-v2` удалена после отдельного owner approval;
 - runtime, DB, migrations, workflow, themes, deploy, branch protection, required checks and settings unchanged;
 - mobile: `OUT OF SCOPE / NOT RUN`.
 
 ### Documentation Current-State Reconciliation v2 Closure — PR #27
 
 - выполнен отдельный documentation-only cycle для устранения stale living-status сведений PR #26;
-- Architecture, Specification, Formal Review и exact 13-path Markdown allowlist утверждены владельцем;
-- living index, roadmap, changelog и три process records v2 синхронизированы с durable completed outcome PR #26;
-- historical pending/pre-merge facts и permission boundaries сохранены как gate-scoped evidence;
+- historical pending/pre-merge facts и permission boundaries сохранены;
 - Documentation Validation и exact-head Final PR Review завершены с PASS;
 - runtime, DB, migrations, workflow, themes, deploy, tools, branch protection, required checks и repository settings не изменялись;
-- closure-ветка удалена после отдельного owner approval;
-- mutable lifecycle evidence PR #27 остаётся canonical в GitHub PR timeline, reviews, Actions и branch inventory;
-- отсутствие повторной копии lifecycle последнего documentation PR в Markdown не является новой documentation task.
+- позднее PR #28 заменил recursive closure terminal documentation model.
 
 ## 2026-08-02
 
 ### Full Documentation Consistency Reconciliation
 
-- выполнен полный read-only audit Markdown-документации относительно `main @ 1eef56b50a8d2278a62c5b70a471663b12132354` и merged PR #1–#22;
+- выполнен полный read-only audit Markdown-документации относительно merged PR #1–#22;
 - подтвержден baseline PR #20 / migrations 001–011 на момент audit;
 - введено правило semantic classification;
 - domain/migration indexes обновлены;

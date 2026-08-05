@@ -33,7 +33,7 @@ Material implementation не начинается до relevant Approval. Pull R
 
 ### Semantic classification overrides directory classification
 
-Section является living/current-state, если сообщает current functional/technical baseline, migrations, domains, routes, roles, permissions, themes/assets, CI capability или repository state.
+Section является living/current-state, если сообщает current functional/technical baseline, migrations, domains, routes, roles, permissions, themes/assets, CI capability или durable tooling capability.
 
 Rules:
 
@@ -42,9 +42,24 @@ Rules:
 - documentation-only head не объявляется runtime-tested;
 - target architecture не представляется как current schema;
 - historical gate markers сохраняются;
-- completed outcome добавляется отдельным closure;
 - current PR/branch inventory не сохраняется как permanent living field;
 - links должны resolve либо быть явно historical/obsolete evidence.
+
+Canonical rule:
+
+```text
+HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
+```
+
+### Terminal documentation invariant
+
+Lifecycle новейшего documentation Pull Request не копируется обратно в living Markdown solely to record its own review, merge, Actions run or branch cleanup.
+
+Architecture, Specification, Formal Review, Approval, Implementation и Validation остаются historical gate records. Final PR Review может храниться только в GitHub, если repository-файл создал бы self-modifying review cycle.
+
+A missing Markdown copy of the newest documentation PR lifecycle is not a documentation defect when canonical evidence exists in GitHub PR timeline, reviews, Actions and branch inventory.
+
+Recursive post-merge documentation closure is prohibited when the only missing information is lifecycle copy.
 
 ## Domain ownership
 
@@ -85,8 +100,6 @@ PR #24 adds a reusable evolution pattern:
 - published/superseded child data immutable;
 - recovery accepts only exact known building state and fails closed on contradiction.
 
-Military Ranks v2 applies this pattern while preserving 20 rank codes/names/order and separating derived staffing scopes from normative compositions.
-
 ## Evidence-bounded identifiers and relations
 
 Identifiers are decomposed only when authoritative evidence supports it. Raw values preserved; unknown semantics stay explicit. Similar identifiers do not imply cross-domain relation.
@@ -120,13 +133,13 @@ When transport constraints prevent direct canonical SQL:
 - fail closed on mismatch;
 - repeat installer and parity verification.
 
-Migrations 010–011 use gzip/base64 packaging. Migration 012 uses a separate compatibility loader with a fail-closed marker and versioned DDL/publication/recovery modules; it must not be falsely described as gzip/base64 packaging.
+Migrations 010–011 use gzip/base64 packaging. Migration 012 uses a separate compatibility loader with a fail-closed marker and versioned DDL/publication/recovery modules.
 
 ## Security boundaries
 
 Permissions never bypass validation, CSRF, invariants, audit, transactions or secret handling.
 
-Public local-only development fixtures are not production secrets only when explicitly scoped, replaced on first use and never reused as instance credentials. Production/instance credentials, real temporary user passwords, sessions, tokens, private keys and local config remain secret.
+Public local-only development fixtures are not production secrets only when explicitly scoped, replaced on first use and never reused as instance credentials. Production/instance credentials, real temporary user passwords, sessions, tokens, API keys, private keys and local config remain secret.
 
 ## Testing obligations
 
@@ -145,7 +158,7 @@ GitHub Actions Static Verification is an additional early/final signal:
 - final tracked/untracked worktree guard;
 - push and workflow_dispatch post-merge diagnostics.
 
-Static CI does **not** replace MySQL, migration, deploy, HTTP/browser, source/deploy parity or manual visual acceptance.
+Static CI does not replace MySQL, migration, deploy, HTTP/browser, source/deploy parity or manual visual acceptance.
 
 Stage B is separate:
 
@@ -155,21 +168,93 @@ branch protection mutation: not performed
 conversation-resolution rule: separately gated
 ```
 
-Changing stable job/check identity after Stage B would be operationally breaking and requires review.
+## Windows PowerShell 5.1 native automation pattern
+
+Native process execution follows these invariants:
+
+```text
+native exit code is authoritative
+stderr alone is not failure
+stdout and stderr are captured separately
+cmd/bat invocation uses ComSpec
+interactive login remains visible
+secrets use redirected stdin only
+optional output is normalized to collections
+valid empty output remains valid
+process timeouts are bounded
+temporary environment changes are restored
+helper installation is atomic
+failed installation rolls back
+```
+
+PowerShell 5.1 scalar/collection unrolling must be handled explicitly through stable result objects or `@(...)` normalization before `.Count`, indexing or iteration.
+
+Secrets must not be passed through command arguments, environment variables or logs.
+
+## Authentication mode separation pattern
+
+Supported Codex modes:
+
+```text
+Auto
+ChatGPT
+ApiKey
+Skip
+```
+
+Invariants:
+
+```text
+requested ChatGPT mode must not silently accept API-key mode
+requested ApiKey mode must not silently accept ChatGPT mode
+API-key authentication is not called ChatGPT login
+ChatGPT subscription is not API billing
+paid remote request readiness is not claimed without an authorized request
+```
+
+## Local helper integrity pattern
+
+Repository helpers are installed through:
+
+- source manifest verification;
+- staging verification;
+- normalized UTF-8/LF hashing where specified;
+- Cleanup Doctor before acceptance;
+- atomic destination replacement;
+- rollback on failure;
+- secret-free logs.
+
+Local helpers are repository tooling and are not application deploy artifacts.
 
 ## Repository cleanup pattern
 
 Required sequence:
 
 1. post-merge verification;
-2. documentation refresh when needed;
-3. fresh remote/local inventory;
-4. reachability/unique-commit check;
-5. exact deletion batch;
-6. separate owner approval;
-7. remote deletion first;
-8. approved local deletion;
-9. final main/inventory verification.
+2. fresh remote/local inventory;
+3. exact main, PR head and merge anchors;
+4. successful post-merge push run/job/steps;
+5. canonical post-merge PASS evidence;
+6. reachability/unique-commit check;
+7. exact deletion batch;
+8. separate owner approval;
+9. Cleanup Doctor;
+10. remote deletion first;
+11. `fetch --prune`;
+12. approved local deletion;
+13. final main/inventory verification.
+
+Cleanup tool invariants:
+
+```text
+Doctor must pass before Verify and Delete
+ApprovalToken == BranchName case-sensitive
+branch ahead of main = 0
+unique unmerged commits = 0
+destructive command limited to git push origin --delete approved-branch
+tool deletes no local branch
+anchor or evidence mismatch fails closed
+```
 
 `SAFE TO DELETE` is classification, not authorization.
 
@@ -179,7 +264,10 @@ Required sequence:
 ARCHITECTURAL PATTERNS: APPROVED
 APPLICABILITY: PROJECT-WIDE
 FUNCTIONAL BASELINE COVERAGE: THROUGH PR #24 / MIGRATION 012
-TECHNICAL BASELINE COVERAGE: THROUGH PR #25
+STATIC CI COVERAGE: THROUGH PR #25
+DOCUMENTATION GOVERNANCE COVERAGE: THROUGH PR #28
+LOCAL AUTOMATION COVERAGE: THROUGH PR #30
+DURABLE TECHNICAL CAPABILITY COVERAGE: THROUGH PR #30
 SYSTEM ROLES: 4
 SYSTEM PERMISSIONS: 25
 BUILT-IN THEMES: 3

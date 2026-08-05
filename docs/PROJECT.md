@@ -15,7 +15,7 @@
 - Runtime data хранится в MySQL; secrets и local config не хранятся в Git.
 - Mobile PASS не заявляется без фактической mobile acceptance.
 
-## Реализованное состояние
+## Реализованное functional состояние
 
 ### Platform и Security
 
@@ -52,7 +52,9 @@ Military Ranks v2 сохраняет 20 ranks, добавляет 8 version-scop
 
 Реализованы structure/version lifecycle, draft tree, stable elements, document metadata, history, compare, transactions, revisions, CSRF и RBAC.
 
-### Static CI
+## Реализованное technical состояние
+
+### GitHub-hosted Static CI
 
 GitHub Actions workflow `ASU-VCH Static Verification` выполняет:
 
@@ -66,21 +68,58 @@ GitHub Actions workflow `ASU-VCH Static Verification` выполняет:
 
 Post-merge push и manual runs PR #25 завершены SUCCESS. Required status check и branch protection Stage B не включены. CI не заменяет DB/deploy/browser/manual testing.
 
+### Local Windows Automation
+
+PR #29 и corrective PR #30 реализовали repository-only package для Windows PowerShell 5.1:
+
+- one-command bootstrap;
+- Git и GitHub CLI через approved WinGet packages;
+- Node.js LTS и Codex CLI через официальный npm package;
+- Codex authentication modes `Auto`, `ChatGPT`, `ApiKey`, `Skip`;
+- secure API-key stdin handling;
+- manifest integrity checks;
+- atomic helper install/rollback;
+- native regression harness;
+- fail-closed remote branch cleanup helper.
+
+Local automation не публикуется в application deploy и не меняет PHP, MySQL, migrations, themes, routes или database state. Browser ChatGPT не получает прямого доступа к локальному компьютеру.
+
+Authentication boundaries:
+
+```text
+ChatGPT authentication != API-key authentication
+ChatGPT subscription != API billing
+real authentication/account verification: not inferred from mock validation
+paid API request: not claimed without separate authorized execution
+```
+
+Native PowerShell 5.1 validation PR #30: `58 PASS / 0 FAIL`. Это historical tooling evidence, а не новый functional runtime test.
+
+### Documentation governance
+
+PR #28 закрепил terminal documentation model: mutable PR/SHA/run/branch lifecycle хранится в GitHub/Git, historical gate records сохраняются как snapshots, а recursive closure solely for copying documentation-PR lifecycle запрещён.
+
 ## Контрольные точки
 
 ```text
-latest functional PR: #24
-latest technical PR: #25
+latest functional runtime baseline: PR #24 / migration 012
+static CI baseline: PR #25
+documentation governance baseline: PR #28
+local automation foundation: PR #29
+local automation corrected baseline: PR #30
+durable technical capability coverage: through PR #30
 PR #24 merge: feac7230616d3a8df98acb48f43a0b60f89f2255
 PR #24 runtime/manual acceptance: b44aed14ee1a54be213cbc939322ba21b02e7a58
 PR #25 merge: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+PR #29 merge: 375f941be3f50f9f1f264da244f0dc31496e2a6f
+PR #30 merge: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
 migrations: 12
 roles: 4
 permissions: 25
 themes: 3
 required CSS assets: 10
 active functional increment: none
-active technical increment: none
+active material technical increment: none
 ```
 
 ## Не реализовано
@@ -100,7 +139,12 @@ PR #24: automated/runtime, DB, deploy/parity, HTTP smoke, manual desktop и post
 
 PR #25: exact-head PR workflow, post-merge push run и manual workflow_dispatch — SUCCESS.
 
+PR #30: native Windows PowerShell 5.1 regression, exact-head workflow и post-merge push verification — PASS/SUCCESS within tooling scope.
+
 ```text
+new real GitHub authentication acceptance: NOT CLAIMED
+new real Codex authentication acceptance: NOT CLAIMED
+paid API request: NOT RUN
 mobile testing: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
 ```

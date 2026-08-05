@@ -1,6 +1,6 @@
 # Текущее состояние проекта АСУ-ВЧ
 
-Дата актуализации functional и technical baseline: `2026-08-03`.
+Дата актуализации durable functional и technical baseline: `2026-08-05`.
 
 ## Репозиторий и anchors
 
@@ -14,24 +14,30 @@ git rev-parse origin/main
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
-latest functional PR: #24
-latest technical PR: #25
+latest functional runtime baseline: PR #24 / migration 012
+static CI baseline: PR #25
+documentation governance baseline: PR #28
+local automation foundation: PR #29
+local automation corrected baseline: PR #30
+durable technical capability coverage: through PR #30
 PR #24 merge commit: feac7230616d3a8df98acb48f43a0b60f89f2255
 PR #24 runtime/manual acceptance head: b44aed14ee1a54be213cbc939322ba21b02e7a58
-PR #24 Final PR Review remediation head: fe893e8315f7add80ed4d0501b41d8bc39b4b0e8
 PR #25 merge commit: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+PR #29 merge commit: 375f941be3f50f9f1f264da244f0dc31496e2a6f
+PR #30 corrected implementation head: fede2aa8c9c7b896f142075caa69b35219d4016d
+PR #30 merge commit: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
 migrations: 001–012
 system roles: 4
 system permissions: 25
 built-in themes: 3
 required CSS assets per theme: 10
 active functional increment: none
-active technical increment: none
+active material technical increment: none
 ```
 
 Documentation-only commits после runtime-tested head не объявляются runtime-tested. Exact merge/test SHA — historical anchors; current Git state определяется через GitHub/Git.
 
-## Реализованные области
+## Реализованные functional области
 
 - bootstrap owner, authentication, protected sessions и CSRF;
 - 4 system roles и 25 permissions;
@@ -39,8 +45,7 @@ Documentation-only commits после runtime-tested head не объявляю�
 - 3 trusted themes и 10 required CSS-assets per theme;
 - owner-only read-only directories: ranks, organizational element types, military positions, public VUS;
 - Organizational Structure v1;
-- migrations 001–012;
-- GitHub Actions Static Verification v1.
+- migrations 001–012.
 
 ## Functional PR #24 — Military Ranks Directory v2
 
@@ -78,9 +83,7 @@ mobile: OUT OF SCOPE / NOT RUN
 
 Merge commit не подменяет исходный runtime/manual acceptance head.
 
-## Technical PR #25 — GitHub Actions Static Verification v1
-
-Реализован workflow:
+## Static CI PR #25 — GitHub Actions Static Verification v1
 
 ```text
 workflow: ASU-VCH Static Verification
@@ -92,22 +95,66 @@ permissions: contents read
 tracked PHP lint: enabled
 CI-safe checkers: 9
 final worktree guard: enabled
+required status check: NOT ENABLED
+branch protection/settings changed: NO
 ```
 
 Post-merge evidence:
 
 ```text
-exact Final PR Review head: 0c6f7338f912e8797868d02d54fc015df7533ad6
 push run: 30837637886 / SUCCESS
 workflow_dispatch run: 30839122892 / SUCCESS
 PHP in recorded runs: 8.5.9
 tracked PHP files: 124 / 0 errors
 Organization UI checker: 64 PASS / 0 FAIL
-required status check: NOT ENABLED
-branch protection/settings changed: NO
 ```
 
-Static CI не заменяет MySQL, migration, deploy, HTTP/browser и visual testing. DB/deploy/browser/mobile checks не выполнялись в рамках PR #25.
+Static CI не заменяет MySQL, migration, deploy, HTTP/browser и visual testing.
+
+## Documentation governance PR #28
+
+PR #28 закрепил terminal documentation model:
+
+```text
+mutable PR/SHA/run/branch lifecycle: canonical in GitHub/Git
+historical gate records: immutable snapshots
+HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
+recursive post-merge Markdown closure solely for lifecycle copying: prohibited
+```
+
+Living documentation обновляется при substantive durable-state change или реальном content defect, а не только потому, что завершился последний documentation PR.
+
+## Local GitHub/Codex Automation — PR #29 + PR #30
+
+Repository tooling включает:
+
+- one-command Windows PowerShell 5.1 installer;
+- проверку или установку Git через WinGet;
+- проверку или установку GitHub CLI и интерактивный GitHub login flow;
+- Node.js LTS и официальный npm package `@openai/codex@latest`;
+- authentication modes `Auto`, `ChatGPT`, `ApiKey`, `Skip`;
+- secure API-key stdin handling;
+- integrity manifest;
+- atomic helper staging/install/rollback;
+- native PowerShell 5.1 regression harness;
+- Cleanup Doctor и fail-closed `Verify`/`Delete`.
+
+PR #30 historical evidence:
+
+```text
+exact corrected implementation head: fede2aa8c9c7b896f142075caa69b35219d4016d
+native Windows PowerShell: 5.1.28000.2525
+native regression: 58 PASS / 0 FAIL
+repository worktree restoration: PASS
+PATH and LOCALAPPDATA restoration: PASS
+exact-head PR workflow run: 31024419654 / SUCCESS
+post-merge push run: 31025264683 / SUCCESS
+merge commit: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
+```
+
+Эти проверки подтверждают repository/native regression contract. Они не объявляют PASS для реальной GitHub/Codex authentication, account verification, paid OpenAI API request или полной target-machine installation acceptance.
+
+Local automation не меняет PHP runtime, MySQL, migrations, themes, deploy, application routes, GitHub Actions workflow или repository settings. Browser ChatGPT не получает прямого доступа к локальному компьютеру.
 
 ## Themes
 
@@ -121,9 +168,7 @@ Static CI не заменяет MySQL, migration, deploy, HTTP/browser и visual
 
 ## Repository governance
 
-PR #24 и PR #25 merged только после отдельных owner approvals и прошли post-merge verification. Их feature branches удалены после отдельных branch-deletion approvals.
-
-Это завершённые dated outcomes. Current branch inventory остаётся dynamic:
+PR, merge и branch deletion требуют отдельных owner approvals. Current branch inventory остаётся dynamic:
 
 ```powershell
 git fetch --prune origin
@@ -134,7 +179,7 @@ git status --short
 
 ## Следующий инкремент
 
-Новый functional или technical scope не выбран и не утверждён. Любой material increment начинается с Research → Analysis → Architecture → Specification → Review → Approval.
+Новый functional или material technical scope не выбран и не утверждён. Любой material increment начинается с Research → Analysis → Architecture → Specification → Review → Approval.
 
 ## Постоянные gates
 

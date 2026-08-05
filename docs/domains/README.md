@@ -11,10 +11,13 @@ Project architecture        — APPROVED
 Domain modeling             — CONTINUES PER INCREMENT
 Implementation              — STARTED
 Functional increments       — PR #1–#9, #12, #15, #19, #20, #24 MERGED
-Latest functional PR        — #24
-Latest technical PR         — #25
+Latest functional runtime   — PR #24 / migration 012
+Static CI baseline          — PR #25
+Documentation governance    — PR #28
+Local automation foundation — PR #29
+Local automation corrected  — PR #30
 Active functional increment — NONE
-Active technical increment  — NONE
+Active material technical   — NONE
 ```
 
 ## Current domain map
@@ -25,8 +28,28 @@ Active technical increment  — NONE
 | Reference | four owner-only read-only routes; Military Ranks has current v2/historical v1 and compatibility service |
 | Organization | Organizational Structure v1: structures, versions, draft tree, document metadata, history, compare |
 | Audit | critical operation audit inside Security/Organization; common domain log not implemented |
-| Infrastructure | installer, migrations, deploy, theme registry, health, CLI checkers and static CI Stage A |
+| Infrastructure | installer, migrations, deploy, theme registry, health, CLI checkers, static CI Stage A and local Git/GitHub/Codex automation through PR #30 |
 | Documents | common Documents runtime not implemented; Organization owns only its document metadata |
+
+## Infrastructure tooling capability
+
+Current repository tooling includes:
+
+- local Git/GitHub/Codex bootstrap for Windows PowerShell 5.1;
+- approved WinGet/npm installation flows;
+- Codex authentication-mode separation;
+- integrity manifest;
+- atomic helper installation and rollback;
+- native PowerShell 5.1 regression harness;
+- fail-closed remote branch cleanup helper.
+
+Infrastructure tooling:
+
+- is not a business domain;
+- is not application runtime;
+- is not deployed to the web root;
+- does not change Security, Reference or Organization ownership;
+- does not imply real authentication or paid API request acceptance without separate evidence.
 
 ## Specialized Reference catalogs
 
@@ -96,7 +119,7 @@ Documents      → Security / Reference / Organization / Audit
 Infrastructure → external technical systems
 ```
 
-Reference does not depend on Organization. Static CI belongs to Infrastructure and does not change domain ownership.
+Reference does not depend on Organization. Static CI and local automation belong to Infrastructure and do not change business-domain ownership.
 
 ## New domain increment workflow
 
