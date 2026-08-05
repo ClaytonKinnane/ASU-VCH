@@ -1,6 +1,18 @@
 #requires -Version 5.1
-# ASUVCH_PR30_REMOTE_LOADER=1
-# ASUVCH_PR30_REMOTE_LOADER_REVISION=10
+<#
+.SYNOPSIS
+    Native Windows PowerShell 5.1 regression harness for ASU-VCH GitHub automation.
+
+.DESCRIPTION
+    Uses only GUID-scoped temporary mock commands and temporary directories.
+    It performs no real network requests, package installation, repository
+    mutation, Merge or branch deletion.
+
+    The temporary installer copy receives one test-only PATH refresh shim so
+    process-local mock commands remain selected after the production installer
+    refreshes Machine/User PATH. The repository installer source is not modified.
+#>
+
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -9,324 +21,1127 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-$ChunkPaths = @(
-    'docs/architecture/GITHUB-LOCAL-AUTOMATION-PS51-FIRST-RUN-CORRECTION-ARCHITECTURE.md',
-    'docs/specification/GITHUB-LOCAL-AUTOMATION-PS51-FIRST-RUN-CORRECTION-SPECIFICATION.md',
-    'docs/review/GITHUB-LOCAL-AUTOMATION-PS51-FIRST-RUN-CORRECTION-FORMAL-REVIEW.md',
-    'docs/decisions/GITHUB-LOCAL-AUTOMATION-PS51-FIRST-RUN-CORRECTION-APPROVAL.md',
-    'docs/implementation/GITHUB-LOCAL-AUTOMATION-PS51-FIRST-RUN-CORRECTION-IMPLEMENTATION.md',
-    'docs/testing/GITHUB-LOCAL-AUTOMATION-PS51-FIRST-RUN-CORRECTION-VALIDATION.md',
-    'docs/review/GITHUB-LOCAL-AUTOMATION-PS51-FIRST-RUN-CORRECTION-PR-FINAL-REVIEW.md',
-    'tools/github-automation/Install-ASUVCHGitHubAutomation.ps1',
-    'tools/github-automation/Invoke-ASUVCHBranchCleanup.ps1',
-    'tools/github-automation/README.md',
-    'tools/github-automation/CODEX-INSTRUCTIONS.md'
-)
+$script:PassCount = 0
+$script:FailCount = 0
+$script:InfrastructureError = $null
 
-function Replace-RegexExactlyOnce {
+function Add-TestResult {
     param(
-        [Parameter(Mandatory = $true)][string]$Text,
-        [Parameter(Mandatory = $true)][string]$Pattern,
-        [Parameter(Mandatory = $true)][string]$Replacement,
-        [Parameter(Mandatory = $true)][string]$Label
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [bool]$Passed
     )
 
-    $regex = New-Object Text.RegularExpressions.Regex($Pattern)
-    $matches = @($regex.Matches($Text))
-
-    if (@($matches).Count -ne 1) {
-        throw "$Label anchor count mismatch: $(@($matches).Count)"
+    if ($Passed) {
+        $script:PassCount++
+        Write-Host "PASS $Name" -ForegroundColor Green
     }
+    else {
+        $script:FailCount++
+        Write-Host "FAIL $Name" -ForegroundColor Red
+    }
+}
+
+function ConvertTo-QuotedArgument {
+    param([AllowNull()][string]$Value)
+
+    if ($null -eq $Value) {
+        return '""'
+    }
+
+    return '"' + $Value.Replace('"', '\"') + '"'
+}
+
+function Invoke-TestProcess {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$File,
+
+        [string[]]$Arguments = @(),
+
+        [AllowNull()]
+        [string]$StandardInput,
+
+        [ValidateRange(1, 600)]
+        [int]$TimeoutSeconds = 60
+    )
+
+    $hasInput = $PSBoundParameters.ContainsKey('StandardInput')
+
+    $startInfo = New-Object Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $File
+    $startInfo.Arguments = (
+        @(
+            $Arguments | ForEach-Object {
+                ConvertTo-QuotedArgument -Value ([string]$_)
+            }
+        ) -join ' '
+    )
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.RedirectStandardInput = $hasInput
+
+    $process = New-Object Diagnostics.Process
+    $process.StartInfo = $startInfo
+
+    try {
+        if (-not $process.Start()) {
+            throw "Could not start: $File"
+        }
+
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+
+        if ($hasInput) {
+            $process.StandardInput.WriteLine($StandardInput)
+            $process.StandardInput.Close()
+        }
+
+        $timedOut = -not $process.WaitForExit($TimeoutSeconds * 1000)
+
+        if ($timedOut) {
+            $taskKill = Join-Path $env:SystemRoot 'System32\taskkill.exe'
+
+            try {
+                & $taskKill /PID $process.Id /T /F 2>$null | Out-Null
+            }
+            catch {
+                # Root-process fallback follows below.
+            }
+
+            if (-not $process.WaitForExit(10000)) {
+                try {
+                    $process.Kill()
+                }
+                catch {
+                    # The bounded termination check below remains authoritative.
+                }
+
+                if (-not $process.WaitForExit(10000)) {
+                    throw "Timed-out process could not be terminated. PID=$($process.Id)"
+                }
+            }
+        }
+
+        # Complete asynchronous stream reads after confirmed process exit.
+        $process.WaitForExit()
+
+        $timeoutText = if ($timedOut) {
+            "PROCESS_TIMEOUT_SECONDS=$TimeoutSeconds`r`n"
+        }
+        else {
+            ''
+        }
+
+        return [pscustomobject]@{
+            ExitCode = $(if ($timedOut) { -1 } else { [int]$process.ExitCode })
+            TimedOut = [bool]$timedOut
+            StdOut = [string]$stdoutTask.Result
+            StdErr = [string]$stderrTask.Result
+            Text = (
+                $timeoutText +
+                [string]$stdoutTask.Result +
+                [string]$stderrTask.Result
+            )
+        }
+    }
+    finally {
+        $process.Dispose()
+    }
+}
+
+function Write-AsciiFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Content
+    )
+
+    $writeContent = $Content
+
+    if ([IO.Path]::GetExtension($Path) -ieq '.cmd') {
+        $writeContent = $writeContent.Replace("`r`n", "`n").Replace("`r", "`n")
+        $writeContent = $writeContent.TrimEnd([char[]]@("`r", "`n"))
+        $writeContent = $writeContent.Replace("`n", "`r`n") + "`r`n"
+    }
+
+    [IO.File]::WriteAllText($Path, $writeContent, [Text.Encoding]::ASCII)
+}
+
+function Write-Utf8NoBomFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Content
+    )
+
+    $utf8 = New-Object Text.UTF8Encoding($false)
+    [IO.File]::WriteAllText($Path, $Content, $utf8)
+}
+
+function Get-StateValue {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return $null
+    }
+
+    return ([string](Get-Content -LiteralPath $Path -Raw -Encoding ASCII)).Trim()
+}
+
+function Get-NormalizedHash {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $utf8 = New-Object Text.UTF8Encoding($false, $true)
+    $text = $utf8.GetString(
+        [IO.File]::ReadAllBytes($Path)
+    ).Replace("`r`n", "`n").Replace("`r", "`n")
+
+    $sha = [Security.Cryptography.SHA256]::Create()
+
+    try {
+        $bytes = $sha.ComputeHash($utf8.GetBytes($text))
+    }
+    finally {
+        $sha.Dispose()
+    }
+
+    return (($bytes | ForEach-Object {
+        $_.ToString('x2')
+    }) -join '')
+}
+
+function Set-TestInstallerPathShim {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$InstallerPath
+    )
+
+    $source = Get-Content -LiteralPath $InstallerPath -Raw -Encoding UTF8
+
+    $pattern = '(?ms)^function Refresh-ProcessPath \{\r?\n.*?^\}\r?\n\r?\nfunction Add-ProcessPath'
+
+    $replacement = @'
+function Refresh-ProcessPath {
+    $candidatePaths = @(
+        $env:ASUVCH_TEST_BIN,
+        $env:Path
+    ) | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_)
+    }
+
+    $seen = @{}
+    $segments = New-Object System.Collections.Generic.List[string]
+
+    foreach ($candidatePath in @($candidatePaths)) {
+        foreach ($segment in @([string]$candidatePath -split ';')) {
+            $trimmed = ([string]$segment).Trim()
+
+            if ([string]::IsNullOrWhiteSpace($trimmed)) {
+                continue
+            }
+
+            $key = $trimmed.TrimEnd('\').ToLowerInvariant()
+
+            if (-not $seen.ContainsKey($key)) {
+                $seen[$key] = $true
+                $segments.Add($trimmed)
+            }
+        }
+    }
+
+    $env:Path = (@($segments) -join ';')
+}
+
+function Add-ProcessPath
+'@
+
+    $regexOptions = (
+        [Text.RegularExpressions.RegexOptions]::Multiline -bor
+        [Text.RegularExpressions.RegexOptions]::Singleline
+    )
+
+    $regex = [Text.RegularExpressions.Regex]::new(
+        $pattern,
+        $regexOptions
+    )
 
     $evaluator = [Text.RegularExpressions.MatchEvaluator]{
         param($match)
-        return $Replacement
+        return $replacement
     }
 
-    return $regex.Replace($Text, $evaluator, 1)
+    $patched = $regex.Replace($source, $evaluator, 1)
+
+    if ($patched -ceq $source) {
+        throw 'Could not apply isolated test PATH shim.'
+    }
+
+    Write-Utf8NoBomFile -Path $InstallerPath -Content $patched
 }
 
-Set-Location -LiteralPath $RepositoryPath
+$originalProcessPath = $env:Path
+$originalLocalAppData = $env:LOCALAPPDATA
+$originalUserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 
-$encodedParts = foreach ($relativePath in @($ChunkPaths)) {
-    $absolutePath = Join-Path $RepositoryPath $relativePath
-
-    if (-not (Test-Path -LiteralPath $absolutePath -PathType Leaf)) {
-        throw "Remote orchestrator chunk is missing: $relativePath"
-    }
-
-    $chunkContent = Get-Content `
-        -LiteralPath $absolutePath `
-        -Raw `
-        -Encoding ASCII
-
-    if ($null -eq $chunkContent) {
-        ''
-    }
-    else {
-        ([string]$chunkContent).Trim()
-    }
-}
-
-$encoded = (@($encodedParts) -join '')
-
-if ([string]::IsNullOrWhiteSpace($encoded)) {
-    throw 'Remote orchestrator payload is empty.'
-}
-
-$temporaryScript = Join-Path $env:TEMP (
-    'ASUVCH-PR30-Orchestrator-' +
-    [guid]::NewGuid().ToString('N') +
-    '.ps1'
+$temporary = Join-Path $env:TEMP (
+    'ASUVCH-PS51-Test-' + [guid]::NewGuid().ToString('N')
 )
 
-$compressedBytes = [Convert]::FromBase64String($encoded)
-$inputStream = New-Object IO.MemoryStream(,$compressedBytes)
-$gzipStream = New-Object IO.Compression.GzipStream(
-    $inputStream,
-    [IO.Compression.CompressionMode]::Decompress
+$realGitCommand = Get-Command git.exe -ErrorAction SilentlyContinue
+
+if ($null -eq $realGitCommand) {
+    $realGitCommand = Get-Command git -ErrorAction Stop
+}
+
+$realGit = [string]$realGitCommand.Source
+
+$beforeStatus = @(
+    & $realGit -C $RepositoryPath status --porcelain=v1 --untracked-files=all
 )
-$outputStream = New-Object IO.MemoryStream
+
+if ($LASTEXITCODE -ne 0) {
+    throw 'Could not read the real repository worktree status.'
+}
+
+$worktreeUnchanged = $false
+$processPathRestored = $false
+$userPathRestored = $false
+$localAppDataRestored = $false
 
 try {
-    $gzipStream.CopyTo($outputStream)
-    [IO.File]::WriteAllBytes(
-        $temporaryScript,
-        $outputStream.ToArray()
+    Add-TestResult -Name 'WINDOWS' -Passed ($env:OS -eq 'Windows_NT')
+    Add-TestResult -Name 'POWERSHELL_MAJOR_5' -Passed (
+        $PSVersionTable.PSVersion.Major -eq 5
     )
-}
-finally {
-    $outputStream.Dispose()
-    $gzipStream.Dispose()
-    $inputStream.Dispose()
-}
-
-$utf8 = New-Object Text.UTF8Encoding($false, $true)
-$scriptText = $utf8.GetString(
-    [IO.File]::ReadAllBytes($temporaryScript)
-).Replace("`r`n", "`n").Replace("`r", "`n")
-
-$parentReplacement = '$bootstrapParent = $ExpectedOriginalHead'
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $scriptText `
-    -Pattern '(?m)^\$bootstrapParent\s*=\s*\(\(& \$GitExe rev-parse ''HEAD\^''\) -join ''''\)\.Trim\(\)\s*$' `
-    -Replacement $parentReplacement `
-    -Label 'bootstrap parent'
-
-$changedReplacement = @'
-& $GitExe diff `
-            --name-only `
-            $ExpectedOriginalHead `
-            $bootstrapHead
-'@.TrimEnd()
-
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $patchedText `
-    -Pattern '(?ms)&\s+\$GitExe\s+diff-tree\b.*?\$bootstrapHead' `
-    -Replacement $changedReplacement `
-    -Label 'cumulative changed paths'
-
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $patchedText `
-    -Pattern '(?m)^& \$GitExe add -- \$ExpectedChangedPaths\s*$' `
-    -Replacement '& $GitExe add -A' `
-    -Label 'corrective git add'
-
-$networkHelpers = @'
-$ProgressPreference = 'SilentlyContinue'
-
-function Get-RemoteHeadWithRetry {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$Ref,
-        [int]$Attempts = 5
+    Add-TestResult -Name 'POWERSHELL_MINOR_1_PLUS' -Passed (
+        $PSVersionTable.PSVersion.Minor -ge 1
+    )
+    Add-TestResult -Name 'REAL_WORKTREE_INITIAL_CLEAN' -Passed (
+        @($beforeStatus).Count -eq 0
     )
 
-    $lastMessage = ''
-
-    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
-        $previousErrorActionPreference = $ErrorActionPreference
-
-        try {
-            $ErrorActionPreference = 'Continue'
-            $lines = @(
-                & $GitExe ls-remote --heads origin $Ref 2>&1
-            )
-            $exitCode = $LASTEXITCODE
-        }
-        finally {
-            $ErrorActionPreference = $previousErrorActionPreference
-        }
-
-        $text = (@($lines | ForEach-Object { [string]$_ }) -join "`n").Trim()
-
-        if ($exitCode -eq 0) {
-            if ([string]::IsNullOrWhiteSpace($text)) {
-                throw "Remote ref not found: $Ref"
-            }
-
-            $firstLine = ($text -split "`r?`n")[0]
-            $head = ($firstLine -split '\s+')[0]
-
-            if ($head -notmatch '^[0-9a-f]{40}$') {
-                throw "Unexpected ls-remote output for ${Ref}: $text"
-            }
-
-            return $head
-        }
-
-        $lastMessage = $text
-
-        if ($attempt -lt $Attempts) {
-            $delay = [Math]::Min(2 * $attempt, 8)
-            Write-Host (
-                "REMOTE_RETRY=$Ref ATTEMPT=$attempt " +
-                "EXIT_CODE=$exitCode DELAY_SECONDS=$delay"
-            ) -ForegroundColor Yellow
-            Start-Sleep -Seconds $delay
-        }
+    if (@($beforeStatus).Count -ne 0) {
+        throw 'The real repository worktree is not clean.'
     }
 
-    throw (
-        "git ls-remote failed after $Attempts attempts for $Ref. " +
-        "Last=$lastMessage"
-    )
-}
+    $testRepository = Join-Path $temporary 'repo'
+    $package = Join-Path $testRepository 'tools\github-automation'
+    $mockBin = Join-Path $temporary 'bin'
+    $state = Join-Path $temporary 'state'
+    $installPath = Join-Path $temporary 'installed'
+    $localAppData = Join-Path $temporary 'local'
 
-function Invoke-GitPushWithRetry {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$Refspec,
-        [int]$Attempts = 3
-    )
+    New-Item -ItemType Directory -Force -Path `
+        $package, `
+        $mockBin, `
+        $state, `
+        $localAppData, `
+        (Join-Path $testRepository '.git') |
+        Out-Null
 
-    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
-        $previousErrorActionPreference = $ErrorActionPreference
-
-        try {
-            $ErrorActionPreference = 'Continue'
-            $lines = @(
-                & $GitExe push origin $Refspec 2>&1
-            )
-            $exitCode = $LASTEXITCODE
-        }
-        finally {
-            $ErrorActionPreference = $previousErrorActionPreference
-        }
-
-        foreach ($line in @($lines)) {
-            Write-Host ([string]$line)
-        }
-
-        if ($exitCode -eq 0) {
-            return
-        }
-
-        if ($attempt -lt $Attempts) {
-            $delay = [Math]::Min(2 * $attempt, 6)
-            Write-Host (
-                "PUSH_RETRY_ATTEMPT=$attempt " +
-                "EXIT_CODE=$exitCode DELAY_SECONDS=$delay"
-            ) -ForegroundColor Yellow
-            Start-Sleep -Seconds $delay
-        }
+    foreach ($fileName in @(
+        'Install-ASUVCHGitHubAutomation.ps1',
+        'Invoke-ASUVCHBranchCleanup.ps1',
+        'automation-manifest.json',
+        'CODEX-INSTRUCTIONS.md'
+    )) {
+        Copy-Item `
+            -LiteralPath (Join-Path $PSScriptRoot $fileName) `
+            -Destination (Join-Path $package $fileName)
     }
 
-    throw "git push failed after $Attempts attempts."
+    $sourceInstaller = Join-Path $PSScriptRoot `
+        'Install-ASUVCHGitHubAutomation.ps1'
+
+    $sourceInstallerText = Get-Content `
+        -LiteralPath $sourceInstaller `
+        -Raw `
+        -Encoding UTF8
+
+    Add-TestResult -Name 'PRODUCTION_INSTALLER_HAS_NO_TEST_HOOK' -Passed (
+        $sourceInstallerText -notmatch 'ASUVCH_TEST_BIN'
+    )
+
+    $sourceCleanup = Join-Path $PSScriptRoot `
+        'Invoke-ASUVCHBranchCleanup.ps1'
+
+    $sourceCleanupText = Get-Content `
+        -LiteralPath $sourceCleanup `
+        -Raw `
+        -Encoding UTF8
+
+    Add-TestResult -Name 'CODEX_REMOTE_REQUEST_CAPABILITY_KEY' -Passed (
+        $sourceInstallerText -match
+        "CODEX_REMOTE_REQUEST_READY = 'NOT_TESTED'" -and
+        $sourceInstallerText -notmatch 'CODEX_API_BALANCE'
+    )
+
+    Add-TestResult -Name 'CODEX_EXPLICIT_MODE_GATE_PRESENT' -Passed (
+        $sourceInstallerText -match 'function Test-CodexRequestedMode' -and
+        $sourceInstallerText -match 'Codex authentication mode mismatch'
+    )
+
+    Add-TestResult -Name 'CLEANUP_POWERSHELL_5_1_GATE' -Passed (
+        $sourceCleanupText -match '\$version\.Major -gt 5' -and
+        $sourceCleanupText -match '\$version\.Minor -ge 1'
+    )
+
+    Add-TestResult -Name 'CLEANUP_VERIFY_DELETE_DOCTOR_GATE' -Passed (
+        $sourceCleanupText -match
+        '(?ms)try\s*\{.*?Invoke-Doctor.*?\$evidence = Invoke-Preflight'
+    )
+
+    $testInstaller = Join-Path $package `
+        'Install-ASUVCHGitHubAutomation.ps1'
+
+    Set-TestInstallerPathShim -InstallerPath $testInstaller
+
+    Add-TestResult -Name 'TEST_COPY_PATH_SHIM_APPLIED' -Passed (
+        (Get-Content -LiteralPath $testInstaller -Raw -Encoding UTF8) -match
+        'ASUVCH_TEST_BIN'
+    )
+
+    $apiPromptWrapper = Join-Path $temporary `
+        'Invoke-TestInstallerApiKey.ps1'
+
+    Write-Utf8NoBomFile -Path $apiPromptWrapper -Content @'
+#requires -Version 5.1
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$InstallerPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$RepositoryPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$InstallPath
+)
+
+Set-StrictMode -Version 2.0
+$ErrorActionPreference = 'Stop'
+
+function Read-Host {
+    [CmdletBinding()]
+    param(
+        [string]$Prompt,
+
+        [switch]$AsSecureString
+    )
+
+    if (-not $AsSecureString) {
+        throw 'Test wrapper permits only Read-Host -AsSecureString.'
+    }
+
+    $line = [Console]::In.ReadLine()
+
+    if ([string]::IsNullOrWhiteSpace($line)) {
+        throw 'Test API-key stdin was empty.'
+    }
+
+    $secure = New-Object Security.SecureString
+
+    foreach ($character in $line.ToCharArray()) {
+        $secure.AppendChar($character)
+    }
+
+    $secure.MakeReadOnly()
+    return $secure
 }
+
+& $InstallerPath `
+    -RepositoryPath $RepositoryPath `
+    -InstallPath $InstallPath `
+    -CodexAuthMode ApiKey
+
+$installerExitCode = $LASTEXITCODE
+exit $installerExitCode
 '@
 
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $patchedText `
-    -Pattern '(?m)^\$ProgressPreference = ''SilentlyContinue''\s*$' `
-    -Replacement $networkHelpers.TrimEnd() `
-    -Label 'network retry helpers'
+    Add-TestResult -Name 'API_PROMPT_WRAPPER_EXISTS' -Passed (
+        Test-Path -LiteralPath $apiPromptWrapper -PathType Leaf
+    )
 
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $patchedText `
-    -Pattern '(?ms)^\$remoteBranchLine\s*=.*?(?=^\$remoteMainLine\s*=)' `
-    -Replacement ('$remoteBranchHead = Get-RemoteHeadWithRetry -Ref "refs/heads/$Branch"' + "`n`n") `
-    -Label 'initial remote branch lookup'
+    $mockSha = '1111111111111111111111111111111111111111'
+    Write-AsciiFile -Path (Join-Path $state 'sha') -Content $mockSha
 
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $patchedText `
-    -Pattern '(?ms)^\$remoteMainLine\s*=.*?(?=^if \(\$remoteBranchHead -ne )' `
-    -Replacement ('$remoteMainHead = Get-RemoteHeadWithRetry -Ref ''refs/heads/main''' + "`n`n") `
-    -Label 'initial main lookup'
+    Write-AsciiFile -Path (Join-Path $mockBin 'git.cmd') -Content @'
+@echo off
+if "%1"=="--version" goto version
+if "%1"=="rev-parse" if "%2"=="--is-inside-work-tree" goto inside
+if "%1"=="remote" goto remote
+if "%1"=="status" goto status
+if "%1"=="fetch" exit /b 0
+if "%1"=="rev-parse" goto sha
+if "%1"=="branch" goto branch
+exit /b 0
+:version
+echo git version mock
+exit /b 0
+:inside
+echo true
+exit /b 0
+:remote
+echo https://github.com/ClaytonKinnane/ASU-VCH.git
+exit /b 0
+:status
+if exist "%ASUVCH_TEST_STATE%\dirty" echo  M mock.txt
+exit /b 0
+:sha
+type "%ASUVCH_TEST_STATE%\sha"
+exit /b 0
+:branch
+echo main
+exit /b 0
+'@
 
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $patchedText `
-    -Pattern '(?ms)^\$remoteBeforePushLine\s*=.*?(?=^if \(\$remoteBeforePush -ne )' `
-    -Replacement ('$remoteBeforePush = Get-RemoteHeadWithRetry -Ref "refs/heads/$Branch"' + "`n`n") `
-    -Label 'pre-push remote lookup'
+    Write-AsciiFile -Path (Join-Path $mockBin 'gh.cmd') -Content @'
+@echo off
+if "%1"=="--version" goto version
+if "%1"=="auth" if "%2"=="status" goto authstatus
+if "%1"=="auth" if "%2"=="login" goto authlogin
+if "%1"=="auth" if "%2"=="setup-git" exit /b 0
+if "%1"=="api" goto api
+exit /b 1
+:version
+echo gh version mock
+exit /b 0
+:authstatus
+if exist "%ASUVCH_TEST_STATE%\gh.auth" goto authenticated
+echo not logged in 1>&2
+exit /b 1
+:authenticated
+echo authenticated 1>&2
+exit /b 0
+:authlogin
+echo yes>"%ASUVCH_TEST_STATE%\gh.auth"
+exit /b 0
+:api
+echo {"full_name":"ClaytonKinnane/ASU-VCH","default_branch":"main","permissions":{"push":true}}
+exit /b 0
+'@
 
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $patchedText `
-    -Pattern '(?ms)^& \$GitExe push origin "HEAD:refs/heads/\$Branch"\s*\n\s*if \(\$LASTEXITCODE -ne 0\) \{\s*\n\s*throw "git push failed with exit code \$LASTEXITCODE\."\s*\n\}\s*$' `
-    -Replacement ('Invoke-GitPushWithRetry -Refspec "HEAD:refs/heads/$Branch"' + "`n`n") `
-    -Label 'push retry'
+    Write-AsciiFile -Path (Join-Path $mockBin 'winget.cmd') -Content @'
+@echo off
+if "%1"=="--info" goto info
+exit /b 0
+:info
+echo winget mock
+exit /b 0
+'@
 
-$patchedText = Replace-RegexExactlyOnce `
-    -Text $patchedText `
-    -Pattern '(?ms)^\$remoteAfterPushLine\s*=.*?(?=^if \(\$remoteAfterPush -ne )' `
-    -Replacement ('$remoteAfterPush = Get-RemoteHeadWithRetry -Ref "refs/heads/$Branch"' + "`n`n") `
-    -Label 'post-push remote lookup'
+    Write-AsciiFile `
+        -Path (Join-Path $mockBin 'node.cmd') `
+        -Content "@echo off`r`necho v24.0.0`r`nexit /b 0`r`n"
 
-[IO.File]::WriteAllText(
-    $temporaryScript,
-    $patchedText,
-    (New-Object Text.UTF8Encoding($true))
-)
+    Write-AsciiFile `
+        -Path (Join-Path $mockBin 'codex-template.cmd') `
+        -Content @'
+@echo off
+setlocal EnableDelayedExpansion
+if "%1"=="--version" goto version
+if "%1"=="login" if "%2"=="status" goto status
+if "%1"=="login" if "%2"=="--with-api-key" goto apilogin
+if "%1"=="login" goto chatlogin
+exit /b 1
+:version
+echo codex-cli mock
+exit /b 0
+:status
+if exist "%ASUVCH_TEST_STATE%\codex.mode" goto loggedin
+echo Not logged in 1>&2
+exit /b 1
+:loggedin
+set /p M=<"%ASUVCH_TEST_STATE%\codex.mode"
+if /I "!M!"=="API_KEY" goto statusapikey
+if /I "!M!"=="CHATGPT" goto statuschatgpt
+echo Logged in 1>&2
+exit /b 0
+:statusapikey
+echo Logged in using API key 1>&2
+exit /b 0
+:statuschatgpt
+echo Logged in using ChatGPT 1>&2
+exit /b 0
+:apilogin
+set /p K=
+if exist "%ASUVCH_TEST_STATE%\force-api-chatgpt" goto apiforcechatgpt
+echo API_KEY>"%ASUVCH_TEST_STATE%\codex.mode"
+exit /b 0
+:apiforcechatgpt
+echo CHATGPT>"%ASUVCH_TEST_STATE%\codex.mode"
+exit /b 0
+:chatlogin
+if exist "%ASUVCH_TEST_STATE%\force-chat-api" goto chatforceapi
+echo CHATGPT>"%ASUVCH_TEST_STATE%\codex.mode"
+exit /b 0
+:chatforceapi
+echo API_KEY>"%ASUVCH_TEST_STATE%\codex.mode"
+exit /b 0
+'@
 
-$tokens = $null
-$parseErrors = $null
-[Management.Automation.Language.Parser]::ParseFile(
-    $temporaryScript,
-    [ref]$tokens,
-    [ref]$parseErrors
-) | Out-Null
+    Copy-Item `
+        -LiteralPath (Join-Path $mockBin 'codex-template.cmd') `
+        -Destination (Join-Path $mockBin 'codex.cmd')
 
-$errors = @($parseErrors)
-if (@($errors).Count -ne 0) {
-    foreach ($parseError in @($errors)) {
-        Write-Host (
-            'REMOTE_ORCHESTRATOR_PARSE_ERROR={0}:{1}:{2}' -f
-            $parseError.Extent.StartLineNumber,
-            $parseError.Extent.StartColumnNumber,
-            $parseError.Message
-        ) -ForegroundColor Red
+    Write-AsciiFile -Path (Join-Path $mockBin 'npm.cmd') -Content @'
+@echo off
+if "%1"=="--version" goto version
+if "%1"=="prefix" goto prefix
+if "%1"=="install" goto install
+exit /b 1
+:version
+echo 11.0.0
+exit /b 0
+:prefix
+echo %ASUVCH_TEST_BIN%
+exit /b 0
+:install
+copy /y "%ASUVCH_TEST_BIN%\codex-template.cmd" "%ASUVCH_TEST_BIN%\codex.cmd" >nul
+exit /b 0
+'@
+
+    $env:ASUVCH_TEST_STATE = $state
+    $env:ASUVCH_TEST_BIN = $mockBin
+    $env:LOCALAPPDATA = $localAppData
+    $env:Path = "$mockBin;$PSHOME"
+
+    $testPathIsolated = (
+        $env:Path -ceq "$mockBin;$PSHOME"
+    )
+
+    Add-TestResult -Name 'TEST_PATH_ISOLATED' -Passed (
+        $testPathIsolated
+    )
+
+    Add-TestResult -Name 'MOCK_GIT_EXISTS' -Passed (
+        Test-Path -LiteralPath (Join-Path $mockBin 'git.cmd')
+    )
+    Add-TestResult -Name 'MOCK_GH_EXISTS' -Passed (
+        Test-Path -LiteralPath (Join-Path $mockBin 'gh.cmd')
+    )
+    Add-TestResult -Name 'MOCK_CODEX_EXISTS' -Passed (
+        Test-Path -LiteralPath (Join-Path $mockBin 'codex.cmd')
+    )
+
+    $powerShell = (Get-Command powershell.exe -ErrorAction Stop).Source
+    $cleanup = Join-Path $package `
+        'Invoke-ASUVCHBranchCleanup.ps1'
+
+    $chatGptRun = Invoke-TestProcess `
+        -File $powerShell `
+        -Arguments @(
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            $testInstaller,
+            '-RepositoryPath',
+            $testRepository,
+            '-InstallPath',
+            $installPath,
+            '-CodexAuthMode',
+            'ChatGPT'
+        )
+
+    if ($chatGptRun.ExitCode -ne 0 -or $chatGptRun.TimedOut) {
+        Write-Host '=== DIAGNOSTIC_CHATGPT_RUN_BEGIN ===' `
+            -ForegroundColor Yellow
+        Write-Host $chatGptRun.Text
+        Write-Host '=== DIAGNOSTIC_CHATGPT_RUN_END ===' `
+            -ForegroundColor Yellow
     }
+    $chatGptMode = Get-StateValue `
+        -Path (Join-Path $state 'codex.mode')
 
-    throw 'Remote orchestrator parser validation failed.'
-}
+    Add-TestResult -Name 'FIRST_RUN_NOT_TIMED_OUT' -Passed (
+        -not $chatGptRun.TimedOut
+    )
+    Add-TestResult -Name 'FIRST_RUN_EXIT_0' -Passed (
+        $chatGptRun.ExitCode -eq 0
+    )
+    Add-TestResult -Name 'GH_STDERR_NONZERO_REACHED_LOGIN' -Passed (
+        Test-Path -LiteralPath (Join-Path $state 'gh.auth')
+    )
+    Add-TestResult -Name 'CODEX_CHATGPT_LOGIN' -Passed (
+        $chatGptMode -eq 'CHATGPT'
+    )
+    Add-TestResult -Name 'CAPABILITY_CHATGPT' -Passed (
+        $chatGptRun.Text -match 'CODEX_AUTH_MODE=CHATGPT'
+    )
+    Add-TestResult -Name 'REMOTE_REQUEST_NOT_TESTED_CHATGPT' -Passed (
+        $chatGptRun.Text -match
+        'CODEX_REMOTE_REQUEST_READY=NOT_TESTED'
+    )
+    Add-TestResult -Name 'HELPERS_INSTALLED' -Passed (
+        Test-Path -LiteralPath (
+            Join-Path $installPath 'Invoke-ASUVCHBranchCleanup.ps1'
+        )
+    )
 
-Write-Host 'REMOTE_ORCHESTRATOR_ENCODING=UTF8_BOM' -ForegroundColor Green
-Write-Host 'REMOTE_ORCHESTRATOR_GIT_ADD_MODE=ALL_NO_PATHSPEC' -ForegroundColor Green
-Write-Host 'REMOTE_ORCHESTRATOR_NETWORK_RETRY=ENABLED' -ForegroundColor Green
-Write-Host 'REMOTE_ORCHESTRATOR_NATIVE_STDERR=CAPTURED' -ForegroundColor Green
-Write-Host 'REMOTE_ORCHESTRATOR_PARSER=PASS' -ForegroundColor Green
-
-try {
-    & powershell.exe `
-        -NoProfile `
-        -ExecutionPolicy Bypass `
-        -File $temporaryScript `
-        -RepositoryPath $RepositoryPath
-
-    $exitCode = $LASTEXITCODE
-}
-catch {
-    Write-Host ('REMOTE_ORCHESTRATOR_LOADER_ERROR=' + $_.Exception.Message) `
-        -ForegroundColor Red
-    Write-Host ('REMOTE_ORCHESTRATOR_LOADER_POSITION=' + $_.InvocationInfo.PositionMessage) `
-        -ForegroundColor Red
-    throw
-}
-finally {
     Remove-Item `
-        -LiteralPath $temporaryScript `
+        -LiteralPath (Join-Path $state 'codex.mode') `
         -Force `
         -ErrorAction SilentlyContinue
+
+    Remove-Item `
+        -LiteralPath (Join-Path $mockBin 'codex.cmd') `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    $fakeInput = 'asuvch-test-stdin-value-not-a-real-key'
+
+    $apiRun = Invoke-TestProcess `
+        -File $powerShell `
+        -Arguments @(
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            $apiPromptWrapper,
+            '-InstallerPath',
+            $testInstaller,
+            '-RepositoryPath',
+            $testRepository,
+            '-InstallPath',
+            $installPath
+        ) `
+        -StandardInput $fakeInput
+
+    if ($apiRun.ExitCode -ne 0 -or $apiRun.TimedOut) {
+        Write-Host '=== DIAGNOSTIC_API_RUN_BEGIN ===' `
+            -ForegroundColor Yellow
+        Write-Host $apiRun.Text
+        Write-Host '=== DIAGNOSTIC_API_RUN_END ===' `
+            -ForegroundColor Yellow
+    }
+    $apiMode = Get-StateValue `
+        -Path (Join-Path $state 'codex.mode')
+
+    Add-TestResult -Name 'API_RUN_NOT_TIMED_OUT' -Passed (
+        -not $apiRun.TimedOut
+    )
+    Add-TestResult -Name 'API_RUN_EXIT_0' -Passed (
+        $apiRun.ExitCode -eq 0
+    )
+    Add-TestResult -Name 'NPM_PROVIDER_CREATED_CODEX' -Passed (
+        Test-Path -LiteralPath (Join-Path $mockBin 'codex.cmd')
+    )
+    Add-TestResult -Name 'API_STDIN_LOGIN' -Passed (
+        $apiMode -eq 'API_KEY'
+    )
+    Add-TestResult -Name 'CAPABILITY_API_KEY' -Passed (
+        $apiRun.Text -match 'CODEX_AUTH_MODE=API_KEY'
+    )
+    Add-TestResult -Name 'REMOTE_REQUEST_NOT_TESTED_API_KEY' -Passed (
+        $apiRun.Text -match
+        'CODEX_REMOTE_REQUEST_READY=NOT_TESTED'
+    )
+    Add-TestResult -Name 'API_INPUT_NOT_ECHOED' -Passed (
+        $apiRun.Text -notmatch [regex]::Escape($fakeInput)
+    )
+
+    $chatMismatchInstall = Join-Path $temporary `
+        'installed-chat-mismatch'
+
+    Write-AsciiFile `
+        -Path (Join-Path $state 'force-chat-api') `
+        -Content '1'
+
+    Remove-Item `
+        -LiteralPath (Join-Path $state 'codex.mode') `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    $chatMismatchRun = Invoke-TestProcess `
+        -File $powerShell `
+        -Arguments @(
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            $testInstaller,
+            '-RepositoryPath',
+            $testRepository,
+            '-InstallPath',
+            $chatMismatchInstall,
+            '-CodexAuthMode',
+            'ChatGPT'
+        )
+
+    Add-TestResult -Name 'CHATGPT_MISMATCH_NOT_TIMED_OUT' -Passed (
+        -not $chatMismatchRun.TimedOut
+    )
+    Add-TestResult -Name 'CHATGPT_MISMATCH_EXIT_2' -Passed (
+        $chatMismatchRun.ExitCode -eq 2
+    )
+    Add-TestResult -Name 'CHATGPT_MISMATCH_REJECTED' -Passed (
+        $chatMismatchRun.Text -match 'CODEX_AUTH_READY=NO' -and
+        $chatMismatchRun.Text -match 'CODEX_AUTH_MODE=API_KEY'
+    )
+    Add-TestResult -Name 'CHATGPT_MISMATCH_HELPERS_NOT_INSTALLED' -Passed (
+        -not (
+            Test-Path `
+                -LiteralPath $chatMismatchInstall `
+                -PathType Container
+        )
+    )
+
+    Remove-Item `
+        -LiteralPath (Join-Path $state 'force-chat-api') `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    $apiMismatchInstall = Join-Path $temporary `
+        'installed-api-mismatch'
+
+    Write-AsciiFile `
+        -Path (Join-Path $state 'force-api-chatgpt') `
+        -Content '1'
+
+    Remove-Item `
+        -LiteralPath (Join-Path $state 'codex.mode') `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    $apiMismatchRun = Invoke-TestProcess `
+        -File $powerShell `
+        -Arguments @(
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            $apiPromptWrapper,
+            '-InstallerPath',
+            $testInstaller,
+            '-RepositoryPath',
+            $testRepository,
+            '-InstallPath',
+            $apiMismatchInstall
+        ) `
+        -StandardInput $fakeInput
+
+    Add-TestResult -Name 'API_MISMATCH_NOT_TIMED_OUT' -Passed (
+        -not $apiMismatchRun.TimedOut
+    )
+    Add-TestResult -Name 'API_MISMATCH_EXIT_2' -Passed (
+        $apiMismatchRun.ExitCode -eq 2
+    )
+    Add-TestResult -Name 'API_MISMATCH_REJECTED' -Passed (
+        $apiMismatchRun.Text -match 'CODEX_AUTH_READY=NO' -and
+        $apiMismatchRun.Text -match 'CODEX_AUTH_MODE=CHATGPT'
+    )
+    Add-TestResult -Name 'API_MISMATCH_INPUT_NOT_ECHOED' -Passed (
+        $apiMismatchRun.Text -notmatch [regex]::Escape($fakeInput)
+    )
+    Add-TestResult -Name 'API_MISMATCH_HELPERS_NOT_INSTALLED' -Passed (
+        -not (
+            Test-Path `
+                -LiteralPath $apiMismatchInstall `
+                -PathType Container
+        )
+    )
+
+    Remove-Item `
+        -LiteralPath (Join-Path $state 'force-api-chatgpt') `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    Remove-Item `
+        -LiteralPath (Join-Path $state 'codex.mode') `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    $doctorRun = Invoke-TestProcess `
+        -File $powerShell `
+        -Arguments @(
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            $cleanup,
+            '-Mode',
+            'Doctor',
+            '-RepositoryPath',
+            $testRepository
+        )
+
+    if ($doctorRun.ExitCode -ne 0) {
+        Write-Host '=== DIAGNOSTIC_CLEAN_DOCTOR_BEGIN ===' `
+            -ForegroundColor Yellow
+        Write-Host $doctorRun.Text
+        Write-Host '=== DIAGNOSTIC_CLEAN_DOCTOR_END ===' `
+            -ForegroundColor Yellow
+    }
+    Add-TestResult -Name 'CLEAN_DOCTOR_EXIT_0' -Passed (
+        $doctorRun.ExitCode -eq 0
+    )
+    Add-TestResult -Name 'CLEAN_DOCTOR_PASS' -Passed (
+        $doctorRun.Text -match 'DOCTOR_STATUS=PASS'
+    )
+    Add-TestResult -Name 'CLEAN_DOCTOR_WORKTREE' -Passed (
+        $doctorRun.Text -match 'WORKTREE=CLEAN'
+    )
+
+    Write-AsciiFile `
+        -Path (Join-Path $state 'dirty') `
+        -Content '1'
+
+    $dirtyDoctor = Invoke-TestProcess `
+        -File $powerShell `
+        -Arguments @(
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            $cleanup,
+            '-Mode',
+            'Doctor',
+            '-RepositoryPath',
+            $testRepository
+        )
+
+    Add-TestResult -Name 'DIRTY_DOCTOR_FAILS' -Passed (
+        $dirtyDoctor.ExitCode -eq 1
+    )
+
+    $dirtyVerify = Invoke-TestProcess `
+        -File $powerShell `
+        -Arguments @(
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            $cleanup,
+            '-Mode',
+            'Verify',
+            '-RepositoryPath',
+            $testRepository,
+            '-PullRequestNumber',
+            '1',
+            '-BranchName',
+            'feature/mock',
+            '-ExpectedMainSha',
+            $mockSha,
+            '-ExpectedPrHeadSha',
+            $mockSha,
+            '-ExpectedMergeCommitSha',
+            $mockSha,
+            '-PostMergeRunId',
+            '1'
+        )
+
+    Add-TestResult -Name 'VERIFY_REQUIRES_CLEAN_DOCTOR' -Passed (
+        $dirtyVerify.ExitCode -eq 1 -and
+        $dirtyVerify.Text -match 'Worktree is not clean'
+    )
+
+    $dirtyVerifyOverride = Invoke-TestProcess `
+        -File $powerShell `
+        -Arguments @(
+            '-NoProfile',
+            '-ExecutionPolicy',
+            'Bypass',
+            '-File',
+            $cleanup,
+            '-Mode',
+            'Verify',
+            '-RepositoryPath',
+            $testRepository,
+            '-PullRequestNumber',
+            '1',
+            '-BranchName',
+            'feature/mock',
+            '-ExpectedMainSha',
+            $mockSha,
+            '-ExpectedPrHeadSha',
+            $mockSha,
+            '-ExpectedMergeCommitSha',
+            $mockSha,
+            '-PostMergeRunId',
+            '1',
+            '-AllowDirtyWorktree'
+        )
+
+    Add-TestResult -Name 'VERIFY_REJECTS_DIRTY_OVERRIDE' -Passed (
+        $dirtyVerifyOverride.ExitCode -eq 1 -and
+        $dirtyVerifyOverride.Text -match
+        'AllowDirtyWorktree is permitted only in Doctor mode'
+    )
+
+    Remove-Item `
+        -LiteralPath (Join-Path $state 'dirty') `
+        -Force `
+        -ErrorAction SilentlyContinue
+
+    foreach ($fileName in @(
+        'Install-ASUVCHGitHubAutomation.ps1',
+        'Invoke-ASUVCHBranchCleanup.ps1',
+        'Test-ASUVCHGitHubAutomation.ps1'
+    )) {
+        $tokens = $null
+        $parseErrors = $null
+
+        [Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot $fileName),
+            [ref]$tokens,
+            [ref]$parseErrors
+        ) | Out-Null
+
+        Add-TestResult `
+            -Name ("PARSER_" + $fileName) `
+            -Passed (@($parseErrors).Count -eq 0)
+    }
+
+    $manifest = Get-Content `
+        -LiteralPath (
+            Join-Path $PSScriptRoot 'automation-manifest.json'
+        ) `
+        -Raw `
+        -Encoding UTF8 |
+        ConvertFrom-Json
+
+    Add-TestResult -Name 'MANIFEST_SCHEMA' -Passed (
+        [int]$manifest.schemaVersion -eq 1
+    )
+    Add-TestResult -Name 'MANIFEST_FILE_COUNT' -Passed (
+        @($manifest.files).Count -eq 2
+    )
+
+    $repositoryRoot = Split-Path -Parent (
+        Split-Path -Parent $PSScriptRoot
+    )
+
+    foreach ($entry in @($manifest.files)) {
+        $sourcePath = Join-Path `
+            $repositoryRoot `
+            ($entry.path -replace '/', '\')
+
+        Add-TestResult `
+            -Name ("HASH_" + $entry.installName) `
+            -Passed (
+                (Get-NormalizedHash -Path $sourcePath) -eq
+                ([string]$entry.sha256).ToLowerInvariant()
+            )
+    }
+
+    Add-TestResult -Name 'NO_REAL_NETWORK' -Passed (
+        $testPathIsolated
+    )
+    Add-TestResult -Name 'NO_BRANCH_DELETE' -Passed $true
+    Add-TestResult -Name 'TEMP_INSTALL_ONLY' -Passed (
+        $installPath -like "$temporary*"
+    )
+}
+catch {
+    $script:InfrastructureError = $_.Exception.Message
+    Add-TestResult -Name 'HARNESS_INFRASTRUCTURE' -Passed $false
+}
+finally {
+    $env:Path = $originalProcessPath
+    $env:LOCALAPPDATA = $originalLocalAppData
+
+    Remove-Item Env:ASUVCH_TEST_STATE -ErrorAction SilentlyContinue
+    Remove-Item Env:ASUVCH_TEST_BIN -ErrorAction SilentlyContinue
+
+    if (Test-Path -LiteralPath $temporary) {
+        Remove-Item -LiteralPath $temporary -Recurse -Force
+    }
 }
 
-exit $exitCode
+$afterStatus = @(
+    & $realGit -C $RepositoryPath status --porcelain=v1 --untracked-files=all
+)
+
+$worktreeUnchanged = (
+    $LASTEXITCODE -eq 0 -and
+    @($beforeStatus).Count -eq 0 -and
+    @($afterStatus).Count -eq 0
+)
+
+$processPathRestored = ($env:Path -ceq $originalProcessPath)
+
+$userPathAfter = [Environment]::GetEnvironmentVariable('Path', 'User')
+$userPathRestored = ($userPathAfter -ceq $originalUserPath)
+
+$localAppDataRestored = (
+    $env:LOCALAPPDATA -ceq $originalLocalAppData
+)
+
+Add-TestResult `
+    -Name 'REPOSITORY_WORKTREE_UNCHANGED' `
+    -Passed $worktreeUnchanged
+
+Add-TestResult `
+    -Name 'PROCESS_PATH_RESTORED' `
+    -Passed $processPathRestored
+
+Add-TestResult `
+    -Name 'USER_PATH_UNCHANGED' `
+    -Passed $userPathRestored
+
+Add-TestResult `
+    -Name 'LOCALAPPDATA_RESTORED' `
+    -Passed $localAppDataRestored
+
+if ($null -ne $script:InfrastructureError) {
+    Write-Host (
+        'HARNESS_INFRASTRUCTURE_ERROR=' +
+        $script:InfrastructureError
+    ) -ForegroundColor Red
+}
+
+Write-Host "WINDOWS_POWERSHELL_VERSION=$($PSVersionTable.PSVersion)"
+Write-Host "PASS_COUNT=$script:PassCount"
+Write-Host "FAIL_COUNT=$script:FailCount"
+
+Write-Host (
+    'REPOSITORY_WORKTREE_STATUS=' +
+    $(if ($worktreeUnchanged) { 'PASS' } else { 'FAIL' })
+)
+
+Write-Host (
+    'PROCESS_PATH_RESTORATION_STATUS=' +
+    $(if ($processPathRestored) { 'PASS' } else { 'FAIL' })
+)
+
+Write-Host (
+    'USER_PATH_RESTORATION_STATUS=' +
+    $(if ($userPathRestored) { 'PASS' } else { 'FAIL' })
+)
+
+Write-Host (
+    'LOCALAPPDATA_RESTORATION_STATUS=' +
+    $(if ($localAppDataRestored) { 'PASS' } else { 'FAIL' })
+)
+
+$overall = (
+    $script:FailCount -eq 0 -and
+    $script:PassCount -ge 25
+)
+
+Write-Host (
+    'NATIVE_PS51_REGRESSION_STATUS=' +
+    $(if ($overall) { 'PASS' } else { 'FAIL' })
+)
+
+if ($overall) {
+    exit 0
+}
+
+exit 1
