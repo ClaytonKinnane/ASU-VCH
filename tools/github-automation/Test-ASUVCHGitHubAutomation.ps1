@@ -1,6 +1,6 @@
 #requires -Version 5.1
 # ASUVCH_PR30_REMOTE_LOADER=1
-# ASUVCH_PR30_REMOTE_LOADER_REVISION=6
+# ASUVCH_PR30_REMOTE_LOADER_REVISION=7
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -147,7 +147,7 @@ if (@($gitAddMatches).Count -ne 1) {
 
 $gitAddEvaluator = [Text.RegularExpressions.MatchEvaluator]{
     param($match)
-    return '& $GitExe add -A -- $ExpectedChangedPaths'
+    return '& $GitExe add -A'
 }
 
 $thirdPatch = $gitAddRegex.Replace(
@@ -185,7 +185,7 @@ if (@($errors).Count -ne 0) {
 }
 
 Write-Host 'REMOTE_ORCHESTRATOR_ENCODING=UTF8_BOM' -ForegroundColor Green
-Write-Host 'REMOTE_ORCHESTRATOR_GIT_ADD_MODE=ALL' -ForegroundColor Green
+Write-Host 'REMOTE_ORCHESTRATOR_GIT_ADD_MODE=ALL_NO_PATHSPEC' -ForegroundColor Green
 Write-Host 'REMOTE_ORCHESTRATOR_PARSER=PASS' -ForegroundColor Green
 
 try {
