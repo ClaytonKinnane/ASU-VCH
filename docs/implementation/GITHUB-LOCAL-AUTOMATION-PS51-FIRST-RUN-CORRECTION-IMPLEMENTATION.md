@@ -17,6 +17,7 @@ initial tooling package commit: f7fcc677c8d70f1a7b1e81a8777254973eda347f
 initial harness correction commit: 90cefd28d500da0861545caa782b6325ef1a2a62
 initial pre-native branch head: 7e8a552bdb5a50d252624cf9591906473128d593
 native-attempt-1 harness correction commit: d943ad1850225d483d01cdf2bc8f894f35d98a8e
+PS5.1 constructor correction commit: 449cd1f92e5454b952d8378cb5d4ea3ba0cb861f
 merge-base: 375f941be3f50f9f1f264da244f0dc31496e2a6f
 behind main: 0
 ```
@@ -124,16 +125,17 @@ Path:
 tools/github-automation/Test-ASUVCHGitHubAutomation.ps1
 ```
 
-Correction commit:
+Correction commits:
 
 ```text
 d943ad1850225d483d01cdf2bc8f894f35d98a8e
+449cd1f92e5454b952d8378cb5d4ea3ba0cb861f
 ```
 
 Corrected Git blob:
 
 ```text
-a7eb812a3cb7e1916e5f3790ecf6a0855568cc9e
+739f89661fae310aa49569eac006821796551477
 ```
 
 The corrected harness now:
@@ -148,6 +150,7 @@ The corrected harness now:
 - reads optional state files through a guarded helper;
 - records missing state as a failed assertion instead of terminating diagnostics;
 - reports infrastructure errors and the complete final status block;
+- uses a Windows PowerShell 5.1-compatible `[Regex]::new(...)` constructor;
 - requires at least twenty-five passes and zero failures;
 - checks the real repository is clean before and after;
 - performs no real network request, package installation, Merge or branch deletion.
