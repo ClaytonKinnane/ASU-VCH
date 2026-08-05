@@ -430,7 +430,15 @@ echo Not logged in 1>&2
 exit /b 1
 :loggedin
 set /p M=<"%ASUVCH_TEST_STATE%\codex.mode"
-echo Logged in using !M! 1>&2
+if /I "!M!"=="API_KEY" goto statusapikey
+if /I "!M!"=="CHATGPT" goto statuschatgpt
+echo Logged in 1>&2
+exit /b 0
+:statusapikey
+echo Logged in using API key 1>&2
+exit /b 0
+:statuschatgpt
+echo Logged in using ChatGPT 1>&2
 exit /b 0
 :apilogin
 set /p K=
