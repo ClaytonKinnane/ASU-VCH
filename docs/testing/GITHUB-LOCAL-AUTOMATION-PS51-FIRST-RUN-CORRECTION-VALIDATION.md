@@ -13,6 +13,7 @@ baseline main: 375f941be3f50f9f1f264da244f0dc31496e2a6f
 branch: fix/github-local-automation-ps51-first-run
 initial pre-native branch head: 7e8a552bdb5a50d252624cf9591906473128d593
 native-attempt-1 harness correction commit: d943ad1850225d483d01cdf2bc8f894f35d98a8e
+PS5.1 constructor correction commit: 449cd1f92e5454b952d8378cb5d4ea3ba0cb861f
 merge-base: 375f941be3f50f9f1f264da244f0dc31496e2a6f
 behind main: 0
 ```
@@ -64,22 +65,24 @@ The result is classified as a harness isolation defect, not a successful or fail
 
 ## 4. Corrective static verification
 
-Corrected harness commit:
+Corrected harness commits:
 
 ```text
 d943ad1850225d483d01cdf2bc8f894f35d98a8e
+449cd1f92e5454b952d8378cb5d4ea3ba0cb861f
 ```
 
 Corrected harness Git blob:
 
 ```text
-a7eb812a3cb7e1916e5f3790ecf6a0855568cc9e
+739f89661fae310aa49569eac006821796551477
 ```
 
 Verified from the committed source:
 
 ```text
 REQUIRES_WINDOWS_POWERSHELL_5_1=PASS
+PS51_REGEX_CONSTRUCTOR=PASS
 GUID_SCOPED_TEMP_DIRECTORY=PASS
 PRODUCTION_INSTALLER_TEST_HOOK_ASSERTION=PASS
 TEMP_INSTALLER_COPY_ONLY=PASS
