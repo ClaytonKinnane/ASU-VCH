@@ -1,5 +1,6 @@
 #requires -Version 5.1
 # ASUVCH_PR30_REMOTE_LOADER=1
+# ASUVCH_PR30_REMOTE_LOADER_REVISION=2
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -32,10 +33,12 @@ $encodedParts = foreach ($relativePath in @($ChunkPaths)) {
     }
 
     (
-        Get-Content `
-            -LiteralPath $absolutePath `
-            -Raw `
-            -Encoding ASCII
+        [string](
+            Get-Content `
+                -LiteralPath $absolutePath `
+                -Raw `
+                -Encoding ASCII
+        )
     ).Trim()
 }
 
@@ -71,6 +74,49 @@ finally {
     $gzipStream.Dispose()
     $inputStream.Dispose()
 }
+
+$utf8 = New-Object Text.UTF8Encoding($false, $true)
+$scriptText = $utf8.GetString(
+    [IO.File]::ReadAllBytes($temporaryScript)
+).Replace("`r`n", "`n").Replace("`r", "`n")
+
+$oldParent = '$bootstrapParent = ((& $GitExe rev-parse ''HEAD^'') -join '''').Trim()'
+$newParent = '$bootstrapParent = ((& $GitExe rev-parse ''HEAD^^'') -join '''').Trim()'
+
+$oldChangedCommand = @'
+& $GitExe diff-tree `
+            --no-commit-id `
+            --name-only `
+            -r `
+            $bootstrapHead
+'@
+
+$newChangedCommand = @'
+& $GitExe diff `
+            --name-only `
+            $ExpectedOriginalHead `
+            $bootstrapHead
+'@
+
+$patchedText = $scriptText.Replace($oldParent, $newParent)
+if ($patchedText -ceq $scriptText) {
+    throw 'Could not patch bootstrap-parent depth.'
+}
+
+$secondPatch = $patchedText.Replace(
+    $oldChangedCommand.TrimEnd(),
+    $newChangedCommand.TrimEnd()
+)
+
+if ($secondPatch -ceq $patchedText) {
+    throw 'Could not patch cumulative bootstrap changed-path check.'
+}
+
+[IO.File]::WriteAllText(
+    $temporaryScript,
+    $secondPatch,
+    (New-Object Text.UTF8Encoding($false))
+)
 
 try {
     & powershell.exe `
