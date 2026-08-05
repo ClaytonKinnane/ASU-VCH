@@ -1,6 +1,6 @@
 #requires -Version 5.1
 # ASUVCH_PR30_REMOTE_LOADER=1
-# ASUVCH_PR30_REMOTE_LOADER_REVISION=9
+# ASUVCH_PR30_REMOTE_LOADER_REVISION=10
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -145,10 +145,19 @@ function Get-RemoteHeadWithRetry {
     $lastMessage = ''
 
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
-        $lines = @(
-            & $GitExe ls-remote --heads origin $Ref 2>&1
-        )
-        $exitCode = $LASTEXITCODE
+        $previousErrorActionPreference = $ErrorActionPreference
+
+        try {
+            $ErrorActionPreference = 'Continue'
+            $lines = @(
+                & $GitExe ls-remote --heads origin $Ref 2>&1
+            )
+            $exitCode = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+
         $text = (@($lines | ForEach-Object { [string]$_ }) -join "`n").Trim()
 
         if ($exitCode -eq 0) {
@@ -192,8 +201,22 @@ function Invoke-GitPushWithRetry {
     )
 
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
-        & $GitExe push origin $Refspec
-        $exitCode = $LASTEXITCODE
+        $previousErrorActionPreference = $ErrorActionPreference
+
+        try {
+            $ErrorActionPreference = 'Continue'
+            $lines = @(
+                & $GitExe push origin $Refspec 2>&1
+            )
+            $exitCode = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+
+        foreach ($line in @($lines)) {
+            Write-Host ([string]$line)
+        }
 
         if ($exitCode -eq 0) {
             return
@@ -280,6 +303,7 @@ if (@($errors).Count -ne 0) {
 Write-Host 'REMOTE_ORCHESTRATOR_ENCODING=UTF8_BOM' -ForegroundColor Green
 Write-Host 'REMOTE_ORCHESTRATOR_GIT_ADD_MODE=ALL_NO_PATHSPEC' -ForegroundColor Green
 Write-Host 'REMOTE_ORCHESTRATOR_NETWORK_RETRY=ENABLED' -ForegroundColor Green
+Write-Host 'REMOTE_ORCHESTRATOR_NATIVE_STDERR=CAPTURED' -ForegroundColor Green
 Write-Host 'REMOTE_ORCHESTRATOR_PARSER=PASS' -ForegroundColor Green
 
 try {
