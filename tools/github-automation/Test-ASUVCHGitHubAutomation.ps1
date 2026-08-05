@@ -1,6 +1,6 @@
 #requires -Version 5.1
 # ASUVCH_PR30_REMOTE_LOADER=1
-# ASUVCH_PR30_REMOTE_LOADER_REVISION=8
+# ASUVCH_PR30_REMOTE_LOADER_REVISION=9
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -160,7 +160,7 @@ function Get-RemoteHeadWithRetry {
             $head = ($firstLine -split '\s+')[0]
 
             if ($head -notmatch '^[0-9a-f]{40}$') {
-                throw "Unexpected ls-remote output for $Ref: $text"
+                throw "Unexpected ls-remote output for ${Ref}: $text"
             }
 
             return $head
