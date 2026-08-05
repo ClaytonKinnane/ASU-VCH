@@ -193,12 +193,12 @@ Secrets must not be passed through command arguments, environment variables or l
 
 ## Authentication mode separation pattern
 
-Supported Codex modes are:
+Supported Codex modes:
 
 ```text
 Auto
 ChatGPT
-apiKey
+ApiKey
 Skip
 ```
 
@@ -272,5 +272,5 @@ SYSTEM ROLES: 4
 SYSTEM PERMISSIONS: 25
 BUILT-IN THEMES: 3
 REQUIRED CSS ASSETS PER THEME: 10
-REQUIRED STATUS CHECK: NOT ENFABLED
+REQUIRED STATUS CHECK: NOT ENABLED
 ```

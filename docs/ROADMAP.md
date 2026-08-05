@@ -100,7 +100,7 @@ active functional increment: none
 active material technical increment: none
 next functional increment: not selected / not approved
 required status check: not enabled
-branch protection Stage B: not implemed
+branch protection Stage B: not implemented
 ```
 
 Possible future directions не являются active tasks до отдельного Research → Approval cycle.
