@@ -189,9 +189,7 @@ function Set-TestInstallerPathShim {
 function Refresh-ProcessPath {
     $candidatePaths = @(
         $env:ASUVCH_TEST_BIN,
-        $env:Path,
-        [Environment]::GetEnvironmentVariable('Path', 'Machine'),
-        [Environment]::GetEnvironmentVariable('Path', 'User')
+        $env:Path
     ) | Where-Object {
         -not [string]::IsNullOrWhiteSpace($_)
     }
@@ -473,7 +471,15 @@ exit /b 0
     $env:ASUVCH_TEST_STATE = $state
     $env:ASUVCH_TEST_BIN = $mockBin
     $env:LOCALAPPDATA = $localAppData
-    $env:Path = "$mockBin;$originalProcessPath"
+    $env:Path = "$mockBin;$PSHOME"
+
+    $testPathIsolated = (
+        $env:Path -ceq "$mockBin;$PSHOME"
+    )
+
+    Add-TestResult -Name 'TEST_PATH_ISOLATED' -Passed (
+        $testPathIsolated
+    )
 
     Add-TestResult -Name 'MOCK_GIT_EXISTS' -Passed (
         Test-Path -LiteralPath (Join-Path $mockBin 'git.cmd')
@@ -505,6 +511,13 @@ exit /b 0
             'ChatGPT'
         )
 
+    if ($chatGptRun.ExitCode -ne 0) {
+        Write-Host '=== DIAGNOSTIC_CHATGPT_RUN_BEGIN ===' `
+            -ForegroundColor Yellow
+        Write-Host $chatGptRun.Text
+        Write-Host '=== DIAGNOSTIC_CHATGPT_RUN_END ===' `
+            -ForegroundColor Yellow
+    }
     $chatGptMode = Get-StateValue `
         -Path (Join-Path $state 'codex.mode')
 
@@ -555,6 +568,13 @@ exit /b 0
         ) `
         -StandardInput $fakeInput
 
+    if ($apiRun.ExitCode -ne 0) {
+        Write-Host '=== DIAGNOSTIC_API_RUN_BEGIN ===' `
+            -ForegroundColor Yellow
+        Write-Host $apiRun.Text
+        Write-Host '=== DIAGNOSTIC_API_RUN_END ===' `
+            -ForegroundColor Yellow
+    }
     $apiMode = Get-StateValue `
         -Path (Join-Path $state 'codex.mode')
 
@@ -588,6 +608,13 @@ exit /b 0
             $testRepository
         )
 
+    if ($doctorRun.ExitCode -ne 0) {
+        Write-Host '=== DIAGNOSTIC_CLEAN_DOCTOR_BEGIN ===' `
+            -ForegroundColor Yellow
+        Write-Host $doctorRun.Text
+        Write-Host '=== DIAGNOSTIC_CLEAN_DOCTOR_END ===' `
+            -ForegroundColor Yellow
+    }
     Add-TestResult -Name 'CLEAN_DOCTOR_EXIT_0' -Passed (
         $doctorRun.ExitCode -eq 0
     )
@@ -676,7 +703,9 @@ exit /b 0
             )
     }
 
-    Add-TestResult -Name 'NO_REAL_NETWORK' -Passed $true
+    Add-TestResult -Name 'NO_REAL_NETWORK' -Passed (
+        $testPathIsolated
+    )
     Add-TestResult -Name 'NO_BRANCH_DELETE' -Passed $true
     Add-TestResult -Name 'TEMP_INSTALL_ONLY' -Passed (
         $installPath -like "$temporary*"

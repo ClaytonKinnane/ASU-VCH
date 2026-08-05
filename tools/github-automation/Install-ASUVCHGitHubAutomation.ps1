@@ -508,7 +508,7 @@ try {
         Assert-True -Condition ($null -ne $node) -Message 'Node.js is unavailable.'
         Assert-True -Condition ($null -ne $npm) -Message 'npm is unavailable.'
         Write-Log -Level PASS -Message ("Node.js=" + (Get-FirstLine -Lines ((Invoke-NativeChecked -File $node -Arguments @('--version')).StdOut)))
-        Write-Log -Level PASS -Message ("npm=" + (Get-FirstLine -Lines ((Invoke-NativeChecked -File $npm -Arguments @('--version')).StdOut))
+        Write-Log -Level PASS -Message ("npm=" + (Get-FirstLine -Lines ((Invoke-NativeChecked -File $npm -Arguments @('--version')).StdOut)))
         $script:Capability.NODEJS_READY = 'YES'
         $script:Capability.NPM_READY = 'YES'
 
@@ -523,7 +523,7 @@ try {
         if ($prefixResult.ExitCode -eq 0) { Add-ProcessPath -Path (Get-FirstLine -Lines $prefixResult.StdOut) }
         $codex = Get-PreferredCommandPath -Names @('codex.cmd', 'codex.exe', 'codex')
         Assert-True -Condition ($null -ne $codex) -Message 'Codex is unavailable after npm installation.'
-        Write-Log -Level PASS -Message (Get-FirstLine -Lines ((Invoke-NativeChecked -File $codex -Arguments @('--version')).StdOut)))
+        Write-Log -Level PASS -Message (Get-FirstLine -Lines ((Invoke-NativeChecked -File $codex -Arguments @('--version')).StdOut))
         $script:Capability.CODEX_READY = 'YES'
 
         $codexState = Get-CodexAuthState -Codex $codex
