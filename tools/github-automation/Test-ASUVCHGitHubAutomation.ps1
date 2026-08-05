@@ -1,6 +1,6 @@
 #requires -Version 5.1
 # ASUVCH_PR30_REMOTE_LOADER=1
-# ASUVCH_PR30_REMOTE_LOADER_REVISION=4
+# ASUVCH_PR30_REMOTE_LOADER_REVISION=5
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -137,8 +137,33 @@ $secondPatch = $changedRegex.Replace(
 [IO.File]::WriteAllText(
     $temporaryScript,
     $secondPatch,
-    (New-Object Text.UTF8Encoding($false))
+    (New-Object Text.UTF8Encoding($true))
 )
+
+$tokens = $null
+$parseErrors = $null
+[Management.Automation.Language.Parser]::ParseFile(
+    $temporaryScript,
+    [ref]$tokens,
+    [ref]$parseErrors
+) | Out-Null
+
+$errors = @($parseErrors)
+if (@($errors).Count -ne 0) {
+    foreach ($parseError in @($errors)) {
+        Write-Host (
+            'REMOTE_ORCHESTRATOR_PARSE_ERROR={0}:{1}:{2}' -f
+            $parseError.Extent.StartLineNumber,
+            $parseError.Extent.StartColumnNumber,
+            $parseError.Message
+        ) -ForegroundColor Red
+    }
+
+    throw 'Remote orchestrator parser validation failed.'
+}
+
+Write-Host 'REMOTE_ORCHESTRATOR_ENCODING=UTF8_BOM' -ForegroundColor Green
+Write-Host 'REMOTE_ORCHESTRATOR_PARSER=PASS' -ForegroundColor Green
 
 try {
     & powershell.exe `
