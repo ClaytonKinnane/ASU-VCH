@@ -222,10 +222,14 @@ function Refresh-ProcessPath {
 function Add-ProcessPath
 '@
 
-    $regex = New-Object Text.RegularExpressions.Regex(
-        $pattern,
+    $regexOptions = (
         [Text.RegularExpressions.RegexOptions]::Multiline -bor
         [Text.RegularExpressions.RegexOptions]::Singleline
+    )
+
+    $regex = [Text.RegularExpressions.Regex]::new(
+        $pattern,
+        $regexOptions
     )
 
     $evaluator = [Text.RegularExpressions.MatchEvaluator]{
