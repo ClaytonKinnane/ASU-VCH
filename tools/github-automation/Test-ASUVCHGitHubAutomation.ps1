@@ -1,6 +1,6 @@
 #requires -Version 5.1
 # ASUVCH_PR30_REMOTE_LOADER=1
-# ASUVCH_PR30_REMOTE_LOADER_REVISION=7
+# ASUVCH_PR30_REMOTE_LOADER_REVISION=8
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -22,6 +22,29 @@ $ChunkPaths = @(
     'tools/github-automation/README.md',
     'tools/github-automation/CODEX-INSTRUCTIONS.md'
 )
+
+function Replace-RegexExactlyOnce {
+    param(
+        [Parameter(Mandatory = $true)][string]$Text,
+        [Parameter(Mandatory = $true)][string]$Pattern,
+        [Parameter(Mandatory = $true)][string]$Replacement,
+        [Parameter(Mandatory = $true)][string]$Label
+    )
+
+    $regex = New-Object Text.RegularExpressions.Regex($Pattern)
+    $matches = @($regex.Matches($Text))
+
+    if (@($matches).Count -ne 1) {
+        throw "$Label anchor count mismatch: $(@($matches).Count)"
+    }
+
+    $evaluator = [Text.RegularExpressions.MatchEvaluator]{
+        param($match)
+        return $Replacement
+    }
+
+    return $regex.Replace($Text, $evaluator, 1)
+}
 
 Set-Location -LiteralPath $RepositoryPath
 
@@ -83,82 +106,152 @@ $scriptText = $utf8.GetString(
     [IO.File]::ReadAllBytes($temporaryScript)
 ).Replace("`r`n", "`n").Replace("`r", "`n")
 
-$parentPattern = '(?m)^\$bootstrapParent\s*=\s*\(\(& \$GitExe rev-parse ''HEAD\^''\) -join ''''\)\.Trim\(\)\s*$'
-$parentRegex = New-Object Text.RegularExpressions.Regex($parentPattern)
-$parentMatches = @($parentRegex.Matches($scriptText))
-
-if (@($parentMatches).Count -ne 1) {
-    throw (
-        'Bootstrap-parent anchor count mismatch: ' +
-        @($parentMatches).Count
-    )
-}
-
-$parentEvaluator = [Text.RegularExpressions.MatchEvaluator]{
-    param($match)
-    return '$bootstrapParent = $ExpectedOriginalHead'
-}
-
-$patchedText = $parentRegex.Replace(
-    $scriptText,
-    $parentEvaluator,
-    1
-)
-
-$changedPattern = '(?ms)&\s+\$GitExe\s+diff-tree\b.*?\$bootstrapHead'
-$changedRegex = New-Object Text.RegularExpressions.Regex($changedPattern)
-$changedMatches = @($changedRegex.Matches($patchedText))
-
-if (@($changedMatches).Count -ne 1) {
-    throw (
-        'Cumulative changed-path anchor count mismatch: ' +
-        @($changedMatches).Count
-    )
-}
+$parentReplacement = '$bootstrapParent = $ExpectedOriginalHead'
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $scriptText `
+    -Pattern '(?m)^\$bootstrapParent\s*=\s*\(\(& \$GitExe rev-parse ''HEAD\^''\) -join ''''\)\.Trim\(\)\s*$' `
+    -Replacement $parentReplacement `
+    -Label 'bootstrap parent'
 
 $changedReplacement = @'
 & $GitExe diff `
             --name-only `
             $ExpectedOriginalHead `
             $bootstrapHead
-'@
+'@.TrimEnd()
 
-$changedEvaluator = [Text.RegularExpressions.MatchEvaluator]{
-    param($match)
-    return $changedReplacement.TrimEnd()
-}
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $patchedText `
+    -Pattern '(?ms)&\s+\$GitExe\s+diff-tree\b.*?\$bootstrapHead' `
+    -Replacement $changedReplacement `
+    -Label 'cumulative changed paths'
 
-$secondPatch = $changedRegex.Replace(
-    $patchedText,
-    $changedEvaluator,
-    1
-)
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $patchedText `
+    -Pattern '(?m)^& \$GitExe add -- \$ExpectedChangedPaths\s*$' `
+    -Replacement '& $GitExe add -A' `
+    -Label 'corrective git add'
 
-$gitAddPattern = '(?m)^& \$GitExe add -- \$ExpectedChangedPaths\s*$'
-$gitAddRegex = New-Object Text.RegularExpressions.Regex($gitAddPattern)
-$gitAddMatches = @($gitAddRegex.Matches($secondPatch))
+$networkHelpers = @'
+$ProgressPreference = 'SilentlyContinue'
 
-if (@($gitAddMatches).Count -ne 1) {
+function Get-RemoteHeadWithRetry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Ref,
+        [int]$Attempts = 5
+    )
+
+    $lastMessage = ''
+
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        $lines = @(
+            & $GitExe ls-remote --heads origin $Ref 2>&1
+        )
+        $exitCode = $LASTEXITCODE
+        $text = (@($lines | ForEach-Object { [string]$_ }) -join "`n").Trim()
+
+        if ($exitCode -eq 0) {
+            if ([string]::IsNullOrWhiteSpace($text)) {
+                throw "Remote ref not found: $Ref"
+            }
+
+            $firstLine = ($text -split "`r?`n")[0]
+            $head = ($firstLine -split '\s+')[0]
+
+            if ($head -notmatch '^[0-9a-f]{40}$') {
+                throw "Unexpected ls-remote output for $Ref: $text"
+            }
+
+            return $head
+        }
+
+        $lastMessage = $text
+
+        if ($attempt -lt $Attempts) {
+            $delay = [Math]::Min(2 * $attempt, 8)
+            Write-Host (
+                "REMOTE_RETRY=$Ref ATTEMPT=$attempt " +
+                "EXIT_CODE=$exitCode DELAY_SECONDS=$delay"
+            ) -ForegroundColor Yellow
+            Start-Sleep -Seconds $delay
+        }
+    }
+
     throw (
-        'Corrective git-add anchor count mismatch: ' +
-        @($gitAddMatches).Count
+        "git ls-remote failed after $Attempts attempts for $Ref. " +
+        "Last=$lastMessage"
     )
 }
 
-$gitAddEvaluator = [Text.RegularExpressions.MatchEvaluator]{
-    param($match)
-    return '& $GitExe add -A'
-}
+function Invoke-GitPushWithRetry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Refspec,
+        [int]$Attempts = 3
+    )
 
-$thirdPatch = $gitAddRegex.Replace(
-    $secondPatch,
-    $gitAddEvaluator,
-    1
-)
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        & $GitExe push origin $Refspec
+        $exitCode = $LASTEXITCODE
+
+        if ($exitCode -eq 0) {
+            return
+        }
+
+        if ($attempt -lt $Attempts) {
+            $delay = [Math]::Min(2 * $attempt, 6)
+            Write-Host (
+                "PUSH_RETRY_ATTEMPT=$attempt " +
+                "EXIT_CODE=$exitCode DELAY_SECONDS=$delay"
+            ) -ForegroundColor Yellow
+            Start-Sleep -Seconds $delay
+        }
+    }
+
+    throw "git push failed after $Attempts attempts."
+}
+'@
+
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $patchedText `
+    -Pattern '(?m)^\$ProgressPreference = ''SilentlyContinue''\s*$' `
+    -Replacement $networkHelpers.TrimEnd() `
+    -Label 'network retry helpers'
+
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $patchedText `
+    -Pattern '(?ms)^\$remoteBranchLine\s*=.*?(?=^\$remoteMainLine\s*=)' `
+    -Replacement ('$remoteBranchHead = Get-RemoteHeadWithRetry -Ref "refs/heads/$Branch"' + "`n`n") `
+    -Label 'initial remote branch lookup'
+
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $patchedText `
+    -Pattern '(?ms)^\$remoteMainLine\s*=.*?(?=^if \(\$remoteBranchHead -ne )' `
+    -Replacement ('$remoteMainHead = Get-RemoteHeadWithRetry -Ref ''refs/heads/main''' + "`n`n") `
+    -Label 'initial main lookup'
+
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $patchedText `
+    -Pattern '(?ms)^\$remoteBeforePushLine\s*=.*?(?=^if \(\$remoteBeforePush -ne )' `
+    -Replacement ('$remoteBeforePush = Get-RemoteHeadWithRetry -Ref "refs/heads/$Branch"' + "`n`n") `
+    -Label 'pre-push remote lookup'
+
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $patchedText `
+    -Pattern '(?ms)^& \$GitExe push origin "HEAD:refs/heads/\$Branch"\s*\n\s*if \(\$LASTEXITCODE -ne 0\) \{\s*\n\s*throw "git push failed with exit code \$LASTEXITCODE\."\s*\n\}\s*$' `
+    -Replacement ('Invoke-GitPushWithRetry -Refspec "HEAD:refs/heads/$Branch"' + "`n`n") `
+    -Label 'push retry'
+
+$patchedText = Replace-RegexExactlyOnce `
+    -Text $patchedText `
+    -Pattern '(?ms)^\$remoteAfterPushLine\s*=.*?(?=^if \(\$remoteAfterPush -ne )' `
+    -Replacement ('$remoteAfterPush = Get-RemoteHeadWithRetry -Ref "refs/heads/$Branch"' + "`n`n") `
+    -Label 'post-push remote lookup'
 
 [IO.File]::WriteAllText(
     $temporaryScript,
-    $thirdPatch,
+    $patchedText,
     (New-Object Text.UTF8Encoding($true))
 )
 
@@ -186,6 +279,7 @@ if (@($errors).Count -ne 0) {
 
 Write-Host 'REMOTE_ORCHESTRATOR_ENCODING=UTF8_BOM' -ForegroundColor Green
 Write-Host 'REMOTE_ORCHESTRATOR_GIT_ADD_MODE=ALL_NO_PATHSPEC' -ForegroundColor Green
+Write-Host 'REMOTE_ORCHESTRATOR_NETWORK_RETRY=ENABLED' -ForegroundColor Green
 Write-Host 'REMOTE_ORCHESTRATOR_PARSER=PASS' -ForegroundColor Green
 
 try {
