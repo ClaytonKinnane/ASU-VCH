@@ -62,7 +62,10 @@ function Invoke-TestProcess {
         [string[]]$Arguments = @(),
 
         [AllowNull()]
-        [string]$StandardInput
+        [string]$StandardInput,
+
+        [ValidateRange(1, 600)]
+        [int]$TimeoutSeconds = 60
     )
 
     $hasInput = $PSBoundParameters.ContainsKey('StandardInput')
@@ -98,13 +101,52 @@ function Invoke-TestProcess {
             $process.StandardInput.Close()
         }
 
+        $timedOut = -not $process.WaitForExit($TimeoutSeconds * 1000)
+
+        if ($timedOut) {
+            $taskKill = Join-Path $env:SystemRoot 'System32\taskkill.exe'
+
+            try {
+                & $taskKill /PID $process.Id /T /F 2>$null | Out-Null
+            }
+            catch {
+                # Root-process fallback follows below.
+            }
+
+            if (-not $process.WaitForExit(10000)) {
+                try {
+                    $process.Kill()
+                }
+                catch {
+                    # The bounded termination check below remains authoritative.
+                }
+
+                if (-not $process.WaitForExit(10000)) {
+                    throw "Timed-out process could not be terminated. PID=$($process.Id)"
+                }
+            }
+        }
+
+        # Complete asynchronous stream reads after confirmed process exit.
         $process.WaitForExit()
 
+        $timeoutText = if ($timedOut) {
+            "PROCESS_TIMEOUT_SECONDS=$TimeoutSeconds`r`n"
+        }
+        else {
+            ''
+        }
+
         return [pscustomobject]@{
-            ExitCode = [int]$process.ExitCode
+            ExitCode = $(if ($timedOut) { -1 } else { [int]$process.ExitCode })
+            TimedOut = [bool]$timedOut
             StdOut = [string]$stdoutTask.Result
             StdErr = [string]$stderrTask.Result
-            Text = ([string]$stdoutTask.Result + [string]$stderrTask.Result)
+            Text = (
+                $timeoutText +
+                [string]$stdoutTask.Result +
+                [string]$stderrTask.Result
+            )
         }
     }
     finally {
@@ -121,7 +163,15 @@ function Write-AsciiFile {
         [string]$Content
     )
 
-    [IO.File]::WriteAllText($Path, $Content, [Text.Encoding]::ASCII)
+    $writeContent = $Content
+
+    if ([IO.Path]::GetExtension($Path) -ieq '.cmd') {
+        $writeContent = $writeContent.Replace("`r`n", "`n").Replace("`r", "`n")
+        $writeContent = $writeContent.TrimEnd([char[]]@("`r", "`n"))
+        $writeContent = $writeContent.Replace("`n", "`r`n") + "`r`n"
+    }
+
+    [IO.File]::WriteAllText($Path, $writeContent, [Text.Encoding]::ASCII)
 }
 
 function Write-Utf8NoBomFile {
@@ -337,6 +387,64 @@ try {
         'ASUVCH_TEST_BIN'
     )
 
+    $apiPromptWrapper = Join-Path $temporary `
+        'Invoke-TestInstallerApiKey.ps1'
+
+    Write-Utf8NoBomFile -Path $apiPromptWrapper -Content @'
+#requires -Version 5.1
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$InstallerPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$RepositoryPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$InstallPath
+)
+
+Set-StrictMode -Version 2.0
+$ErrorActionPreference = 'Stop'
+
+function Read-Host {
+    [CmdletBinding()]
+    param(
+        [string]$Prompt,
+
+        [switch]$AsSecureString
+    )
+
+    if (-not $AsSecureString) {
+        throw 'Test wrapper permits only Read-Host -AsSecureString.'
+    }
+
+    $line = [Console]::In.ReadLine()
+
+    if ([string]::IsNullOrWhiteSpace($line)) {
+        throw 'Test API-key stdin was empty.'
+    }
+
+    $secure = New-Object Security.SecureString
+
+    foreach ($character in $line.ToCharArray()) {
+        $secure.AppendChar($character)
+    }
+
+    $secure.MakeReadOnly()
+    return $secure
+}
+
+. $InstallerPath `
+    -RepositoryPath $RepositoryPath `
+    -InstallPath $InstallPath `
+    -CodexAuthMode ApiKey
+'@
+
+    Add-TestResult -Name 'API_PROMPT_WRAPPER_EXISTS' -Passed (
+        Test-Path -LiteralPath $apiPromptWrapper -PathType Leaf
+    )
+
     $mockSha = '1111111111111111111111111111111111111111'
     Write-AsciiFile -Path (Join-Path $state 'sha') -Content $mockSha
 
@@ -511,7 +619,7 @@ exit /b 0
             'ChatGPT'
         )
 
-    if ($chatGptRun.ExitCode -ne 0) {
+    if ($chatGptRun.ExitCode -ne 0 -or $chatGptRun.TimedOut) {
         Write-Host '=== DIAGNOSTIC_CHATGPT_RUN_BEGIN ===' `
             -ForegroundColor Yellow
         Write-Host $chatGptRun.Text
@@ -521,6 +629,9 @@ exit /b 0
     $chatGptMode = Get-StateValue `
         -Path (Join-Path $state 'codex.mode')
 
+    Add-TestResult -Name 'FIRST_RUN_NOT_TIMED_OUT' -Passed (
+        -not $chatGptRun.TimedOut
+    )
     Add-TestResult -Name 'FIRST_RUN_EXIT_0' -Passed (
         $chatGptRun.ExitCode -eq 0
     )
@@ -558,17 +669,17 @@ exit /b 0
             '-ExecutionPolicy',
             'Bypass',
             '-File',
+            $apiPromptWrapper,
+            '-InstallerPath',
             $testInstaller,
             '-RepositoryPath',
             $testRepository,
             '-InstallPath',
-            $installPath,
-            '-CodexAuthMode',
-            'ApiKey'
+            $installPath
         ) `
         -StandardInput $fakeInput
 
-    if ($apiRun.ExitCode -ne 0) {
+    if ($apiRun.ExitCode -ne 0 -or $apiRun.TimedOut) {
         Write-Host '=== DIAGNOSTIC_API_RUN_BEGIN ===' `
             -ForegroundColor Yellow
         Write-Host $apiRun.Text
@@ -578,6 +689,9 @@ exit /b 0
     $apiMode = Get-StateValue `
         -Path (Join-Path $state 'codex.mode')
 
+    Add-TestResult -Name 'API_RUN_NOT_TIMED_OUT' -Passed (
+        -not $apiRun.TimedOut
+    )
     Add-TestResult -Name 'API_RUN_EXIT_0' -Passed (
         $apiRun.ExitCode -eq 0
     )
