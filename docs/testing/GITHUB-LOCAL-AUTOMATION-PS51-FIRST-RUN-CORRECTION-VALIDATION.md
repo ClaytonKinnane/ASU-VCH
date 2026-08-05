@@ -14,6 +14,7 @@ branch: fix/github-local-automation-ps51-first-run
 initial pre-native branch head: 7e8a552bdb5a50d252624cf9591906473128d593
 native-attempt-1 harness correction commit: d943ad1850225d483d01cdf2bc8f894f35d98a8e
 PS5.1 constructor correction commit: 449cd1f92e5454b952d8378cb5d4ea3ba0cb861f
+Codex API mock wording correction commit: 3cb3f83b3d325e4589e5a10ebb4269382fbca528
 merge-base: 375f941be3f50f9f1f264da244f0dc31496e2a6f
 behind main: 0
 ```
@@ -70,12 +71,13 @@ Corrected harness commits:
 ```text
 d943ad1850225d483d01cdf2bc8f894f35d98a8e
 449cd1f92e5454b952d8378cb5d4ea3ba0cb861f
+3cb3f83b3d325e4589e5a10ebb4269382fbca528
 ```
 
 Corrected harness Git blob:
 
 ```text
-739f89661fae310aa49569eac006821796551477
+701f02733060380912d9110f42f7ac1954775355
 ```
 
 Verified from the committed source:
@@ -92,6 +94,8 @@ USER_PATH_UNCHANGED_CHECK=PASS
 LOCALAPPDATA_RESTORATION_CHECK=PASS
 GUARDED_STATE_FILE_READ=PASS
 CASCADE_ON_MISSING_CODEX_MODE=REMOVED
+CODEX_API_STATUS_PHRASE=API key
+CODEX_API_STATE_VALUE=API_KEY
 FULL_SUMMARY_AFTER_ASSERTION_FAILURE=PASS
 REAL_REPOSITORY_PRE_POST_STATUS_CHECK=PASS
 REAL_NETWORK_REQUESTS=0
