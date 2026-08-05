@@ -1,6 +1,6 @@
 #requires -Version 5.1
 # ASUVCH_PR30_REMOTE_LOADER=1
-# ASUVCH_PR30_REMOTE_LOADER_REVISION=2
+# ASUVCH_PR30_REMOTE_LOADER_REVISION=3
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\Project\ASU-VCH'
@@ -32,14 +32,17 @@ $encodedParts = foreach ($relativePath in @($ChunkPaths)) {
         throw "Remote orchestrator chunk is missing: $relativePath"
     }
 
-    (
-        [string](
-            Get-Content `
-                -LiteralPath $absolutePath `
-                -Raw `
-                -Encoding ASCII
-        )
-    ).Trim()
+    $chunkContent = Get-Content `
+        -LiteralPath $absolutePath `
+        -Raw `
+        -Encoding ASCII
+
+    if ($null -eq $chunkContent) {
+        ''
+    }
+    else {
+        ([string]$chunkContent).Trim()
+    }
 }
 
 $encoded = (@($encodedParts) -join '')
@@ -81,7 +84,7 @@ $scriptText = $utf8.GetString(
 ).Replace("`r`n", "`n").Replace("`r", "`n")
 
 $oldParent = '$bootstrapParent = ((& $GitExe rev-parse ''HEAD^'') -join '''').Trim()'
-$newParent = '$bootstrapParent = ((& $GitExe rev-parse ''HEAD^^'') -join '''').Trim()'
+$newParent = '$bootstrapParent = ((& $GitExe rev-parse ''HEAD^^^'') -join '''').Trim()'
 
 $oldChangedCommand = @'
 & $GitExe diff-tree `
@@ -126,6 +129,13 @@ try {
         -RepositoryPath $RepositoryPath
 
     $exitCode = $LASTEXITCODE
+}
+catch {
+    Write-Host ('REMOTE_ORCHESTRATOR_LOADER_ERROR=' + $_.Exception.Message) `
+        -ForegroundColor Red
+    Write-Host ('REMOTE_ORCHESTRATOR_LOADER_POSITION=' + $_.InvocationInfo.PositionMessage) `
+        -ForegroundColor Red
+    throw
 }
 finally {
     Remove-Item `
