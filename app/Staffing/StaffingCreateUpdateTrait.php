@@ -25,14 +25,15 @@ trait StaffingCreateUpdateTrait
             $stmt = $this->pdo->prepare(
                 'INSERT INTO staffing_registers '
                 . '(code,name,organizational_structure_id,note,status,revision,created_by,created_at,updated_by,updated_at) '
-                . "VALUES (:code,:name,:structure_id,:note,'active',1,:actor,NOW(),:actor,NOW())"
+                . "VALUES (:code,:name,:structure_id,:note,'active',1,:created_actor,NOW(),:updated_actor,NOW())"
             );
             $stmt->execute([
                 'code' => $code,
                 'name' => $name,
                 'structure_id' => $structureId,
                 'note' => $note,
-                'actor' => $actorId,
+                'created_actor' => $actorId,
+                'updated_actor' => $actorId,
             ]);
             $id = (int) $this->pdo->lastInsertId();
             $this->appendEvent(
@@ -100,11 +101,12 @@ trait StaffingCreateUpdateTrait
                 throw new DomainException('Карточка была изменена другим пользователем. Обновите страницу.');
             }
             $stmt = $this->pdo->prepare(
-                "UPDATE staffing_registers SET status='archived',revision=revision+1,archived_by=:actor,archived_at=NOW(),archive_reason=:reason,updated_by=:actor,updated_at=NOW() "
+                "UPDATE staffing_registers SET status='archived',revision=revision+1,archived_by=:archived_actor,archived_at=NOW(),archive_reason=:reason,updated_by=:updated_actor,updated_at=NOW() "
                 . "WHERE id=:id AND status='active' AND revision=:revision"
             );
             $stmt->execute([
-                'actor' => $actorId,
+                'archived_actor' => $actorId,
+                'updated_actor' => $actorId,
                 'reason' => $reason,
                 'id' => $registerId,
                 'revision' => $expectedRevision,
@@ -128,11 +130,12 @@ trait StaffingCreateUpdateTrait
                 throw new DomainException('Карточка была изменена другим пользователем. Обновите страницу.');
             }
             $stmt = $this->pdo->prepare(
-                "UPDATE staffing_registers SET status='active',revision=revision+1,restored_by=:actor,restored_at=NOW(),restore_reason=:reason,updated_by=:actor,updated_at=NOW() "
+                "UPDATE staffing_registers SET status='active',revision=revision+1,restored_by=:restored_actor,restored_at=NOW(),restore_reason=:reason,updated_by=:updated_actor,updated_at=NOW() "
                 . "WHERE id=:id AND status='archived' AND revision=:revision"
             );
             $stmt->execute([
-                'actor' => $actorId,
+                'restored_actor' => $actorId,
+                'updated_actor' => $actorId,
                 'reason' => $reason,
                 'id' => $registerId,
                 'revision' => $expectedRevision,
@@ -215,7 +218,7 @@ trait StaffingCreateUpdateTrait
                 . '(staffing_register_id,based_on_version_id,organizational_structure_id,organizational_structure_version_id,'
                 . 'position_catalog_version_id,rank_catalog_version_id,vus_catalog_version_id,version_number,version_label,status,'
                 . 'effective_from,effective_to,change_reason,revision,created_by,created_at,updated_by,updated_at) '
-                . "VALUES (:register_id,:based_on,:structure_id,:organization_version_id,:position_catalog_id,:rank_catalog_id,:vus_catalog_id,:version_number,:label,'draft',:effective_from,NULL,:reason,1,:actor,NOW(),:actor,NOW())"
+                . "VALUES (:register_id,:based_on,:structure_id,:organization_version_id,:position_catalog_id,:rank_catalog_id,:vus_catalog_id,:version_number,:label,'draft',:effective_from,NULL,:reason,1,:created_actor,NOW(),:updated_actor,NOW())"
             );
             $insert->execute([
                 'register_id' => $registerId,
@@ -229,7 +232,8 @@ trait StaffingCreateUpdateTrait
                 'label' => $label,
                 'effective_from' => $effectiveFrom,
                 'reason' => $reason,
-                'actor' => $actorId,
+                'created_actor' => $actorId,
+                'updated_actor' => $actorId,
             ]);
             $versionId = (int) $this->pdo->lastInsertId();
 
@@ -253,28 +257,30 @@ trait StaffingCreateUpdateTrait
                     . 'minimum_rank_id,maximum_rank_id,preferred_rank_id,internal_code,display_name,normative_state,note,sort_order,created_by,created_at,updated_by,updated_at) '
                     . 'SELECT staffing_register_id,:new_version,staffing_slot_identity_id,organizational_structure_id,organizational_structure_version_id,'
                     . 'organizational_structure_element_id,position_catalog_version_id,position_type_id,position_variant_id,rank_catalog_version_id,vus_catalog_version_id,'
-                    . 'minimum_rank_id,maximum_rank_id,preferred_rank_id,internal_code,display_name,normative_state,note,sort_order,:actor,NOW(),:actor,NOW() '
+                    . 'minimum_rank_id,maximum_rank_id,preferred_rank_id,internal_code,display_name,normative_state,note,sort_order,:created_actor,NOW(),:updated_actor,NOW() '
                     . 'FROM staffing_slots WHERE staffing_version_id=:source_version ORDER BY id'
                 );
                 $copySlots->execute([
                     'new_version' => $versionId,
-                    'actor' => $actorId,
+                    'created_actor' => $actorId,
+                    'updated_actor' => $actorId,
                     'source_version' => $basedOnVersionId,
                 ]);
 
                 $copyVus = $this->pdo->prepare(
                     'INSERT INTO staffing_slot_vus_requirements '
                     . '(staffing_version_id,staffing_register_id,staffing_slot_id,vus_catalog_version_id,public_disclosure_id,requirement_role,sort_order,created_by,created_at) '
-                    . 'SELECT :new_version,new_slot.staffing_register_id,new_slot.id,old_req.vus_catalog_version_id,old_req.public_disclosure_id,'
+                    . 'SELECT :new_version_insert,new_slot.staffing_register_id,new_slot.id,old_req.vus_catalog_version_id,old_req.public_disclosure_id,'
                     . 'old_req.requirement_role,old_req.sort_order,:actor,NOW() '
                     . 'FROM staffing_slot_vus_requirements old_req '
                     . 'JOIN staffing_slots old_slot ON old_slot.id=old_req.staffing_slot_id '
-                    . 'JOIN staffing_slots new_slot ON new_slot.staffing_version_id=:new_version '
+                    . 'JOIN staffing_slots new_slot ON new_slot.staffing_version_id=:new_version_join '
                     . 'AND new_slot.staffing_slot_identity_id=old_slot.staffing_slot_identity_id '
                     . 'WHERE old_req.staffing_version_id=:source_version'
                 );
                 $copyVus->execute([
-                    'new_version' => $versionId,
+                    'new_version_insert' => $versionId,
+                    'new_version_join' => $versionId,
                     'actor' => $actorId,
                     'source_version' => $basedOnVersionId,
                 ]);
