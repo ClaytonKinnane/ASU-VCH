@@ -132,6 +132,12 @@ check(str_contains($migration, 'uq_staffing_versions_active_guard'), 'single act
 check(str_contains($migration, 'STAFFING_EVENT_APPEND_ONLY'), 'append-only history triggers exist');
 check(str_contains($migration, 'STAFFING_PUBLISHED_DOCUMENT_IMMUTABLE'), 'published document immutability exists');
 check(str_contains($migration, 'STAFFING_SLOT_UPDATE_DRAFT_ONLY'), 'slot mutations are draft-only');
+check(str_contains($migration, 'STAFFING_SLOT_DELETE_DRAFT_ONLY'), 'published slots cannot be deleted');
+check(str_contains($migration, 'STAFFING_SLOT_VUS_DELETE_DRAFT_ONLY'), 'published VUS requirements cannot be deleted');
+check(str_contains($migration, 'STAFFING_VERSION_DOCUMENT_LINK_IDENTITY_IMMUTABLE'), 'document link identity is immutable while draft metadata remains editable');
+check(str_contains($migration, 'STAFFING_VERSION_DOCUMENT_DRAFT_ONLY'), 'published document links are immutable');
+check(str_contains($migration, 'STAFFING_SLOT_RANK_INVALID'), 'slot ranks must belong to the pinned rank catalog');
+check(str_contains($migration, 'STAFFING_PUBLISHED_VERSION_CONTENT_IMMUTABLE'), 'published version content is immutable');
 check(str_contains($migration, 'organizational_structure_element_id'), 'staffing binds to stable organizational element identity');
 check(str_contains($migration, 'military_position_catalog_versions'), 'position catalog version is pinned');
 check(str_contains($migration, 'military_rank_catalog_versions'), 'rank catalog version is pinned');
