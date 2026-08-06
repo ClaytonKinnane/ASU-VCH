@@ -1,225 +1,151 @@
 # Домен Staffing
 
-## 1. Статус и назначение
+## 1. Назначение
 
-Документ определяет границы и инварианты домена `Staffing` внутри единственного контура `PersonnelServiceAccounting`.
+`Staffing` — домен нормативной штатной структуры внутри единственного контура `PersonnelServiceAccounting`.
 
 ```text
 INCREMENT=Lowest Unit Staffing Structure v1
+VERSION=0.2
 BASE_SHA=d60db94e405979c8f29bdc3dcaae7950362fb13a
 FEATURE_BRANCH=feature/lowest-unit-staffing-v1
 IMPLEMENTATION=NOT STARTED
 ```
 
-Домен хранит нормативную штатную структуру подразделений. Он не хранит военнослужащих и не определяет фактическую занятость позиции до появления отдельного домена назначений.
+Он описывает штатные документы и индивидуальные позиции, но не хранит военнослужащих и не утверждает фактическую занятость.
 
-## 2. Ответственность домена
+## 2. Ответственность
 
-Staffing отвечает за:
+- register штатной структуры;
+- versioned snapshots;
+- документы-основания без файлов;
+- stable slot identities;
+- individual slot snapshots;
+- Organization binding;
+- position/rank/VUS requirements;
+- lifecycle;
+- change history;
+- read models по organizational elements.
 
-- административный реестр штатной структуры;
-- версии штатной структуры;
-- документы-основания и их роли;
-- индивидуальные штатные позиции;
-- связь позиции со стабильным организационным элементом;
-- связь позиции с опубликованным типом воинской должности;
-- допустимые звания;
-- разрешенные ВУС;
-- lifecycle версии;
-- предметную историю изменений;
-- чтение штатной структуры по подразделениям.
+## 3. Вне домена
 
-## 3. Вне границ домена
-
-Staffing не отвечает за:
-
-- организационное дерево;
-- справочники должностей, званий и ВУС;
-- военнослужащих;
-- назначения и временное исполнение обязанностей;
-- фактическую вакантность;
+- собственное организационное дерево;
+- редактирование справочников;
+- военнослужащие и назначения;
+- occupancy/vacancy facts;
 - кадровые приказы по лицам;
-- документы и файлы военнослужащих;
-- отпуска;
-- медицинские данные;
-- учет граждан, призывников и запаса;
-- государственные реестры воинского учета;
-- общий Audit.
+- files/photos;
+- leave/medical;
+- `CitizenMilitaryAccounting`;
+- общий Security Audit;
+- external integration.
 
-## 4. Зависимости
-
-Разрешены:
+## 4. Dependencies
 
 ```text
 Staffing → Organization
 Staffing → Directory/Reference catalogs
-Staffing → Security authorization infrastructure
-Staffing → database and HTTP infrastructure
+Staffing → existing Security authorization
+Staffing → DB/HTTP infrastructure
 ```
 
-Запрещены в v1:
+Forbidden in v1:
 
 ```text
 Staffing → Personnel
 Staffing → Assignments
 Staffing → Orders
 Staffing → DocumentsVault
-Staffing → Medical
 Staffing → CitizenMilitaryAccounting
 ```
 
-Staffing не изменяет таблицы Organization или каталогов напрямую.
+## 5. Entities
 
-## 5. Основные сущности
+### StaffingRegister
 
-### 5.1. StaffingRegister
+- immutable unique code;
+- name/note;
+- one organizational structure;
+- `active/archived` status;
+- archive only without pending version.
 
-Административный контейнер штатной структуры одной `organizational_structure`.
+### StaffingVersion
 
-Бизнес-правила:
+- one register;
+- optional based-on version;
+- pinned Organization version;
+- pinned position/rank/VUS versions;
+- unique version number;
+- status and effective interval;
+- reason/revision/lifecycle metadata.
 
-- machine code уникален и неизменяем;
-- register относится ровно к одной organizational structure;
-- register может существовать без версии;
-- archive является логическим;
-- archive запрещен при наличии pending version;
-- code не переиспользуется.
+Only one pending and one active version per register.
 
-### 5.2. StaffingVersion
+### StaffingSlotIdentity
 
-Версионный снимок штатной структуры.
+Stable immutable identity across versions. It is never reused for another normative position.
 
-Бизнес-правила:
+### StaffingSlot
 
-- version number уникален внутри register;
-- одновременно не более одной pending version;
-- одновременно не более одной active version;
-- содержимое меняется только в draft;
-- версия фиксирует organizational structure version и catalog versions;
-- approved version имеет effective date и primary basis;
-- activation supersedes предыдущую active version;
-- published states immutable.
+Version snapshot containing:
 
-### 5.3. StaffingSlotIdentity
+- slot identity;
+- stable organizational element;
+- position type and optional variant;
+- code/name/sort order;
+- min/max/preferred rank;
+- normative state `active/suspended/closed`;
+- VUS requirements;
+- note.
 
-Стабильная идентичность одной штатной позиции между версиями.
+One row equals one slot. `quantity`, person and assignment fields are forbidden.
 
-Бизнес-правила:
+### StaffingDocument
 
-- относится к одному register;
-- не содержит display fields;
-- не изменяется и не удаляется физически;
-- один identity встречается не более одного раза в версии;
-- новый identity создается при появлении новой нормативной позиции;
-- закрытие позиции не освобождает identity для повторного использования.
+Metadata only. Published metadata immutable; changed draft uses copy-on-write.
 
-### 5.4. StaffingSlot
+### StaffingVersionDocument
 
-Снимок позиции в конкретной StaffingVersion.
-
-Бизнес-правила:
-
-- принадлежит одной version;
-- относится к одному stable identity;
-- относится к одному stable organizational element;
-- organizational element обязан присутствовать в pinned structure version;
-- position type и variant принадлежат pinned position catalog;
-- rank references принадлежат pinned rank catalog;
-- VUS references принадлежат pinned VUS catalog;
-- одна строка равна одной позиции;
-- position has normative state `active/suspended/closed`;
-- occupation/vacancy fields отсутствуют;
-- internal code, если указан, уникален внутри version;
-- sibling sort order уникален внутри organizational element.
-
-### 5.5. StaffingDocument
-
-Реквизиты организационно-распорядительного основания без файла.
-
-Бизнес-правила:
-
-- document belongs to one register;
-- number, date, type and title обязательны;
-- document linked to published version becomes immutable;
-- изменение реквизитов для нового draft выполняется copy-on-write.
-
-### 5.6. StaffingVersionDocument
-
-Связь version ↔ document.
-
-Роли:
+Roles:
 
 ```text
-primary_basis
-additional_basis
-amendment
+primary_basis|additional_basis|amendment
 ```
 
-Бизнес-правила:
+Approved/active version has exactly one primary basis.
 
-- у approved/active version ровно один primary basis;
-- sort order уникален внутри version;
-- document and version belong to one register.
-
-### 5.7. StaffingSlotVusRequirement
-
-Связь slot ↔ VUS.
-
-Типы:
+### StaffingSlotVusRequirement
 
 ```text
-required
-allowed
-preferred
+required|allowed|preferred
 ```
 
-Бизнес-правила:
+No duplicate VUS per slot; all values belong to pinned version.
 
-- duplicate VUS в одном slot запрещен;
-- VUS принадлежит pinned catalog version;
-- sort order уникален;
-- `preferred` не означает обязательность;
-- источник ограниченного доступа не реконструируется.
+### StaffingChangeEvent
 
-### 5.8. StaffingChangeEvent
+Append-only successful business event with actor, target, before/after summary, reason and timestamp.
 
-Append-only запись успешно совершенного предметного изменения.
+## 6. Aggregates
 
-Минимальные поля:
+### StaffingRegister aggregate
 
-- register;
-- version;
-- slot identity, если применимо;
-- actor;
-- event type;
-- before state;
-- after state;
-- reason;
-- timestamp.
+Commands:
 
-## 6. Агрегаты
-
-### 6.1. StaffingRegister aggregate
-
-Отвечает за:
-
-- create/update administrative card;
+- create/update;
 - archive/restore;
 - create initial draft;
-- create draft from active version.
+- create draft from active.
 
-### 6.2. StaffingVersion aggregate
+### StaffingVersion aggregate
 
-Отвечает за:
+Commands:
 
-- draft content;
-- documents;
-- slots;
-- VUS requirements;
+- manage draft documents/slots/VUS;
 - approve/cancel/activate;
-- revision and locking.
+- compare/history.
 
-Все изменения одной draft version выполняются транзакционно.
+All mutations are transactional.
 
 ## 7. Lifecycle
 
@@ -229,79 +155,87 @@ draft → cancelled
 approved → cancelled
 ```
 
-Недопустимы:
+Rules:
 
-- active → draft;
-- superseded → active;
-- cancelled → draft;
-- content mutation outside draft;
-- activation without primary basis;
-- activation without at least one active slot;
-- overlapping active effective periods.
+- content mutable only in draft;
+- initial draft pins current compatible catalogs;
+- draft from active copies **the same pinned catalogs**;
+- catalog upgrade of an active register is outside v1;
+- activation atomically supersedes previous active;
+- no published-state rollback to draft;
+- periods are `[effective_from, effective_to)`.
 
-## 8. Инварианты catalog pinning
+## 8. Organization invariants
 
-1. Position catalog version имеет status published.
-2. Rank catalog version совпадает с версией, закрепленной position catalog.
-3. Organizational element catalog version, закрепленная position catalog, совместима с pinned Organization structure version.
-4. VUS catalog version имеет status published.
-5. Position type belongs to pinned position catalog.
-6. Position variant belongs to selected type and version.
-7. Rank IDs belong to pinned rank version.
-8. VUS IDs belong to pinned VUS version.
-
-## 9. Инварианты Organization
-
-1. Register references existing organizational structure.
-2. StaffingVersion references version of the same structure.
-3. Pinned structure version status is active or superseded.
+1. Register references an existing OrganizationalStructure.
+2. Version references a version of the same structure.
+3. Pinned Organization version is active or superseded.
 4. Slot references stable `organizational_structure_elements.id`.
-5. Element is present as node in pinned structure version.
-6. Root military-unit element cannot receive slots in v1.
-7. Staffing never changes Organization rows.
+5. Element is present in pinned snapshot.
+6. Root and non-root elements are both allowed.
+7. Position context compatibility is checked when catalog relation exists.
+8. Staffing never changes Organization rows.
 
-## 10. Rank requirement
+The product begins with lower units, but this is a rollout rule, not a DB prohibition on root-level positions.
 
-Поля:
+## 9. Catalog invariants
 
-```text
-minimum_rank_id
-maximum_rank_id
-preferred_rank_id
-```
+1. Pinned versions are published.
+2. Rank version equals the rank version pinned by position catalog.
+3. Position type belongs to position version.
+4. Variant belongs to selected type/version.
+5. Rank IDs belong to rank version; min ≤ max; preferred lies within range.
+6. VUS IDs belong to pinned VUS version.
+7. Free-form official codes are prohibited.
 
-Правила:
+## 10. Assignment-state semantics
 
-- все поля nullable;
-- minimum seniority cannot exceed maximum;
-- preferred lies inside range when range exists;
-- empty range means unavailable/not specified;
-- UI must not label empty range as “любое звание”.
-
-## 11. Состояние и vacancy semantics
-
-Normative slot state:
+Normative state:
 
 ```text
-active
-suspended
-closed
+active|suspended|closed
 ```
 
-Assignment state в v1:
+Assignment state:
 
 ```text
 not-managed-in-v1
 ```
 
-Запрещено:
+The UI must not call a slot occupied or vacant until Assignments domain exists.
 
-- manual occupied flag;
-- manual actual vacancy flag;
-- связь с person ID;
-- показ фиктивной укомплектованности.
+## 11. Persistence
 
-## 12. Permissions
+```text
+staffing_registers
+staffing_slot_identities
+staffing_versions
+staffing_documents
+staffing_version_documents
+staffing_slots
+staffing_slot_vus_requirements
+staffing_change_events
+```
+
+Required:
+
+- composite keys/FKs where possible;
+- triggers for cross-table invariants and immutability;
+- pending/active guards;
+- append-only events;
+- no physical deletion of published history.
+
+## 12. Concurrency
+
+Lock order:
+
+```text
+register → version → children
+```
+
+Draft command requires `expected_revision`; success increments it. Stale command rolls back entirely.
+
+## 13. Permissions
 
 ```text
 staffing.registers.view
@@ -312,37 +246,9 @@ staffing.registers.archive
 staffing.registers.history
 ```
 
-Owner access обеспечивается `system.*.*`.
+Owner uses `system.*.*`. No automatic grant to other roles. V1 is module-scoped; subtree ACL is deferred.
 
-V1 не вводит subtree ACL. Permissions применяются ко всему модулю. Ограничение по подразделениям до отдельного Security increment не заявляется как реализованное.
-
-## 13. Domain services
-
-```text
-StaffingService
-StaffingLifecycleService
-StaffingSlotService
-```
-
-Обязанности:
-
-- enforce domain invariants;
-- use transactions;
-- lock in canonical order;
-- validate expected revision;
-- append change events;
-- return domain-safe errors.
-
-## 14. Repositories
-
-```text
-StaffingRepository
-StaffingReadModelRepository
-```
-
-Repository не предоставляет generic update/delete API. Published data changes only via domain commands.
-
-## 15. Domain events v1
+## 14. Domain events
 
 ```text
 StaffingRegisterCreated
@@ -361,56 +267,20 @@ StaffingVersionActivated
 StaffingVersionSuperseded
 ```
 
-Events are business history, not replacement for security audit.
+## 15. Test-data rule
 
-## 16. Основные use cases
+Only synthetic non-sensitive codes, units, documents and slots enter migrations, tools or documentation. No real штат, unit name, location or person is committed.
 
-- создать register;
-- изменить его display metadata;
-- создать initial draft;
-- создать draft from active;
-- добавить документ-основание;
-- добавить индивидуальный slot;
-- изменить slot in draft;
-- удалить slot from draft snapshot;
-- задать rank range;
-- задать VUS requirements;
-- approve version;
-- cancel version;
-- activate version;
-- view active staffing by unit;
-- compare versions;
-- view history;
-- archive/restore register.
+## 16. Future increments
 
-## 17. Data classification
-
-V1 не требует персональных данных. Реальные штатные сведения могут иметь ограниченный режим и не должны попадать в GitHub.
-
-Repository fixtures use only synthetic names and codes.
-
-## 18. Future extensions
-
-Отдельными инкрементами:
-
-- delegated organizational scope;
+- catalog migration/remapping;
+- delegated subtree scope;
 - Personnel Core;
 - Assignments and computed vacancy;
-- Orders integration;
-- file documents;
-- import/export;
-- staffing reports;
-- higher-echelon aggregates.
+- Orders/Documents integration;
+- import/export and reports;
+- higher-echelon aggregation.
 
-## 19. Запрет второго контура
+## 17. Explicit exclusion
 
-Staffing не содержит и не должен получить поля или процессы для:
-
-- категории учета гражданина;
-- постановки/снятия с учета;
-- запаса;
-- бронирования;
-- повесток;
-- Реестра воинского учета.
-
-`CitizenMilitaryAccounting` остается исключенным.
+No fields or processes for conscripts, reserve, booking, summons, citizen registration or state military-accounting registries may enter this domain.
