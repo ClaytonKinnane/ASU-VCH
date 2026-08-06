@@ -1,20 +1,20 @@
 # АСУ-ВЧ — постоянный handoff для нового чата
 
-## 1. Как использовать этот документ
+## 1. Обязательный порядок начала нового чата
 
-Этот файл является оперативной точкой входа для продолжения разработки проекта «АСУ-ВЧ» в новом чате.
-
-В новом чате ассистент должен сначала:
+Перед любыми material-действиями ассистент должен:
 
 1. прочитать `docs/PROJECT-WORKING-RULES.md`;
-2. прочитать этот файл полностью;
-3. самостоятельно проверить GitHub mutable state;
-4. сопоставить GitHub state с данным snapshot;
-5. продолжить с текущего незавершённого stage, не повторяя уже полученные разрешения.
+2. прочитать этот документ полностью;
+3. самостоятельно проверить live GitHub state: `main`, remote branches, open PR, open Issues, Actions и reviews активного scope;
+4. сопоставить GitHub state с этим snapshot;
+5. продолжить с текущего незавершенного stage;
+6. не повторять уже полученные разрешения;
+7. не начинать implementation без утвержденных Architecture, Specification, Review и Approval.
 
-Этот документ не заменяет GitHub/Git. Branches, commits, Pull Requests, Actions, reviews, merge и branch cleanup всегда повторно проверяются через GitHub.
+GitHub/Git остается canonical source для mutable lifecycle. Записанные SHA являются exact historical/current anchors только на момент соответствующей проверки и всегда перепроверяются.
 
-## 2. Репозиторий и среда
+## 2. Репозиторий и локальная среда
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
@@ -29,179 +29,9 @@ MySQL: 8.4
 local shell: Windows PowerShell 5.1
 ```
 
-## 3. Последний подтверждённый stable GitHub snapshot
+Локальная машина используется для sync, deploy, MySQL/migrations, runtime, HTTP/browser и visual desktop acceptance. GitHub operations выполняются ассистентом через доступные инструменты. Длинные PowerShell-сценарии добавляются файлами в репозиторий и должны быть совместимы с Windows PowerShell 5.1.
 
-Дата первоначальной проверки: `2026-08-06`.
-
-```text
-verified main HEAD before governance maintenance: fce7a9e317105ecaa0dbec96469bb0f60fad5835
-main HEAD provenance: merge commit Pull Request #31
-remote branch inventory at verification: main only
-open Pull Requests at verification: 0
-open GitHub Issues at verification: 0
-open findings: 0
-active functional increment: none
-active material technical increment: none
-next functional increment: not selected / not approved
-```
-
-Текущий live `main` HEAD после появления этого файла определяется динамически через GitHub. Значение выше является exact base anchor создания постоянных governance-документов, а не вечным current pointer.
-
-## 4. Последний завершённый material increment до governance maintenance
-
-```text
-name: Documentation Current-State Reconciliation v3
-Pull Request: #31
-reviewed feature head: fce7131c8b8df96eec1bcd2a50d4560a1399221b
-pre-merge base: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
-merge commit: fce7a9e317105ecaa0dbec96469bb0f60fad5835
-merge method: merge
-changed paths: 16 Markdown files
-Documentation Validation: PASS
-Final PR Review: PASS
-exact-head GitHub Actions: SUCCESS
-post-merge verification: PASS
-feature branch cleanup: complete
-```
-
-PR #31 является documentation-only reconciliation. Он не изменял runtime, config, database, migrations, workflow, themes, deploy, automation tools, integrity manifest или repository settings.
-
-Living Markdown описывает durable baseline через PR #30. Lifecycle PR #31 намеренно не копировался обратно в living documentation. Это terminal documentation model, а не stale documentation.
-
-## 5. Durable baseline
-
-### Functional runtime baseline
-
-```text
-Pull Request: #24
-migration: 012
-merge commit: feac7230616d3a8df98acb48f43a0b60f89f2255
-runtime/manual acceptance head: b44aed14ee1a54be213cbc939322ba21b02e7a58
-```
-
-### Static CI baseline
-
-```text
-Pull Request: #25
-workflow: ASU-VCH Static Verification
-merge commit: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
-required status check: not enabled
-```
-
-### Documentation governance baseline
-
-```text
-Pull Request: #28
-GitHub/Git: canonical for mutable lifecycle
-historical gate records: immutable snapshots
-HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
-recursive lifecycle-only documentation closure: prohibited
-```
-
-### Local automation baseline
-
-```text
-foundation: Pull Request #29
-corrected PowerShell 5.1 baseline: Pull Request #30
-PR #30 corrected implementation head: fede2aa8c9c7b896f142075caa69b35219d4016d
-PR #30 merge commit: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
-native Windows PowerShell 5.1 regression: 58 PASS / 0 FAIL
-```
-
-## 6. Реализованные области
-
-### Platform и security
-
-- bootstrap первого владельца системы;
-- authentication;
-- protected sessions;
-- CSRF;
-- public registration отключается после создания владельца;
-- 4 system roles;
-- 25 system permissions;
-- полный user lifecycle;
-- required password change;
-- rejection audit;
-- archive/restore.
-
-### Themes
-
-Built-in themes:
-
-- `asu-blue`;
-- `asu-light-blue`;
-- `asu-evgeniya-rostova`.
-
-Для каждой темы существует 10 required CSS assets.
-
-### Owner-only read-only directories
-
-- military ranks;
-- organizational element types;
-- military positions;
-- public VUS.
-
-### Organization и ranks
-
-- Organizational Structure v1;
-- migrations 001–012;
-- Military Ranks Directory v2;
-- current v2 и historical v1;
-- version switching;
-- search/filtering;
-- source cards;
-- derived/staffing badges;
-- Reference-owned read-only compatibility service.
-
-## 7. Что не реализовано
-
-Следующее не реализовано и не считается активной задачей без отдельного Research → Approval cycle:
-
-- Staffing tables;
-- штатные slots;
-- Organization bindings;
-- personnel assignments;
-- реальные unit/personnel data;
-- mutation UI соответствующих справочников;
-- production deployment infrastructure;
-- branch protection Stage B;
-- required status check;
-- отдельная mobile acceptance.
-
-## 8. Текущее функциональное планирование
-
-```text
-active functional increment: none
-active material technical increment: none
-next functional increment: not selected
-next functional increment: not approved
-open findings: 0
-```
-
-Обсуждался, но не был выбран и не был утверждён кандидат:
-
-```text
-candidate: Staffing Structure v1
-classification: possible future functional increment
-proposed boundary: staffing foundation without personnel cards or assignments
-status: discussion only / not approved / no implementation authorization
-```
-
-Другие possible future directions:
-
-- personnel card;
-- staffing structure and personnel assignments;
-- common Documents domain;
-- common Audit domain;
-- production deployment infrastructure;
-- branch protection Stage B / required status check;
-- separate mobile verification increment.
-
-Ни один пункт не становится active task только из-за наличия в этом списке.
-
-## 9. Обязательный process
-
-Для material increment:
+## 3. Постоянный lifecycle проекта
 
 ```text
 Research
@@ -224,202 +54,265 @@ Research
 → Branch deletion
 ```
 
-Ключевые ограничения:
+Основные ограничения:
 
-- не начинать implementation до утверждения Architecture, Specification, Review и Approval;
-- создавать отдельную ветку для каждого material scope;
-- обычный PR создавать только после отдельного разрешения;
-- обычный Final PR Review выполнять только после отдельного разрешения и successful exact-head Actions;
-- обычный merge выполнять только после отдельного разрешения;
-- обычное branch deletion выполнять только после отдельного post-merge разрешения;
-- fail closed при изменении exact head/base/path anchors;
-- никаких скрытых remediation или дополнительных commits;
-- не изменять repository settings, branch protection и required checks без отдельного инкремента;
-- mobile testing исключено из обычного scope;
-- не заявлять mobile PASS без фактического acceptance;
-- static CI не заменяет MySQL, migration, deploy, HTTP/browser и visual testing;
-- documentation-only commits после runtime-tested head не объявлять runtime-tested.
+- отдельная ветка для каждого material scope;
+- exact base/head/merge-base/path allowlist;
+- fail closed при несовпадении anchors;
+- никаких скрытых remediation и scope expansion;
+- обычные PR, Final PR Review, merge и branch deletion требуют отдельных разрешений;
+- repository settings, branch protection и required checks меняются только отдельным утвержденным инкрементом;
+- static CI не заменяет MySQL, migrations, deploy, HTTP/browser, visual и mobile acceptance;
+- mobile testing не входит в обычный scope;
+- documentation-only commit не объявляется runtime-tested.
 
-Полный регламент находится в `docs/PROJECT-WORKING-RULES.md`.
+## 4. Постоянное разрешение на governance-документы
 
-## 10. GitHub и локальные операции
-
-### Ассистент выполняет через GitHub
-
-- проверку branches, commits и exact SHA;
-- чтение repository files;
-- создание веток;
-- commits и публикацию изменений;
-- создание Pull Requests;
-- review;
-- проверку GitHub Actions;
-- merge;
-- post-merge verification;
-- branch deletion;
-- другие доступные GitHub operations.
-
-Не нужно просить пользователя выполнять локальные Git/GitHub-команды, когда операция доступна через GitHub.
-
-### Пользовательская локальная машина нужна для
-
-- синхронизации `C:\Project\ASU-VCH`;
-- deploy;
-- MySQL и migrations;
-- local runtime checks;
-- HTTP/browser testing;
-- visual desktop acceptance;
-- операций с Open Server Panel и локальной файловой системой.
-
-Длинный PowerShell-код должен добавляться файлом в репозиторий. В чат выдаются короткие команды запуска. Совместимость с Windows PowerShell 5.1 обязательна.
-
-## 11. Постоянное разрешение на обслуживание governance-документов
-
-Владелец предоставил standing authorization на создание и постоянное обслуживание:
+Владелец предоставил standing authorization без повторных permission prompts на поддержание только:
 
 ```text
 docs/PROJECT-WORKING-RULES.md
 docs/CHAT-HANDOFF.md
 ```
 
-Для documentation-only maintenance, ограниченного этими двумя файлами, не требуется повторно спрашивать разрешения на:
+Разрешены отдельная documentation branch, commits, PR, exact-head Actions, Final PR Review, merge после PASS, post-merge verification и branch cleanup. Любой третий путь запрещен без отдельного обычного gate.
 
-- отдельную documentation branch;
-- commits и push;
-- Pull Request;
-- exact-head Actions verification;
-- Final PR Review;
-- merge после PASS;
-- post-merge verification;
-- branch deletion после PASS.
+Standing authorization не распространяется на runtime, config, DB, migrations, workflows, themes, deploy, automation tools, integrity manifest, repository settings, branch protection, required checks или иные Markdown-файлы.
 
-Строгий allowlist — только два указанных пути. Изменение любого третьего файла требует обычного отдельного gate.
+## 5. Последний подтвержденный stable baseline
 
-Standing authorization не распространяется на runtime, config, DB, migrations, workflows, themes, deploy, automation tools, integrity manifest, repository settings, branch protection или required checks.
-
-## 12. Правила обновления этого файла
-
-Этот handoff обновляется при каждом значимом изменении project state, включая:
-
-- новый или изменённый scope;
-- изменение lifecycle stage;
-- approvals;
-- branch/commit/push;
-- Pull Request;
-- Actions result;
-- Final PR Review;
-- findings или remediation;
-- merge и post-merge verification;
-- branch cleanup;
-- local DB/deploy/HTTP/browser/visual results;
-- изменение durable baseline;
-- изменение постоянных правил.
-
-Незначимые read-only проверки без изменения состояния не требуют отдельной записи.
-
-При обновлении необходимо одновременно поддерживать:
-
-- раздел текущего состояния;
-- active stage;
-- next action;
-- exact anchors, если они не создают self-recursive stale pointer;
-- список approvals и запретов;
-- findings;
-- testing evidence;
-- журнал значимых действий.
-
-Mutable lifecycle всё равно остаётся canonical в GitHub/Git. Не создаётся рекурсивный PR только ради записи merge SHA самого handoff-maintenance PR.
-
-## 13. Governance maintenance lifecycle
+### Main и governance
 
 ```text
-purpose: create permanent working-rules and chat-handoff documents
-Pull Request: #32
+verified main HEAD before current research: 7ae5bcf77826870d6beee7293f101f679a521c56
+provenance: merge commit Pull Request #32
+PR #32: merged
+PR #32 exact reviewed head: d219f91dcd65026df4f8729353fdfc2ffd381072
+PR #32 post-merge workflow: 31070334183 / SUCCESS
+PR #32 documentation branch cleanup: PASS
+remote inventory after cleanup: main only
+open findings after PR #32: 0
+```
+
+PR #32 создал постоянные документы правил работы и handoff. Его lifecycle считается terminal complete; отдельный recursive PR только ради копирования его merge SHA или cleanup запрещен.
+
+### Functional runtime baseline
+
+```text
+Pull Request: #24
+migration: 012
+merge commit: feac7230616d3a8df98acb48f43a0b60f89f2255
+runtime/manual acceptance head: b44aed14ee1a54be213cbc939322ba21b02e7a58
+```
+
+### Static CI baseline
+
+```text
+Pull Request: #25
+workflow: ASU-VCH Static Verification
+merge commit: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
+required status check: not enabled
+branch protection Stage B: not implemented
+```
+
+### Documentation governance baseline
+
+```text
+Pull Request: #28
+GitHub/Git: canonical for mutable lifecycle
+historical gate records: immutable snapshots
+HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
+recursive lifecycle-only documentation closure: prohibited
+```
+
+### Local automation baseline
+
+```text
+foundation: Pull Request #29
+PowerShell 5.1 corrected baseline: Pull Request #30
+PR #30 implementation head: fede2aa8c9c7b896f142075caa69b35219d4016d
+PR #30 merge commit: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
+native regression: 58 PASS / 0 FAIL
+```
+
+## 6. Реализованные области
+
+### Platform и security
+
+- bootstrap первого владельца;
+- authentication, sessions и CSRF;
+- public registration отключается после владельца;
+- 4 system roles;
+- 25 system permissions;
+- полный user lifecycle;
+- required password change;
+- rejection audit;
+- archive/restore.
+
+### Themes
+
+- `asu-blue`;
+- `asu-light-blue`;
+- `asu-evgeniya-rostova`;
+- 10 required CSS assets на тему.
+
+### Справочники и организация
+
+- owner-only read-only military ranks;
+- organizational element types;
+- public military positions;
+- public VUS;
+- Organizational Structure v1;
+- Military Ranks Directory v2;
+- current v2 / historical v1;
+- version switching, search/filtering, source cards и badges;
+- migrations 001–012.
+
+## 7. Не реализовано
+
+- штатные документы и штатные slots;
+- персональные карточки военнослужащих;
+- назначения person → staffing slot;
+- реальные personnel/unit data;
+- документы и фото военнослужащих;
+- кадрово-служебная история;
+- отдельный контур воинского учета граждан;
+- ГАР/ФИАС subsystem;
+- reference import governance;
+- reconciliation/data quality;
+- statutory forms/reporting engine;
+- график отпусков;
+- production deployment infrastructure;
+- branch protection Stage B / required status check;
+- mobile acceptance.
+
+Наличие пункта в списке не означает разрешение на реализацию.
+
+## 8. Активный scope: Military Accounting Order 700 Research
+
+### Разрешение владельца
+
+Владелец поставил задачу исследовать приказ Министра обороны Российской Федерации от 22.11.2021 № 700 в действующей редакции, все его ссылки и связанные официальные документы, сформировать целевое представление о воинском учете и предложения по модернизации «АСУ-ВЧ». Разрешено создать одну или несколько отдельных веток.
+
+### Exact anchors
+
+```text
+scope name: Military Accounting Order 700 Research
+classification: research / analysis / documentation-only
 base branch: main
-base SHA: fce7a9e317105ecaa0dbec96469bb0f60fad5835
-head branch: docs/project-working-rules-and-chat-handoff
-scope: exactly two new Markdown files
-changed paths: docs/PROJECT-WORKING-RULES.md; docs/CHAT-HANDOFF.md
-standing authorization: granted
-runtime impact: none
-DB/migration impact: none
-workflow/settings impact: none
+base SHA: 7ae5bcf77826870d6beee7293f101f679a521c56
+research branch: research/military-accounting-order-700
+research head SHA: b148c7c28d43c9bba08666fc593b75477e0d40b8
+merge base: 7ae5bcf77826870d6beee7293f101f679a521c56
+ahead: 1
+behind: 0
+changed paths: 5
+unexpected paths: 0
+runtime/config/DB/workflow diff: 0
 ```
 
-PR #32 является canonical mutable evidence этого maintenance lifecycle. Его live head, exact-head Actions, Final PR Review, merge commit и branch cleanup должны определяться через GitHub.
-
-Инвариант состояния:
+### Exact research allowlist
 
 ```text
-if PR #32 is open: governance maintenance is active at the GitHub-reported stage
-if PR #32 is merged and branch is deleted: governance maintenance is complete
-if PR #32 is closed without merge: governance maintenance requires explicit reconciliation
+docs/research/military-accounting-order-700/README.md
+docs/research/military-accounting-order-700/OFFICIAL-SOURCE-REGISTER.md
+docs/research/military-accounting-order-700/LEGAL-AND-PROCESS-ANALYSIS.md
+docs/research/military-accounting-order-700/TARGET-ACCOUNTING-MODEL.md
+docs/research/military-accounting-order-700/ASU-VCH-MODERNIZATION-ROADMAP.md
 ```
 
-Эта формулировка остаётся актуальной без рекурсивного post-merge commit только ради записи собственного merge SHA.
+### Research conclusions
 
-## 14. Next project action
+1. Приказ № 700 регулирует преимущественно государственную систему воинского учета граждан: документы, первичный учет, учет в организациях, сверки, контроль качества и выписки Реестра.
+2. Действующие военнослужащие не относятся к обычному контингенту воинского учета по Положению № 719; кадрово-служебный учет военнослужащих должен быть отдельным доменом.
+3. «АСУ-ВЧ» должна разделить `CitizenMilitaryAccounting` и `PersonnelServiceAccounting`, связав их контролируемыми юридическими событиями.
+4. Публичные акты не устанавливают детальную внутреннюю иерархию действующих частей для прямого hardcode. Предложено конфигурируемое оргдерево с ownership снизу и агрегированием вверх.
+5. Первый рекомендуемый functional increment — `Lowest Unit Staffing Structure v1`, без персональных данных и назначений.
+6. ГАР/ФИАС является целевым адресным эталоном; КЛАДР — legacy migration mapping.
+7. Фото и документы требуют отдельного защищенного object/document vault, field-level access и immutable audit.
+8. Отчетность должна быть versioned by legal edition и reproducible as-of.
+9. График отпусков — отдельный кадровый процесс, утверждаемый командиром, а не автоматическое решение системы.
+10. Секретные и ограниченные сведения не загружаются в общий контур без отдельной законной и аттестованной среды.
 
-После terminal completion PR #32:
+### Официальные источники
+
+Исследование использует официальный портал правовой информации, банк документов Президента Российской Федерации, официальный сайт Правительства Российской Федерации и ФНС России. Коммерческие правовые системы допускались только как навигация, не как authoritative source.
+
+Официальный 150-страничный PDF приказа был нестабилен/недоступен через используемые read-интерфейсы. Реквизиты и редакции подтверждены официальными карточками, а выводы — официальными системообразующими актами. Полнота ограничена открытыми официальными источниками; закрытые/секретные акты не реконструировались.
+
+## 9. Текущий stage и разрешения
 
 ```text
-next project action: continue discussion of next functional increment
-new functional branch creation: not authorized because functional scope is not selected
-functional implementation: not authorized
+Research: PREPARED
+Analysis: PREPARED
+Architecture: NOT STARTED
+Specification: NOT STARTED
+Review: NOT YET AUTHORIZED
+Approval: NOT GRANTED
+Implementation: NOT AUTHORIZED
+runtime/DB/UI changes: NOT AUTHORIZED
+research Pull Request: NOT AUTHORIZED
+research merge: NOT AUTHORIZED
+research branch deletion: NOT AUTHORIZED
+open findings: 0
 ```
 
-Если PR #32 ещё открыт, следующий разрешённый шаг определяется его exact GitHub stage и standing authorization из раздела 11.
+Создание research commit не является implementation и не разрешает PR/merge.
 
-## 15. Журнал значимых действий
+## 10. Следующий разрешенный шаг
 
-### 2026-08-06 — Baseline verification
+1. Представить владельцу результаты исследования и предложения.
+2. Получить решение: принять, скорректировать или отклонить исследовательскую модель.
+3. При принятии — отдельно разрешить Review research head `b148c7c28d43c9bba08666fc593b75477e0d40b8`.
+4. После Review определить точный scope первого functional increment.
+5. Подготовить Architecture и Specification этого инкремента.
+6. Implementation не начинать до отдельного Approval.
 
-- GitHub `main` подтверждён на `fce7a9e317105ecaa0dbec96469bb0f60fad5835`;
-- remote inventory содержал только `main`;
-- открытых Pull Requests не было;
-- открытых GitHub Issues не было;
-- активных functional/material technical increments не было.
+Рекомендуемый первый scope:
 
-### 2026-08-06 — Standing governance authorization
+```text
+NAME=Lowest Unit Staffing Structure v1
+IN_SCOPE=organizational node, staffing document versions, individual staffing slots, vacancy state, links to approved public rank/position/VUS references, read-only desktop views, scoped permissions, audit
+OUT_OF_SCOPE=real personnel, personal data, photos, files, assignments, orders, leave, medical data, external integrations, production deployment, mobile acceptance, classified/restricted data
+```
 
-- владелец потребовал создать отдельный документ правил работы;
-- владелец потребовал создать отдельный документ перехода в новый чат;
-- владелец потребовал постоянно поддерживать оба документа в актуальном состоянии;
-- владелец предоставил standing authorization без повторных permission prompts для обслуживания этих двух файлов;
-- разрешение ограничено двумя allowlisted Markdown-путями и не распространяется на любой другой scope.
+## 11. Журнал текущего исследования
 
-### 2026-08-06 — Branch и документы
+### 2026-08-06 — scope и branch
 
-- создана documentation branch `docs/project-working-rules-and-chat-handoff` от exact base `fce7a9e317105ecaa0dbec96469bb0f60fad5835`;
-- создан `docs/PROJECT-WORKING-RULES.md`;
-- создан `docs/CHAT-HANDOFF.md`;
-- pre-PR compare на head `582cf2797073f6732ed14a95b42fb5bccf6c15b4` показал `ahead=2`, `behind=0`, merge base равен exact base;
-- changed paths: ровно 2/2 allowlisted Markdown-файла;
-- runtime, config, DB, migrations, workflows, themes, deploy, tools и repository settings не изменялись.
+- подтвержден `main` на `7ae5bcf77826870d6beee7293f101f679a521c56`;
+- remote inventory до research содержал только `main`;
+- создана branch `research/military-accounting-order-700`;
+- scope ограничен официальным исследованием и проектными Markdown-предложениями;
+- implementation, PR и merge не разрешались.
 
-### 2026-08-06 — Pull Request #32 и initial exact-head Actions
+### 2026-08-06 — official-source research
 
-- создан Pull Request #32 из `docs/project-working-rules-and-chat-handoff` в `main`;
-- PR base SHA: `fce7a9e317105ecaa0dbec96469bb0f60fad5835`;
-- initial PR head SHA: `582cf2797073f6732ed14a95b42fb5bccf6c15b4`;
-- workflow `ASU-VCH Static Verification`, run `31070181493`: `SUCCESS`;
-- эта запись создаёт следующий head commit, поэтому Final PR Review разрешён только после повторного exact-head Actions SUCCESS на новом live head;
-- Final PR Review, merge, post-merge verification и cleanup выполняются по standing authorization только при сохранении exact allowlist и отсутствии findings.
+- подтверждены приказ № 700, изменение № 791 от 23.11.2023 и изменение № 438 от 09.07.2025;
+- проанализированы постановления Правительства № 719 и № 506;
+- проанализированы системообразующие акты о воинской обязанности, обороне, прохождении службы, статусе военнослужащих, военно-врачебной экспертизе, персональных данных и ГАР/ФИАС;
+- сформирована граница между учетом граждан и кадрово-служебным учетом действующих военнослужащих;
+- выявлено ограничение открытых источников для закрытых ведомственных сведений.
 
-## 16. Checklist для первого ответа в новом чате
+### 2026-08-06 — research commit
 
-Ассистент должен выполнить и сообщить:
+- создан commit `b148c7c28d43c9bba08666fc593b75477e0d40b8`;
+- compare: `ahead=1`, `behind=0`;
+- изменено ровно 5 allowlisted Markdown-файлов;
+- runtime, config, DB, migrations, workflows, themes, deploy и repository settings не изменялись;
+- research PR не создавался.
+
+## 12. Checklist первого ответа в новом чате
 
 ```text
 [ ] прочитан PROJECT-WORKING-RULES.md
 [ ] прочитан CHAT-HANDOFF.md
-[ ] повторно проверен live main HEAD
-[ ] повторно проверен remote branch inventory
-[ ] повторно проверены open PRs
-[ ] повторно проверены open Issues
-[ ] определён active increment и exact stage
-[ ] проверены open findings
-[ ] сверены approvals и forbidden actions
-[ ] определён следующий разрешённый шаг
+[ ] проверен live main HEAD
+[ ] проверены remote branches
+[ ] проверены open PR и Issues
+[ ] проверен live research head
+[ ] compare research branch ↔ main соответствует anchors
+[ ] прочитаны 5 research documents
+[ ] определен текущий owner gate
+[ ] implementation не начат без Approval
 ```
-
-После проверки нельзя начинать новый material scope, пока он не обсуждён и не утверждён. Обслуживание двух governance-документов выполняется по standing authorization и не требует нового вопроса владельцу.
