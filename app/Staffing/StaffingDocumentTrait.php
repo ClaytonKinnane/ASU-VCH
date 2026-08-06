@@ -18,7 +18,7 @@ trait StaffingDocumentTrait
             $insert = $this->pdo->prepare(
                 'INSERT INTO staffing_documents '
                 . '(staffing_register_id,document_type,document_date,document_number,title,note,created_by,created_at,updated_by,updated_at) '
-                . 'VALUES (:register_id,:document_type,:document_date,:document_number,:title,:note,:actor,NOW(),:actor,NOW())'
+                . 'VALUES (:register_id,:document_type,:document_date,:document_number,:title,:note,:created_actor,NOW(),:updated_actor,NOW())'
             );
             $insert->execute([
                 'register_id' => $registerId,
@@ -27,7 +27,8 @@ trait StaffingDocumentTrait
                 'document_number' => $data['document_number'],
                 'title' => $data['title'],
                 'note' => $data['note'],
-                'actor' => $actorId,
+                'created_actor' => $actorId,
+                'updated_actor' => $actorId,
             ]);
             $documentId = (int) $this->pdo->lastInsertId();
             $link = $this->pdo->prepare(
@@ -105,7 +106,7 @@ trait StaffingDocumentTrait
                 $clone = $this->pdo->prepare(
                     'INSERT INTO staffing_documents '
                     . '(staffing_register_id,document_type,document_date,document_number,title,note,created_by,created_at,updated_by,updated_at) '
-                    . 'VALUES (:register_id,:document_type,:document_date,:document_number,:title,:note,:actor,NOW(),:actor,NOW())'
+                    . 'VALUES (:register_id,:document_type,:document_date,:document_number,:title,:note,:created_actor,NOW(),:updated_actor,NOW())'
                 );
                 $clone->execute([
                     'register_id' => $registerId,
@@ -114,7 +115,8 @@ trait StaffingDocumentTrait
                     'document_number' => $data['document_number'],
                     'title' => $data['title'],
                     'note' => $data['note'],
-                    'actor' => $actorId,
+                    'created_actor' => $actorId,
+                    'updated_actor' => $actorId,
                 ]);
                 $targetDocumentId = (int) $this->pdo->lastInsertId();
                 $deleteLink = $this->pdo->prepare(
