@@ -196,7 +196,7 @@ $formatHistoryState = static function (?string $json) use ($translateHistoryStat
     <a class="secondary-button" href="/admin/staffing/register.php?id=<?= $registerId ?>">К реестру</a>
 </div></div></header>
 <main class="admin-main"><div class="container organization-layout">
-    <section class="organization-list" aria-label="Предметная история">
+    <section class="organization-history-list" aria-label="Предметная история">
     <?php if ($events === []): ?>
         <article class="organization-empty glass-tile"><h2>События отсутствуют</h2></article>
     <?php else: foreach ($events as $event):
@@ -207,19 +207,21 @@ $formatHistoryState = static function (?string $json) use ($translateHistoryStat
         $eventLabel = $historyEventLabels[$eventCode] ?? 'Событие предметной истории';
         $targetLabel = $historyTargetLabels[$targetCode] ?? 'Объект истории';
     ?>
-        <article class="organization-card glass-tile" data-event-code="<?= e($eventCode) ?>" data-target-code="<?= e($targetCode) ?>">
+        <article class="glass-tile" data-event-code="<?= e($eventCode) ?>" data-target-code="<?= e($targetCode) ?>">
             <div>
-                <span class="status-badge"><?= e($eventLabel) ?></span>
-                <h2><?= e($targetLabel) ?><?= $event['target_id'] !== null ? ' № ' . (int) $event['target_id'] : '' ?></h2>
-                <p><?= e($formatHistoryTimestamp((string) $event['created_at'])) ?> · <?= e((string) ($event['actor_name'] ?? 'Системный субъект')) ?><?= $event['version_number'] !== null ? ' · версия № ' . (int) $event['version_number'] : '' ?></p>
-                <?php if ($event['reason'] !== null): ?><p><?= nl2br(e((string) $event['reason'])) ?></p><?php endif; ?>
+                <div>
+                    <span class="status-badge"><?= e($eventLabel) ?></span>
+                    <h2><?= e($targetLabel) ?><?= $event['target_id'] !== null ? ' № ' . (int) $event['target_id'] : '' ?></h2>
+                    <p><?= e($formatHistoryTimestamp((string) $event['created_at'])) ?> · <?= e((string) ($event['actor_name'] ?? 'Системный субъект')) ?><?= $event['version_number'] !== null ? ' · версия № ' . (int) $event['version_number'] : '' ?></p>
+                    <?php if ($event['reason'] !== null): ?><p><?= nl2br(e((string) $event['reason'])) ?></p><?php endif; ?>
+                </div>
             </div>
             <?php if ($before !== null || $after !== null): ?>
-                <details>
+                <details class="organization-history-state">
                     <summary>Изменения</summary>
-                    <div class="organization-form-grid">
-                        <div><h3>До</h3><pre><?= e((string) ($before ?? '—')) ?></pre></div>
-                        <div><h3>После</h3><pre><?= e((string) ($after ?? '—')) ?></pre></div>
+                    <div>
+                        <section><h3>До</h3><pre><?= e((string) ($before ?? '—')) ?></pre></section>
+                        <section><h3>После</h3><pre><?= e((string) ($after ?? '—')) ?></pre></section>
                     </div>
                 </details>
             <?php endif; ?>
