@@ -19,6 +19,13 @@ $versionStatusLabels = [
     <title><?= e((string) $register['name']) ?> — штатная структура</title>
     <link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
     <link rel="stylesheet" href="<?= e(theme_asset('css/organization.css')) ?>">
+    <style>
+        .staffing-date-control { display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+        .staffing-date-control input[type="date"] { min-width: 0; }
+        .staffing-date-control input[type="date"]::-webkit-calendar-picker-indicator { width: 0; height: 0; margin: 0; padding: 0; opacity: 0; pointer-events: none; }
+        .staffing-date-picker { width: 44px; min-width: 44px; height: 42px; min-height: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+        .staffing-date-picker svg { pointer-events: none; }
+    </style>
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile">
@@ -73,12 +80,12 @@ $versionStatusLabels = [
             <label>Копировать из<select name="based_on_version_id"><?php if (is_array($activeVersionForDraft)): ?><option value="<?= (int) $activeVersionForDraft['id'] ?>">Действующая № <?= (int) $activeVersionForDraft['version_number'] ?> · <?= e((string) $activeVersionForDraft['version_label']) ?></option><?php else: ?><option value="">Пустой первоначальный черновик</option><?php endif; ?></select></label>
             <label>Обозначение<input name="version_label" maxlength="255" required></label>
             <label>Дата начала действия
-                <div class="organization-actions">
-                    <input type="date" name="effective_from" required>
-                    <button class="secondary-button" type="button" title="Выбрать дату" aria-label="Открыть календарь для даты начала действия" onclick="const field = this.previousElementSibling; try { if (typeof field.showPicker === 'function') { field.showPicker(); } else { field.focus(); field.click(); } } catch (error) { field.focus(); }">
+                <span class="staffing-date-control">
+                    <input id="staffing-version-effective-from" type="date" name="effective_from" required>
+                    <button class="secondary-button staffing-date-picker" type="button" title="Выбрать дату" aria-label="Открыть календарь для даты начала действия" data-date-picker-target="staffing-version-effective-from">
                         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path></svg>
                     </button>
-                </div>
+                </span>
             </label>
             <label class="span-2">Основание<textarea name="change_reason" maxlength="1000" required></textarea></label><div class="span-2 organization-actions"><button class="primary-button" type="submit">Создать версию</button></div>
         </form></details>
@@ -87,5 +94,30 @@ $versionStatusLabels = [
 
     <?php if ($selectedVersion !== null): require __DIR__ . '/version-card.php'; endif; ?>
 </div></main>
+<script>
+document.addEventListener('click', function (event) {
+    const button = event.target.closest('[data-date-picker-target]');
+    if (!(button instanceof HTMLButtonElement)) {
+        return;
+    }
+
+    const targetId = button.getAttribute('data-date-picker-target');
+    const field = targetId === null ? null : document.getElementById(targetId);
+    if (!(field instanceof HTMLInputElement) || field.type !== 'date') {
+        return;
+    }
+
+    try {
+        if (typeof field.showPicker === 'function') {
+            field.showPicker();
+            return;
+        }
+        field.focus();
+        field.click();
+    } catch (error) {
+        field.focus();
+    }
+});
+</script>
 </body>
 </html>
