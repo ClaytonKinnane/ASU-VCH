@@ -29,11 +29,12 @@ trait StaffingLifecycleTrait
             }
 
             $stmt = $this->pdo->prepare(
-                "UPDATE staffing_versions SET status='approved',approved_by=:actor,approved_at=NOW(),updated_by=:actor,updated_at=NOW() "
+                "UPDATE staffing_versions SET status='approved',approved_by=:approved_actor,approved_at=NOW(),updated_by=:updated_actor,updated_at=NOW() "
                 . "WHERE id=:version_id AND staffing_register_id=:register_id AND status='draft' AND revision=:revision"
             );
             $stmt->execute([
-                'actor' => $actorId,
+                'approved_actor' => $actorId,
+                'updated_actor' => $actorId,
                 'version_id' => $versionId,
                 'register_id' => $registerId,
                 'revision' => $expectedRevision,
@@ -74,11 +75,12 @@ trait StaffingLifecycleTrait
                 throw new DomainException('Версия была изменена другим пользователем. Обновите страницу.');
             }
             $stmt = $this->pdo->prepare(
-                "UPDATE staffing_versions SET status='cancelled',cancelled_by=:actor,cancelled_at=NOW(),cancellation_reason=:reason,updated_by=:actor,updated_at=NOW() "
+                "UPDATE staffing_versions SET status='cancelled',cancelled_by=:cancelled_actor,cancelled_at=NOW(),cancellation_reason=:reason,updated_by=:updated_actor,updated_at=NOW() "
                 . "WHERE id=:version_id AND staffing_register_id=:register_id AND status IN ('draft','approved') AND revision=:revision"
             );
             $stmt->execute([
-                'actor' => $actorId,
+                'cancelled_actor' => $actorId,
+                'updated_actor' => $actorId,
                 'reason' => $reason,
                 'version_id' => $versionId,
                 'register_id' => $registerId,
@@ -150,11 +152,12 @@ trait StaffingLifecycleTrait
             }
 
             $activate = $this->pdo->prepare(
-                "UPDATE staffing_versions SET status='active',activated_by=:actor,activated_at=NOW(),updated_by=:actor,updated_at=NOW() "
+                "UPDATE staffing_versions SET status='active',activated_by=:activated_actor,activated_at=NOW(),updated_by=:updated_actor,updated_at=NOW() "
                 . "WHERE id=:version_id AND staffing_register_id=:register_id AND status='approved' AND revision=:revision"
             );
             $activate->execute([
-                'actor' => $actorId,
+                'activated_actor' => $actorId,
+                'updated_actor' => $actorId,
                 'version_id' => $versionId,
                 'register_id' => $registerId,
                 'revision' => $expectedRevision,
