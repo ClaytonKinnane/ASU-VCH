@@ -163,7 +163,7 @@ $translateHistoryState = static function (mixed $value) use (
     return $value;
 };
 
-$formatHistoryState = static function (?string $json) use ($translateHistoryState): ?string {
+$decodeHistoryState = static function (?string $json) use ($translateHistoryState): ?array {
     if ($json === null || $json === '') {
         return null;
     }
@@ -172,13 +172,39 @@ $formatHistoryState = static function (?string $json) use ($translateHistoryStat
         if (!is_array($decoded)) {
             return null;
         }
-        return json_encode(
-            $translateHistoryState($decoded),
-            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
-        );
+        $translated = $translateHistoryState($decoded);
+        return is_array($translated) ? $translated : null;
     } catch (JsonException) {
         return null;
     }
+};
+
+$renderHistoryValue = null;
+$renderHistoryValue = static function (mixed $value) use (&$renderHistoryValue): string {
+    if ($value === null || $value === '') {
+        return '<span class="staffing-history-empty">—</span>';
+    }
+    if (!is_array($value)) {
+        return '<span>' . e((string) $value) . '</span>';
+    }
+    if ($value === []) {
+        return '<span class="staffing-history-empty">Нет данных</span>';
+    }
+    if (array_is_list($value)) {
+        $items = '';
+        foreach ($value as $item) {
+            $items .= '<li>' . $renderHistoryValue($item) . '</li>';
+        }
+        return '<ol class="staffing-history-value-list">' . $items . '</ol>';
+    }
+    $rows = '';
+    foreach ($value as $key => $item) {
+        $rows .= '<div class="staffing-history-field">'
+            . '<dt>' . e((string) $key) . '</dt>'
+            . '<dd>' . $renderHistoryValue($item) . '</dd>'
+            . '</div>';
+    }
+    return '<dl class="staffing-history-fields">' . $rows . '</dl>';
 };
 ?>
 <!DOCTYPE html>
@@ -189,6 +215,23 @@ $formatHistoryState = static function (?string $json) use ($translateHistoryStat
     <title>История — <?= e((string) $register['name']) ?></title>
     <link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
     <link rel="stylesheet" href="<?= e(theme_asset('css/organization.css')) ?>">
+    <style>
+        .staffing-history-state-grid { margin-top: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .staffing-history-state-panel { min-width: 0; }
+        .staffing-history-state-panel > h3 { margin: 0 0 8px; }
+        .staffing-history-fields { display: grid; gap: 7px; margin: 0; }
+        .staffing-history-field { min-width: 0; display: grid; grid-template-columns: minmax(150px, .8fr) minmax(0, 1.2fr); gap: 12px; padding: 9px 10px; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--input-background); }
+        .staffing-history-field dt { color: var(--text-secondary); font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+        .staffing-history-field dd { min-width: 0; margin: 0; color: var(--text-primary); overflow-wrap: anywhere; }
+        .staffing-history-field dd > .staffing-history-fields { margin-top: 2px; }
+        .staffing-history-value-list { margin: 0; padding-left: 22px; display: grid; gap: 7px; }
+        .staffing-history-value-list > li { min-width: 0; }
+        .staffing-history-empty { color: var(--text-secondary); }
+        @media (max-width: 900px) {
+            .staffing-history-state-grid { grid-template-columns: 1fr; }
+            .staffing-history-field { grid-template-columns: 1fr; gap: 4px; }
+        }
+    </style>
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile">
@@ -200,8 +243,8 @@ $formatHistoryState = static function (?string $json) use ($translateHistoryStat
     <?php if ($events === []): ?>
         <article class="organization-empty glass-tile"><h2>События отсутствуют</h2></article>
     <?php else: foreach ($events as $event):
-        $before = $formatHistoryState($event['before_state']);
-        $after = $formatHistoryState($event['after_state']);
+        $before = $decodeHistoryState($event['before_state']);
+        $after = $decodeHistoryState($event['after_state']);
         $eventCode = (string) $event['event_type'];
         $targetCode = (string) $event['target_type'];
         $eventLabel = $historyEventLabels[$eventCode] ?? 'Событие предметной истории';
@@ -219,9 +262,9 @@ $formatHistoryState = static function (?string $json) use ($translateHistoryStat
             <?php if ($before !== null || $after !== null): ?>
                 <details class="organization-history-state">
                     <summary>Изменения</summary>
-                    <div>
-                        <section><h3>До</h3><pre><?= e((string) ($before ?? '—')) ?></pre></section>
-                        <section><h3>После</h3><pre><?= e((string) ($after ?? '—')) ?></pre></section>
+                    <div class="staffing-history-state-grid">
+                        <section class="staffing-history-state-panel"><h3>До</h3><?= $renderHistoryValue($before) ?></section>
+                        <section class="staffing-history-state-panel"><h3>После</h3><?= $renderHistoryValue($after) ?></section>
                     </div>
                 </details>
             <?php endif; ?>
