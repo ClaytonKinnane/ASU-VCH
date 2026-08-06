@@ -29,25 +29,25 @@ MySQL: 8.4
 local shell: Windows PowerShell 5.1
 ```
 
-## 3. Последний подтверждённый GitHub snapshot перед созданием handoff
+## 3. Последний подтверждённый stable GitHub snapshot
 
-Дата проверки: `2026-08-06`.
+Дата первоначальной проверки: `2026-08-06`.
 
 ```text
-verified main HEAD: fce7a9e317105ecaa0dbec96469bb0f60fad5835
+verified main HEAD before governance maintenance: fce7a9e317105ecaa0dbec96469bb0f60fad5835
 main HEAD provenance: merge commit Pull Request #31
-remote branch inventory: main only
-open Pull Requests: 0
-open GitHub Issues: 0
+remote branch inventory at verification: main only
+open Pull Requests at verification: 0
+open GitHub Issues at verification: 0
 open findings: 0
 active functional increment: none
 active material technical increment: none
 next functional increment: not selected / not approved
 ```
 
-Текущий live `main` HEAD после появления этого файла должен определяться динамически через GitHub. Значение выше является историческим exact base anchor создания постоянных governance-документов, а не вечным current pointer.
+Текущий live `main` HEAD после появления этого файла определяется динамически через GitHub. Значение выше является exact base anchor создания постоянных governance-документов, а не вечным current pointer.
 
-## 4. Последний завершённый инкремент
+## 4. Последний завершённый material increment до governance maintenance
 
 ```text
 name: Documentation Current-State Reconciliation v3
@@ -168,15 +168,13 @@ Built-in themes:
 - required status check;
 - отдельная mobile acceptance.
 
-## 8. Текущее планирование
+## 8. Текущее функциональное планирование
 
 ```text
 active functional increment: none
 active material technical increment: none
 next functional increment: not selected
 next functional increment: not approved
-open GitHub Issues at last baseline verification: 0
-open Pull Requests at last baseline verification: 0
 open findings: 0
 ```
 
@@ -331,32 +329,45 @@ Standing authorization не распространяется на runtime, confi
 
 Mutable lifecycle всё равно остаётся canonical в GitHub/Git. Не создаётся рекурсивный PR только ради записи merge SHA самого handoff-maintenance PR.
 
-## 13. Текущий operational state
+## 13. Governance maintenance lifecycle
 
 ```text
-functional increment: none
-material technical increment: none
-governance maintenance: creation of permanent working-rules and chat-handoff documents
-maintenance branch: docs/project-working-rules-and-chat-handoff
-maintenance base: fce7a9e317105ecaa0dbec96469bb0f60fad5835
-maintenance scope: exactly two new Markdown files
-maintenance standing authorization: granted
+purpose: create permanent working-rules and chat-handoff documents
+Pull Request: #32
+base branch: main
+base SHA: fce7a9e317105ecaa0dbec96469bb0f60fad5835
+head branch: docs/project-working-rules-and-chat-handoff
+scope: exactly two new Markdown files
+changed paths: docs/PROJECT-WORKING-RULES.md; docs/CHAT-HANDOFF.md
+standing authorization: granted
 runtime impact: none
 DB/migration impact: none
 workflow/settings impact: none
 ```
 
-После завершения этого documentation-only maintenance cycle значение `governance maintenance` должно считаться завершённым. Точный PR, final head, Actions, merge и branch cleanup определяются через GitHub mutable evidence и могут быть добавлены в этот журнал до merge без создания post-merge recursive closure.
+PR #32 является canonical mutable evidence этого maintenance lifecycle. Его live head, exact-head Actions, Final PR Review, merge commit и branch cleanup должны определяться через GitHub.
 
-## 14. Next action
-
-На момент создания этого файла:
+Инвариант состояния:
 
 ```text
-next project action after governance maintenance: continue discussion of next functional increment
-new functional branch creation: not authorized because functional scope is not selected
-implementation: not authorized
+if PR #32 is open: governance maintenance is active at the GitHub-reported stage
+if PR #32 is merged and branch is deleted: governance maintenance is complete
+if PR #32 is closed without merge: governance maintenance requires explicit reconciliation
 ```
+
+Эта формулировка остаётся актуальной без рекурсивного post-merge commit только ради записи собственного merge SHA.
+
+## 14. Next project action
+
+После terminal completion PR #32:
+
+```text
+next project action: continue discussion of next functional increment
+new functional branch creation: not authorized because functional scope is not selected
+functional implementation: not authorized
+```
+
+Если PR #32 ещё открыт, следующий разрешённый шаг определяется его exact GitHub stage и standing authorization из раздела 11.
 
 ## 15. Журнал значимых действий
 
@@ -368,15 +379,31 @@ implementation: not authorized
 - открытых GitHub Issues не было;
 - активных functional/material technical increments не было.
 
-### 2026-08-06 — Постоянные governance-документы
+### 2026-08-06 — Standing governance authorization
 
 - владелец потребовал создать отдельный документ правил работы;
 - владелец потребовал создать отдельный документ перехода в новый чат;
 - владелец потребовал постоянно поддерживать оба документа в актуальном состоянии;
 - владелец предоставил standing authorization без повторных permission prompts для обслуживания этих двух файлов;
-- scope ограничен `docs/PROJECT-WORKING-RULES.md` и `docs/CHAT-HANDOFF.md`;
+- разрешение ограничено двумя allowlisted Markdown-путями и не распространяется на любой другой scope.
+
+### 2026-08-06 — Branch и документы
+
 - создана documentation branch `docs/project-working-rules-and-chat-handoff` от exact base `fce7a9e317105ecaa0dbec96469bb0f60fad5835`;
-- runtime, config, DB, migrations, workflows, themes, deploy, tools и repository settings не входят в scope.
+- создан `docs/PROJECT-WORKING-RULES.md`;
+- создан `docs/CHAT-HANDOFF.md`;
+- pre-PR compare на head `582cf2797073f6732ed14a95b42fb5bccf6c15b4` показал `ahead=2`, `behind=0`, merge base равен exact base;
+- changed paths: ровно 2/2 allowlisted Markdown-файла;
+- runtime, config, DB, migrations, workflows, themes, deploy, tools и repository settings не изменялись.
+
+### 2026-08-06 — Pull Request #32 и initial exact-head Actions
+
+- создан Pull Request #32 из `docs/project-working-rules-and-chat-handoff` в `main`;
+- PR base SHA: `fce7a9e317105ecaa0dbec96469bb0f60fad5835`;
+- initial PR head SHA: `582cf2797073f6732ed14a95b42fb5bccf6c15b4`;
+- workflow `ASU-VCH Static Verification`, run `31070181493`: `SUCCESS`;
+- эта запись создаёт следующий head commit, поэтому Final PR Review разрешён только после повторного exact-head Actions SUCCESS на новом live head;
+- Final PR Review, merge, post-merge verification и cleanup выполняются по standing authorization только при сохранении exact allowlist и отсутствии findings.
 
 ## 16. Checklist для первого ответа в новом чате
 
