@@ -28,6 +28,11 @@ $slotStateLabels = [
     'removed' => 'Исключена',
     'abolished' => 'Упразднена',
 ];
+$slotRequirementLabels = [
+    'required' => 'Требуется',
+    'allowed' => 'Допускается',
+    'preferred' => 'Предпочтительно',
+];
 $formatStaffingDate = static function (?string $value): string {
     if ($value === null || $value === '') {
         return '—';
@@ -35,6 +40,22 @@ $formatStaffingDate = static function (?string $value): string {
 
     $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
     return $date instanceof DateTimeImmutable ? $date->format('d.m.Y') : $value;
+};
+$formatSlotVusSummary = static function (?string $value) use ($slotRequirementLabels): string {
+    if ($value === null || trim($value) === '') {
+        return 'не заданы';
+    }
+
+    $parts = preg_split('/\s*·\s*/u', trim($value)) ?: [];
+    $result = [];
+    foreach ($parts as $part) {
+        [$role, $identifier] = array_pad(explode(':', $part, 2), 2, '');
+        $label = $slotRequirementLabels[trim($role)] ?? trim($role);
+        $identifier = trim($identifier);
+        $result[] = $identifier !== '' ? $label . ': ' . $identifier : $label;
+    }
+
+    return implode(' · ', $result);
 };
 ?>
 <section class="organization-panel glass-tile">
@@ -88,8 +109,23 @@ $formatStaffingDate = static function (?string $value): string {
 <section class="organization-panel glass-tile">
     <div class="organization-section-heading"><h2>Индивидуальные штатные позиции</h2><span><?= count($slots) ?></span></div>
     <?php if ($slots === []): ?><p>Позиции отсутствуют.</p><?php else: ?><div class="organization-list"><?php foreach ($slots as $slot): ?>
-        <article class="organization-card"><div><span class="status-badge <?= $slot['normative_state'] !== 'active' ? 'is-muted' : '' ?>"><?= e($slotStateLabels[(string) $slot['normative_state']] ?? (string) $slot['normative_state']) ?></span><h3><?= e((string) $slot['display_name']) ?></h3><p><?= e((string) $slot['organizational_element_name']) ?> · <?= e((string) $slot['position_type_name']) ?><?= $slot['position_variant_name'] !== null ? ' · ' . e((string) $slot['position_variant_name']) : '' ?></p><p>Звания: <?= e((string) ($slot['minimum_rank_name'] ?? '—')) ?> — <?= e((string) ($slot['maximum_rank_name'] ?? '—')) ?>; предпочтительно: <?= e((string) ($slot['preferred_rank_name'] ?? '—')) ?></p><p>ВУС: <?= e((string) ($slot['vus_summary'] ?? 'не заданы')) ?></p></div>
-        <?php if ($isDraft && $canUpdate): ?><details><summary>Изменить позицию</summary><?php $slotForm = $slot; require __DIR__ . '/slot-form.php'; ?><form method="post" action="/admin/staffing/slots/remove.php" class="organization-actions"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="register_id" value="<?= $registerId ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="slot_id" value="<?= (int) $slot['id'] ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><label>Основание удаления<input name="reason" maxlength="1000" required placeholder="Укажите основание"></label><button class="danger-button" type="submit">Удалить из черновика</button></form></details><?php endif; ?>
+        <article class="organization-card staffing-document-card staffing-slot-card">
+            <div class="staffing-document-card__content staffing-slot-card__content">
+                <span class="status-badge <?= $slot['normative_state'] !== 'active' ? 'is-muted' : '' ?>"><?= e($slotStateLabels[(string) $slot['normative_state']] ?? (string) $slot['normative_state']) ?></span>
+                <h3><?= e((string) $slot['display_name']) ?></h3>
+                <p><?= e((string) $slot['organizational_element_name']) ?> · <?= e((string) $slot['position_type_name']) ?><?= $slot['position_variant_name'] !== null ? ' · ' . e((string) $slot['position_variant_name']) : '' ?></p>
+                <p>Звания: <?= e((string) ($slot['minimum_rank_name'] ?? '—')) ?> — <?= e((string) ($slot['maximum_rank_name'] ?? '—')) ?>; предпочтительно: <?= e((string) ($slot['preferred_rank_name'] ?? '—')) ?></p>
+                <p>ВУС: <?= e($formatSlotVusSummary($slot['vus_summary'] !== null ? (string) $slot['vus_summary'] : null)) ?></p>
+            </div>
+            <?php if ($isDraft && $canUpdate): ?>
+                <details class="staffing-document-card__actions staffing-slot-card__actions">
+                    <summary class="organization-disclosure organization-disclosure--edit"><span class="organization-disclosure-icon" aria-hidden="true"></span><span>Изменить позицию</span></summary>
+                    <div class="staffing-document-card__editor staffing-slot-card__editor">
+                        <?php $slotForm = $slot; require __DIR__ . '/slot-form.php'; ?>
+                        <form method="post" action="/admin/staffing/slots/remove.php" class="organization-actions"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="register_id" value="<?= $registerId ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="slot_id" value="<?= (int) $slot['id'] ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><label>Основание удаления<input name="reason" maxlength="1000" required placeholder="Укажите основание"></label><button class="danger-button" type="submit">Удалить из черновика</button></form>
+                    </div>
+                </details>
+            <?php endif; ?>
         </article>
     <?php endforeach; ?></div><?php endif; ?>
     <?php if ($isDraft && $canUpdate): ?><details><summary>Добавить штатную позицию</summary><?php $slotForm = null; require __DIR__ . '/slot-form.php'; ?></details><?php endif; ?>
