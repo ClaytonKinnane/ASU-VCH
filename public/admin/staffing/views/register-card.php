@@ -25,12 +25,27 @@
         <?php if ($register['status'] === 'active' && $canUpdate): ?>
         <details><summary>Изменить карточку</summary><form method="post" action="/admin/staffing/registers/update.php" class="organization-form-grid">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="register_id" value="<?= $registerId ?>"><input type="hidden" name="expected_revision" value="<?= (int) $register['revision'] ?>">
-            <label>Название<input name="name" maxlength="255" value="<?= e((string) $register['name']) ?>" required></label><label class="span-2">Примечание<textarea name="note" maxlength="5000"><?= e((string) ($register['note'] ?? '')) ?></textarea></label><div><button class="primary-button" type="submit">Сохранить</button></div>
+            <label>Название<input name="name" maxlength="255" value="<?= e((string) $register['name']) ?>" required></label><label class="span-2">Примечание<textarea name="note" maxlength="5000"><?= e((string) ($register['note'] ?? '')) ?></textarea></label><div class="span-2 organization-actions"><button class="primary-button" type="submit">Сохранить</button></div>
         </form></details>
         <?php endif; ?>
         <?php if ($canArchive): ?>
-            <?php if ($register['status'] === 'active'): ?><form method="post" action="/admin/staffing/registers/archive.php" class="organization-inline-form"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="register_id" value="<?= $registerId ?>"><input type="hidden" name="expected_revision" value="<?= (int) $register['revision'] ?>"><input name="reason" maxlength="1000" required placeholder="Основание архивирования"><button class="danger-button" type="submit">Архивировать</button></form>
-            <?php else: ?><form method="post" action="/admin/staffing/registers/restore.php" class="organization-inline-form"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="register_id" value="<?= $registerId ?>"><input type="hidden" name="expected_revision" value="<?= (int) $register['revision'] ?>"><input name="reason" maxlength="1000" required placeholder="Основание восстановления"><button class="primary-button" type="submit">Восстановить</button></form><?php endif; ?>
+            <?php if ($register['status'] === 'active'): ?>
+                <form method="post" action="/admin/staffing/registers/archive.php" class="organization-actions">
+                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                    <input type="hidden" name="register_id" value="<?= $registerId ?>">
+                    <input type="hidden" name="expected_revision" value="<?= (int) $register['revision'] ?>">
+                    <label>Основание архивирования<input name="reason" maxlength="1000" required placeholder="Укажите основание"></label>
+                    <button class="danger-button" type="submit">Архивировать</button>
+                </form>
+            <?php else: ?>
+                <form method="post" action="/admin/staffing/registers/restore.php" class="organization-actions">
+                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                    <input type="hidden" name="register_id" value="<?= $registerId ?>">
+                    <input type="hidden" name="expected_revision" value="<?= (int) $register['revision'] ?>">
+                    <label>Основание восстановления<input name="reason" maxlength="1000" required placeholder="Укажите основание"></label>
+                    <button class="primary-button" type="submit">Восстановить</button>
+                </form>
+            <?php endif; ?>
         <?php endif; ?>
     </section>
 
@@ -44,7 +59,7 @@
             <?php $activeVersionForDraft = null; foreach ($versions as $versionCandidate) { if ($versionCandidate['status'] === 'active') { $activeVersionForDraft = $versionCandidate; break; } } ?>
             <label>Версия оргструктуры<select name="organizational_structure_version_id" required><?php foreach ($organizationVersions as $orgVersion): if (is_array($activeVersionForDraft) && (int) $orgVersion['id'] !== (int) $activeVersionForDraft['organizational_structure_version_id']) continue; ?><option value="<?= (int) $orgVersion['id'] ?>">№ <?= (int) $orgVersion['version_number'] ?> · <?= e((string) $orgVersion['status']) ?></option><?php endforeach; ?></select></label>
             <label>Копировать из<select name="based_on_version_id"><?php if (is_array($activeVersionForDraft)): ?><option value="<?= (int) $activeVersionForDraft['id'] ?>">Действующая № <?= (int) $activeVersionForDraft['version_number'] ?> · <?= e((string) $activeVersionForDraft['version_label']) ?></option><?php else: ?><option value="">Пустой первоначальный черновик</option><?php endif; ?></select></label>
-            <label>Обозначение<input name="version_label" maxlength="255" required></label><label>Дата начала действия<input type="date" name="effective_from" required></label><label class="span-2">Основание<textarea name="change_reason" maxlength="1000" required></textarea></label><div><button class="primary-button" type="submit">Создать версию</button></div>
+            <label>Обозначение<input name="version_label" maxlength="255" required></label><label>Дата начала действия<input type="date" name="effective_from" required></label><label class="span-2">Основание<textarea name="change_reason" maxlength="1000" required></textarea></label><div class="span-2 organization-actions"><button class="primary-button" type="submit">Создать версию</button></div>
         </form></details>
         <?php endif; ?>
     </section>
