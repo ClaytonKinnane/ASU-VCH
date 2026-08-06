@@ -30,7 +30,7 @@
         <summary>Создать штатный реестр</summary>
         <form method="post" action="/admin/staffing/registers/create.php" class="organization-form-grid">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-            <label>Код<input name="code" maxlength="64" required pattern="[a-z0-9][a-z0-9._-]{1,63}" placeholder="unit.staffing"></label>
+            <label>Код<input name="code" maxlength="64" required pattern="[a-z0-9][a-z0-9._-]{1,63}"></label>
             <label>Название<input name="name" maxlength="255" required></label>
             <label class="span-2">Организационная структура<select name="organizational_structure_id" required><option value="">Выберите</option><?php foreach ($structures as $structure): ?><option value="<?= (int) $structure['id'] ?>"><?= e((string) $structure['display_name']) ?></option><?php endforeach; ?></select></label>
             <label class="span-2">Примечание<textarea name="note" maxlength="5000"></textarea></label>
