@@ -1,217 +1,102 @@
 # АСУ-ВЧ — постоянный handoff для нового чата
 
-## 1. Обязательный порядок начала нового чата
+## 1. Обязательный порядок начала
 
-Перед любыми material-действиями ассистент должен:
+Перед material-действиями:
 
-1. прочитать `docs/PROJECT-WORKING-RULES.md`;
-2. прочитать этот документ полностью;
-3. самостоятельно проверить live GitHub state: `main`, remote branches, open PR, open Issues, Actions и reviews активного scope;
-4. сопоставить GitHub state с этим snapshot;
-5. продолжить с текущего незавершенного stage;
-6. не повторять уже полученные разрешения;
-7. не начинать implementation без утвержденных Architecture, Specification, Review и Approval.
+1. прочитать `docs/PROJECT-WORKING-RULES.md` и этот документ;
+2. самостоятельно проверить live GitHub state: `main`, branches, PR, Issues, Actions и reviews;
+3. сопоставить live state с exact anchors ниже;
+4. продолжить с текущего незавершенного gate;
+5. не повторять уже полученные разрешения;
+6. fail closed при изменении base/head/scope/path allowlist.
 
-GitHub/Git остается canonical source для mutable lifecycle. Записанные SHA являются exact historical/current anchors только на момент соответствующей проверки и всегда перепроверяются.
+GitHub/Git — canonical source mutable lifecycle. SHA всегда перепроверяются.
 
-## 2. Репозиторий и локальная среда
+## 2. Репозиторий и среда
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
+main at snapshot: d60db94e405979c8f29bdc3dcaae7950362fb13a
 local repository: C:\Project\ASU-VCH
 deploy: C:\OSPanel\home\asu-vch.local
 domain: https://asu-vch.local
 Open Server Panel: 6.5.1
-web server: Apache
+Apache
 PHP: 8.5.4
 MySQL: 8.4
-local shell: Windows PowerShell 5.1
+PowerShell: 5.1
 ```
 
-Локальная машина используется для sync, deploy, MySQL/migrations, runtime, HTTP/browser и visual desktop acceptance. GitHub operations выполняются ассистентом через доступные инструменты. Длинные PowerShell-сценарии добавляются файлами в репозиторий и должны быть совместимы с Windows PowerShell 5.1.
+GitHub operations выполняются ассистентом. Локальная машина используется для sync/deploy/MySQL/migrations/runtime/HTTP/browser/visual desktop acceptance. Длинные PowerShell-сценарии хранятся файлами в репозитории и совместимы с Windows PowerShell 5.1.
 
-## 3. Постоянный lifecycle проекта
+## 3. Постоянный lifecycle
 
 ```text
-Research
-→ Analysis
-→ Architecture
-→ Specification
-→ Review
-→ Approval
-→ Implementation
-→ Testing/Validation
-→ Commit
-→ Push
-→ Pull Request
-→ exact-head GitHub Actions
-→ Final PR Review
-→ отдельное Merge approval
-→ Merge
-→ Post-merge verification
-→ отдельное Branch deletion approval
+Research → Analysis → Architecture → Specification → Review → Approval
+→ Implementation → Testing/Validation → Commit → Push → Pull Request
+→ exact-head Actions → Final PR Review → separate Merge approval
+→ Merge → Post-merge verification → separate Branch deletion approval
 → Branch deletion
 ```
 
-Основные ограничения:
+Static CI не заменяет MySQL, migrations, deploy, HTTP/browser и visual acceptance. Mobile не считается проверенным без отдельного инкремента.
 
-- отдельная ветка для каждого material scope;
-- exact base/head/merge-base/path allowlist;
-- fail closed при несовпадении anchors;
-- никаких скрытых remediation и scope expansion;
-- обычные PR, Final PR Review, merge и branch deletion требуют отдельных разрешений;
-- repository settings, branch protection и required checks меняются только отдельным утвержденным инкрементом;
-- static CI не заменяет MySQL, migrations, deploy, HTTP/browser, visual и mobile acceptance;
-- mobile testing не входит в обычный scope;
-- documentation-only commit не объявляется runtime-tested.
+## 4. Standing authorization governance
 
-## 4. Постоянное разрешение на governance-документы
-
-Владелец предоставил standing authorization без повторных permission prompts на поддержание только:
+Без повторных permission prompts можно поддерживать только:
 
 ```text
 docs/PROJECT-WORKING-RULES.md
 docs/CHAT-HANDOFF.md
 ```
 
-Разрешены отдельная documentation branch, commits, PR, exact-head Actions, Final PR Review, merge после PASS, post-merge verification и branch cleanup. Любой третий путь запрещен без отдельного обычного gate.
+Разрешены отдельная docs branch, commit, PR, exact-head Actions, Final PR Review, merge после PASS и post-merge verification. Standing authorization не распространяется на третий путь, runtime, DB, migrations, workflows, themes, deploy, tools или settings.
 
-Standing authorization не распространяется на runtime, config, DB, migrations, workflows, themes, deploy, automation tools, integrity manifest, repository settings, branch protection, required checks или иные Markdown-файлы.
+Branch deletion остается отдельно контролируемым. Новый recursive PR только ради записи merge SHA/cleanup самого handoff запрещен; merged governance PR + successful post-merge check является terminal evidence.
 
-## 5. Последний подтвержденный stable baseline
-
-### Main и governance
+## 5. Stable baseline
 
 ```text
-verified main HEAD before current research: 7ae5bcf77826870d6beee7293f101f679a521c56
-provenance: merge commit Pull Request #32
-PR #32: merged
-PR #32 exact reviewed head: d219f91dcd65026df4f8729353fdfc2ffd381072
-PR #32 post-merge workflow: 31070334183 / SUCCESS
-PR #32 documentation branch cleanup: PASS
-remote inventory after cleanup: main only
-open findings after PR #32: 0
+runtime baseline: PR #24 / migrations through 012
+static CI baseline: PR #25
+GitHub/Git governance: PR #28
+local automation: PR #29 and #30
+permanent rules/handoff: PR #32
+latest handoff merge before this update: PR #33 / d60db94e405979c8f29bdc3dcaae7950362fb13a
 ```
 
-PR #32 создал постоянные документы правил работы и handoff. Его lifecycle считается terminal complete; отдельный recursive PR только ради копирования его merge SHA или cleanup запрещен.
+Реализованы authentication, CSRF, user lifecycle, 4 system roles, 25 permissions, 3 themes, public ranks/positions/VUS, organizational element types, Organizational Structure v1 и migrations 001–012.
 
-### Functional runtime baseline
+## 6. Неизменное решение по продукту
 
 ```text
-Pull Request: #24
-migration: 012
-merge commit: feac7230616d3a8df98acb48f43a0b60f89f2255
-runtime/manual acceptance head: b44aed14ee1a54be213cbc939322ba21b02e7a58
+TARGET_CONTOUR=PersonnelServiceAccounting
+CitizenMilitaryAccounting=EXCLUDED
 ```
 
-### Static CI baseline
+Не разрабатываются учет призывников/запаса, общий и специальный учет граждан, бронирование, учет работников организаций, муниципальный первичный учет, повестки, Реестр воинского учета и Реестр повесток.
+
+Приказ Минобороны России № 700 используется только как дополнительный источник применимых требований к документальному основанию, штатной должности, ВУС, приказам и действиям штаба воинской части. Полное кадрово-служебное регулирование требует иных официальных актов.
+
+## 7. Research branch
 
 ```text
-Pull Request: #25
-workflow: ASU-VCH Static Verification
-merge commit: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
-required status check: not enabled
-branch protection Stage B: not implemented
+SCOPE=Military Accounting Order 700 Research reframed for PersonnelServiceAccounting only
+BRANCH=research/military-accounting-order-700
+ORIGINAL_BASE_SHA=7ae5bcf77826870d6beee7293f101f679a521c56
+CURRENT_HEAD=69bf9c9e1609a40c7f4c27ff41b0ddeebabe2ffe
+AHEAD_FROM_ORIGINAL_BASE=8
+BEHIND_FROM_ORIGINAL_BASE=0
+CHANGED_PATHS=6
+RUNTIME_CONFIG_DB_DIFF=0
+REBASE=NO
+PULL_REQUEST=NOT CREATED
+BRANCH_DELETION=NOT AUTHORIZED
 ```
 
-### Documentation governance baseline
-
-```text
-Pull Request: #28
-GitHub/Git: canonical for mutable lifecycle
-historical gate records: immutable snapshots
-HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
-recursive lifecycle-only documentation closure: prohibited
-```
-
-### Local automation baseline
-
-```text
-foundation: Pull Request #29
-PowerShell 5.1 corrected baseline: Pull Request #30
-PR #30 implementation head: fede2aa8c9c7b896f142075caa69b35219d4016d
-PR #30 merge commit: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
-native regression: 58 PASS / 0 FAIL
-```
-
-## 6. Реализованные области
-
-### Platform и security
-
-- bootstrap первого владельца;
-- authentication, sessions и CSRF;
-- public registration отключается после владельца;
-- 4 system roles;
-- 25 system permissions;
-- полный user lifecycle;
-- required password change;
-- rejection audit;
-- archive/restore.
-
-### Themes
-
-- `asu-blue`;
-- `asu-light-blue`;
-- `asu-evgeniya-rostova`;
-- 10 required CSS assets на тему.
-
-### Справочники и организация
-
-- owner-only read-only military ranks;
-- organizational element types;
-- public military positions;
-- public VUS;
-- Organizational Structure v1;
-- Military Ranks Directory v2;
-- current v2 / historical v1;
-- version switching, search/filtering, source cards и badges;
-- migrations 001–012.
-
-## 7. Не реализовано
-
-- штатные документы и штатные slots;
-- персональные карточки военнослужащих;
-- назначения person → staffing slot;
-- реальные personnel/unit data;
-- документы и фото военнослужащих;
-- кадрово-служебная история;
-- отдельный контур воинского учета граждан;
-- ГАР/ФИАС subsystem;
-- reference import governance;
-- reconciliation/data quality;
-- statutory forms/reporting engine;
-- график отпусков;
-- production deployment infrastructure;
-- branch protection Stage B / required status check;
-- mobile acceptance.
-
-Наличие пункта в списке не означает разрешение на реализацию.
-
-## 8. Активный scope: Military Accounting Order 700 Research
-
-### Разрешение владельца
-
-Владелец поставил задачу исследовать приказ Министра обороны Российской Федерации от 22.11.2021 № 700 в действующей редакции, все его ссылки и связанные официальные документы, сформировать целевое представление о воинском учете и предложения по модернизации «АСУ-ВЧ». Разрешено создать одну или несколько отдельных веток.
-
-### Exact anchors
-
-```text
-scope name: Military Accounting Order 700 Research
-classification: research / analysis / documentation-only
-base branch: main
-base SHA: 7ae5bcf77826870d6beee7293f101f679a521c56
-research branch: research/military-accounting-order-700
-research head SHA: b148c7c28d43c9bba08666fc593b75477e0d40b8
-merge base: 7ae5bcf77826870d6beee7293f101f679a521c56
-ahead: 1
-behind: 0
-changed paths: 5
-unexpected paths: 0
-runtime/config/DB/workflow diff: 0
-```
-
-### Exact research allowlist
+Allowlist:
 
 ```text
 docs/research/military-accounting-order-700/README.md
@@ -219,100 +104,130 @@ docs/research/military-accounting-order-700/OFFICIAL-SOURCE-REGISTER.md
 docs/research/military-accounting-order-700/LEGAL-AND-PROCESS-ANALYSIS.md
 docs/research/military-accounting-order-700/TARGET-ACCOUNTING-MODEL.md
 docs/research/military-accounting-order-700/ASU-VCH-MODERNIZATION-ROADMAP.md
+docs/research/military-accounting-order-700/SCOPE-DECISION-PERSONNEL-SERVICE-ONLY.md
 ```
 
-### Research conclusions
+Research conclusions and roadmap now consistently exclude `CitizenMilitaryAccounting`.
 
-1. Приказ № 700 регулирует преимущественно государственную систему воинского учета граждан: документы, первичный учет, учет в организациях, сверки, контроль качества и выписки Реестра.
-2. Действующие военнослужащие не относятся к обычному контингенту воинского учета по Положению № 719; кадрово-служебный учет военнослужащих должен быть отдельным доменом.
-3. «АСУ-ВЧ» должна разделить `CitizenMilitaryAccounting` и `PersonnelServiceAccounting`, связав их контролируемыми юридическими событиями.
-4. Публичные акты не устанавливают детальную внутреннюю иерархию действующих частей для прямого hardcode. Предложено конфигурируемое оргдерево с ownership снизу и агрегированием вверх.
-5. Первый рекомендуемый functional increment — `Lowest Unit Staffing Structure v1`, без персональных данных и назначений.
-6. ГАР/ФИАС является целевым адресным эталоном; КЛАДР — legacy migration mapping.
-7. Фото и документы требуют отдельного защищенного object/document vault, field-level access и immutable audit.
-8. Отчетность должна быть versioned by legal edition и reproducible as-of.
-9. График отпусков — отдельный кадровый процесс, утверждаемый командиром, а не автоматическое решение системы.
-10. Секретные и ограниченные сведения не загружаются в общий контур без отдельной законной и аттестованной среды.
-
-### Официальные источники
-
-Исследование использует официальный портал правовой информации, банк документов Президента Российской Федерации, официальный сайт Правительства Российской Федерации и ФНС России. Коммерческие правовые системы допускались только как навигация, не как authoritative source.
-
-Официальный 150-страничный PDF приказа был нестабилен/недоступен через используемые read-интерфейсы. Реквизиты и редакции подтверждены официальными карточками, а выводы — официальными системообразующими актами. Полнота ограничена открытыми официальными источниками; закрытые/секретные акты не реконструировались.
-
-## 9. Текущий stage и разрешения
-
-```text
-Research: PREPARED
-Analysis: PREPARED
-Architecture: NOT STARTED
-Specification: NOT STARTED
-Review: NOT YET AUTHORIZED
-Approval: NOT GRANTED
-Implementation: NOT AUTHORIZED
-runtime/DB/UI changes: NOT AUTHORIZED
-research Pull Request: NOT AUTHORIZED
-research merge: NOT AUTHORIZED
-research branch deletion: NOT AUTHORIZED
-open findings: 0
-```
-
-Создание research commit не является implementation и не разрешает PR/merge.
-
-## 10. Следующий разрешенный шаг
-
-1. Представить владельцу результаты исследования и предложения.
-2. Получить решение: принять, скорректировать или отклонить исследовательскую модель.
-3. При принятии — отдельно разрешить Review research head `b148c7c28d43c9bba08666fc593b75477e0d40b8`.
-4. После Review определить точный scope первого functional increment.
-5. Подготовить Architecture и Specification этого инкремента.
-6. Implementation не начинать до отдельного Approval.
-
-Рекомендуемый первый scope:
+## 8. Active functional increment
 
 ```text
 NAME=Lowest Unit Staffing Structure v1
-IN_SCOPE=organizational node, staffing document versions, individual staffing slots, vacancy state, links to approved public rank/position/VUS references, read-only desktop views, scoped permissions, audit
-OUT_OF_SCOPE=real personnel, personal data, photos, files, assignments, orders, leave, medical data, external integrations, production deployment, mobile acceptance, classified/restricted data
+CLASSIFICATION=functional
+CONTOUR=PersonnelServiceAccounting
+BASE_BRANCH=main
+BASE_SHA=d60db94e405979c8f29bdc3dcaae7950362fb13a
+FEATURE_BRANCH=feature/lowest-unit-staffing-v1
+CURRENT_FEATURE_HEAD=3af453f1e093e3a5b1c1d69365211a2abe7c8215
+MERGE_BASE=d60db94e405979c8f29bdc3dcaae7950362fb13a
+AHEAD=7
+BEHIND=0
+CURRENT_CHANGED_PATHS=4
+CURRENT_DIFF=documentation-only
 ```
 
-## 11. Журнал текущего исследования
-
-### 2026-08-06 — scope и branch
-
-- подтвержден `main` на `7ae5bcf77826870d6beee7293f101f679a521c56`;
-- remote inventory до research содержал только `main`;
-- создана branch `research/military-accounting-order-700`;
-- scope ограничен официальным исследованием и проектными Markdown-предложениями;
-- implementation, PR и merge не разрешались.
-
-### 2026-08-06 — official-source research
-
-- подтверждены приказ № 700, изменение № 791 от 23.11.2023 и изменение № 438 от 09.07.2025;
-- проанализированы постановления Правительства № 719 и № 506;
-- проанализированы системообразующие акты о воинской обязанности, обороне, прохождении службы, статусе военнослужащих, военно-врачебной экспертизе, персональных данных и ГАР/ФИАС;
-- сформирована граница между учетом граждан и кадрово-служебным учетом действующих военнослужащих;
-- выявлено ограничение открытых источников для закрытых ведомственных сведений.
-
-### 2026-08-06 — research commit
-
-- создан commit `b148c7c28d43c9bba08666fc593b75477e0d40b8`;
-- compare: `ahead=1`, `behind=0`;
-- изменено ровно 5 allowlisted Markdown-файлов;
-- runtime, config, DB, migrations, workflows, themes, deploy и repository settings не изменялись;
-- research PR не создавался.
-
-## 12. Checklist первого ответа в новом чате
+Current paths:
 
 ```text
-[ ] прочитан PROJECT-WORKING-RULES.md
-[ ] прочитан CHAT-HANDOFF.md
-[ ] проверен live main HEAD
-[ ] проверены remote branches
-[ ] проверены open PR и Issues
-[ ] проверен live research head
-[ ] compare research branch ↔ main соответствует anchors
-[ ] прочитаны 5 research documents
-[ ] определен текущий owner gate
-[ ] implementation не начат без Approval
+docs/domains/STAFFING.md
+docs/design/LOWEST-UNIT-STAFFING-V1-ARCHITECTURE.md
+docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md
+docs/design/LOWEST-UNIT-STAFFING-V1-REVIEW.md
 ```
+
+## 9. Completed stages for active increment
+
+```text
+Research=COMPLETE
+Analysis=COMPLETE
+Architecture=COMPLETE / version 0.2
+Specification=COMPLETE / version 0.2
+Formal Review=PASS
+BLOCKING_FINDINGS=0
+MAJOR_FINDINGS=0
+MINOR_FINDINGS=0
+Approval=PENDING
+Implementation=NOT STARTED
+Testing=NOT STARTED
+Pull Request=NOT AUTHORIZED YET
+Merge=NOT AUTHORIZED
+Branch deletion=NOT AUTHORIZED
+```
+
+Resolved review findings:
+
+1. root organizational element is allowed; rollout from lower level is not a DB prohibition;
+2. draft copied from active keeps the same catalog versions; catalog migration is deferred;
+3. exact proposed implementation maximum is 44 paths, not 42.
+
+## 10. Approved design summary
+
+- separate `Staffing` domain; no parallel organizational tree;
+- link to stable `organizational_structure_elements.id` and pinned Organization version;
+- one row per individual staffing slot;
+- stable slot identity across versions;
+- version lifecycle `draft → approved → active → superseded`, cancellation before activation;
+- pinned position/rank/public-VUS catalogs;
+- no person, assignment, occupancy or actual vacancy in v1;
+- documents are metadata-only;
+- six new module permissions, no automatic non-owner grants;
+- module-level RBAC only; subtree ACL deferred;
+- migration planned as `013_lowest_unit_staffing_v1.sql`;
+- protected management UI plus read-only representations;
+- synthetic-only tests and documentation.
+
+Operational condition:
+
+```text
+NO_REAL_STAFFING_DATA_BEFORE_SECURITY_FOUNDATION
+```
+
+Development/testing may use synthetic data. Real штатные сведения are not operationally accepted until a separate Data Classification and Security Foundation defines information category, deployment boundary, need-to-know, threat model and protection requirements.
+
+## 11. Proposed implementation scope
+
+The Specification enumerates exactly 44 maximum paths:
+
+- 4 current process documents;
+- migration 013;
+- `app/Staffing/*` exact files;
+- `public/admin/staffing/*` exact files;
+- `app/bootstrap.php` and `public/admin/content.php`;
+- two validation tools;
+- six living project documentation files.
+
+The authoritative exact list is section 9 of `docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md`. Any path outside it requires re-approval.
+
+## 12. Next gate
+
+Owner must approve exact feature head `3af453f1e093e3a5b1c1d69365211a2abe7c8215`, Architecture/Specification/Review, functional scope and 44-path implementation allowlist.
+
+After approval, permitted sequence:
+
+```text
+Implementation → exact validation → local MySQL/deploy/HTTP/browser instructions
+→ commit/push validation → separate PR gate
+```
+
+No PR, merge or deletion should be inferred from implementation approval unless explicitly included in the owner’s next exact authorization.
+
+## 13. Branch inventory warning
+
+At this snapshot, known non-main branches include:
+
+```text
+research/military-accounting-order-700
+feature/lowest-unit-staffing-v1
+docs/handoff-military-accounting-research
+docs/handoff-lowest-unit-staffing-design
+```
+
+Do not delete any branch without explicit authorization.
+
+## 14. Current action on chat restart
+
+1. Verify live `main` and feature head.
+2. Read the four active design documents.
+3. Confirm Review remains PASS and compare remains 4-path documentation-only.
+4. Wait for or process the exact owner Approval gate.
+5. Do not begin runtime implementation from a moved head or expanded path list.
