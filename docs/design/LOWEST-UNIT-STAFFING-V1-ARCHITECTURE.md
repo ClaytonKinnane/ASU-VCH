@@ -4,6 +4,7 @@
 
 ```text
 DOCUMENT=Architecture
+VERSION=0.2
 INCREMENT=Lowest Unit Staffing Structure v1
 CONTOUR=PersonnelServiceAccounting
 BASE_BRANCH=main
@@ -12,69 +13,46 @@ FEATURE_BRANCH=feature/lowest-unit-staffing-v1
 IMPLEMENTATION_STATUS=NOT STARTED
 ```
 
-Документ определяет архитектуру первого функционального инкремента единственного целевого контура `PersonnelServiceAccounting`.
-
 ## 2. Цель
 
-Создать версионный штатный фундамент нижнего подразделения без учета конкретных военнослужащих.
+Создать версионный штатный фундамент, начиная с нижнего подразделения, без учета конкретных военнослужащих.
 
-Инкремент должен позволить уполномоченному пользователю:
+Уполномоченный пользователь сможет создать реестр штатной структуры, подготовить draft version, добавить индивидуальные штатные позиции, закрепить документы-основания, утвердить/активировать версию и просматривать штат по организационным элементам.
 
-- создать штатный реестр для существующей организационной структуры;
-- сформировать проект версии штатного документа;
-- привязать индивидуальные штатные позиции к стабильным элементам организационной структуры;
-- определить тип должности, допустимые звания и разрешенные ВУС;
-- утвердить и ввести версию в действие;
-- просматривать штат нижнего подразделения в виде списка и агрегатов;
-- видеть позиции без персональных данных;
-- получить доказуемую историю изменений.
+## 3. Граница
 
-## 3. Архитектурная граница
+### В scope
 
-### 3.1. В scope
-
-- отдельный домен `Staffing` внутри `PersonnelServiceAccounting`;
-- versioned staffing register;
+- домен `Staffing` внутри `PersonnelServiceAccounting`;
+- register и versioned snapshots;
 - документы-основания без файлов;
-- индивидуальные штатные позиции;
-- привязка к `organizational_structure_elements.id`;
-- фиксация конкретной версии организационной структуры;
-- ссылки на опубликованные справочники должностей, званий и публичных ВУС;
-- lifecycle `draft → approved → active → superseded`;
-- cancellation до activation;
-- read-only представления для нижнего подразделения;
-- защищенный management UI для уполномоченных пользователей;
-- существующий RBAC;
-- optimistic concurrency;
+- individual staffing slots;
+- stable slot identity;
+- связь со stable `organizational_structure_elements.id`;
+- pinned Organization/position/rank/VUS catalog versions;
+- lifecycle и optimistic concurrency;
+- management UI и read-only views;
+- existing RBAC;
 - append-only domain history;
 - migration 013;
-- синтетические tests/checkers.
+- синтетические проверки.
 
-### 3.2. Вне scope
+### Вне scope
 
-- реальные военнослужащие;
-- ФИО и персональные данные;
-- назначения конкретных лиц;
-- история службы;
-- приказы по военнослужащим;
-- фото и файловое хранилище;
-- отпуска;
-- медицинские сведения;
-- `CitizenMilitaryAccounting`;
-- призывники, запас, бронирование, повестки;
-- государственный Реестр воинского учета;
-- импорт реальных штатных документов;
-- OCR;
-- внешний API;
-- production deployment;
-- mobile acceptance;
-- сведения ограниченного распространения в репозитории, seed, checker или публичных скриншотах.
+- военнослужащие и персональные данные;
+- назначения лиц и фактическая укомплектованность;
+- кадровые приказы по лицам;
+- файлы, фото, отпуска, медицинские сведения;
+- `CitizenMilitaryAccounting`, призывники, запас, бронирование и повестки;
+- Реестр воинского учета;
+- импорт реальных штатов, OCR, внешний API;
+- catalog-version migration для существующего active staffing;
+- fine-grained subtree ACL;
+- production deployment и mobile acceptance.
 
-## 4. Совместимость с существующей архитектурой
+## 4. Совместимость
 
-### 4.1. Organization Structure v1
-
-Migration 009 уже реализует:
+Migration 009 владеет организационным деревом:
 
 ```text
 organizational_structures
@@ -83,31 +61,9 @@ organizational_structure_versions
 organizational_structure_nodes
 ```
 
-`organizational_structure_elements.id` является стабильной идентичностью организационного элемента между версиями.
+Staffing не создает `military_units`, `departments` или второе дерево. Позиция хранит stable organizational element и проверяет его присутствие в pinned organization version.
 
-Staffing не создает параллельные таблицы `military_units`, `departments` или собственное организационное дерево.
-
-### 4.2. Catalogs
-
-Используются существующие published catalogs:
-
-```text
-military_position_catalog_versions
-military_position_types
-military_position_variants
-military_rank_catalog_versions
-military_ranks
-military_occupational_specialty_catalog_versions
-military_occupational_specialties
-```
-
-Staffing version закрепляет конкретные catalog versions. Ссылки на элементы справочника проверяются в рамках закрепленной версии.
-
-### 4.3. Security
-
-Используется существующий `AuthorizationService`, owner wildcard `system.*.*`, CSRF, authenticated session и permission-aware navigation.
-
-Новые permissions не назначаются автоматически ролям `administrator`, `operator`, `viewer`.
+Используются существующие published catalogs должностей, званий и публичных ВУС. Staffing не изменяет catalog data.
 
 ## 5. Доменная модель
 
@@ -119,91 +75,68 @@ StaffingRegister
     │   └── StaffingSlotVusRequirement
     └── StaffingChangeEvent
 
-StaffingSlotIdentity — стабильная идентичность позиции между версиями.
+StaffingSlotIdentity — stable identity между версиями.
 ```
 
-### 5.1. StaffingRegister
+### StaffingRegister
 
-Корень административного контейнера.
+- code immutable и globally unique;
+- name/note mutable только при active administrative status;
+- ровно одна linked organizational structure;
+- status `active/archived`.
 
-Свойства:
+### StaffingVersion
 
-- immutable machine code;
-- display name;
-- organizational structure;
-- status `active/archived`;
-- audit metadata.
+Фиксирует:
 
-Один register относится ровно к одной `organizational_structure`.
-
-### 5.2. StaffingVersion
-
-Версионный снимок штатной структуры.
-
-Свойства:
-
-- register;
-- based-on version;
-- pinned organizational structure version;
-- pinned position catalog version;
-- pinned rank catalog version;
-- pinned VUS catalog version;
-- version number;
+- register и based-on version;
+- organization structure version;
+- position catalog version;
+- rank catalog version;
+- VUS catalog version;
+- version number/label;
 - status;
-- effective interval;
-- change reason;
-- revision;
-- lifecycle metadata.
+- `[effective_from, effective_to)`;
+- reason;
+- revision и lifecycle metadata.
 
-### 5.3. StaffingSlotIdentity
+### StaffingSlotIdentity
 
-Стабильный идентификатор одной штатной позиции между версиями. Он не содержит изменяемых реквизитов должности. В каждой версии позиция представлена отдельной `StaffingSlot` строкой.
+Неизменяемая идентичность одной нормативной позиции. Не содержит display/business fields и не переиспользуется.
 
-### 5.4. StaffingSlot
+### StaffingSlot
 
-Снимок индивидуальной штатной позиции в одной версии.
+Version snapshot:
 
-Свойства:
-
-- stable slot identity;
-- organizational structure element;
-- position type;
-- optional position variant;
-- internal code;
-- display name;
-- sort order;
-- lifecycle state in version;
-- note;
+- slot identity;
+- organizational element;
+- position type и optional variant;
+- internal code и display name;
 - minimum/maximum/preferred rank;
-- zero or more VUS requirements.
+- normative state;
+- note и sort order;
+- VUS requirements.
 
-Каждая строка представляет ровно один slot. Поле `quantity` отсутствует.
+Одна строка равна одной позиции; `quantity` отсутствует.
 
-### 5.5. Documents
+### Documents
 
-Хранятся только реквизиты:
-
-- type;
-- date;
-- number;
-- title;
-- note.
-
-Файлы не входят в v1.
-
-Роли документов:
+Metadata only:
 
 ```text
-primary_basis
-additional_basis
-amendment
+document_type
+document_date
+document_number
+title
+note
+role=primary_basis|additional_basis|amendment
 ```
 
-Утверждаемая версия имеет ровно один `primary_basis`.
+Approved/active version имеет ровно один primary basis. Published document metadata immutable; изменение в новом draft выполняется copy-on-write.
 
-### 5.6. Change events
+### Change events
 
-Append-only предметная история успешных операций. Она не заменяет будущий общий Audit.
+Append-only предметная история успешных команд. Общий Security Audit не заменяется.
 
 ## 6. Lifecycle
 
@@ -213,54 +146,40 @@ draft → cancelled
 approved → cancelled
 ```
 
-Правила:
+Инварианты:
 
-1. Для register одновременно существует не более одной pending version (`draft` или `approved`).
-2. Одновременно существует не более одной `active` version.
-3. Содержимое версии изменяется только в `draft`.
-4. `approved`, `active`, `superseded`, `cancelled` immutable, кроме строго определенных lifecycle transitions.
-5. Новая draft version копирует active version; при отсутствии active пустой initial draft создается явно.
-6. Периоды действия полуоткрытые: `[effective_from, effective_to)`.
-7. Activation новой версии закрывает предыдущую active version датой начала новой версии и переводит ее в `superseded`.
-8. Activation выполняется вручную.
+1. Не более одной pending version (`draft`/`approved`) на register.
+2. Не более одной active version.
+3. Content mutation только в draft.
+4. Published states immutable.
+5. Initial draft пустой и фиксирует current compatible catalogs.
+6. Draft from active копирует active snapshot **с теми же pinned catalog versions**.
+7. Смена catalog versions у register с active staffing в v1 запрещена и выносится в отдельный migration increment.
+8. Activation атомарно supersedes предыдущую active version.
+9. Activation выполняется вручную.
 
-## 7. Связь с организационной структурой
+## 7. Organization binding
 
-### 7.1. Pinned structure version
+Каждая StaffingVersion ссылается на version той же OrganizationalStructure.
 
-Каждая staffing version фиксирует `organizational_structure_version_id`.
+Slot может ссылаться на **любой** organizational element, присутствующий в pinned version, включая root, если это соответствует штатному документу и разрешенному position catalog context. Название инкремента отражает порядок внедрения «снизу вверх», а не DB-запрет верхних уровней.
 
-Добавление slot допускается только если:
+Проверки:
 
-- organizational structure version принадлежит register structure;
-- версия имеет status `active` или `superseded`;
-- stable organizational element присутствует в pinned version.
-
-### 7.2. Stable element reference
-
-`StaffingSlot` хранит `organizational_structure_element_id`, а не только `organizational_structure_node_id`.
-
-Для проверки присутствия элемента в конкретной версии используется composite FK/validation через node snapshot.
-
-### 7.3. Нижний уровень
-
-Архитектура не жестко кодирует «рота», «взвод» или «отделение». Любой не-root organizational element может иметь штатные позиции, если его тип разрешен pinned position catalog context.
+- structure/version ownership;
+- status pinned organization version = active или superseded;
+- element присутствует в snapshot;
+- element type согласован с position catalog relation, когда relation определена.
 
 ## 8. Catalog pinning
 
-### 8.1. Position catalog
+### Position
 
-`StaffingVersion.position_catalog_version_id` указывает на published version.
+`position_type_id` принадлежит pinned position version. Optional variant принадлежит selected type и той же version.
 
-`StaffingSlot.position_type_id` обязан принадлежать этой version.
+### Rank
 
-`position_variant_id` необязателен и, если указан, принадлежит тому же type/version.
-
-### 8.2. Rank catalog
-
-Position catalog фиксирует совместимую rank catalog version. Staffing version дублирует `rank_catalog_version_id` для явной DB-integrity проверки и должна совпадать с pinned position catalog.
-
-Rank requirement:
+Pinned rank version должна совпадать с rank version, закрепленной position catalog.
 
 ```text
 minimum_rank_id nullable
@@ -268,56 +187,35 @@ maximum_rank_id nullable
 preferred_rank_id nullable
 ```
 
-Правила:
+Все IDs принадлежат pinned version; min ≤ max; preferred находится в диапазоне. Пустой диапазон означает «не определено».
 
-- все rank IDs принадлежат pinned rank version;
-- minimum seniority ≤ maximum seniority;
-- preferred, если указан, находится внутри диапазона;
-- отсутствие диапазона означает «не определено», а не «любое звание допустимо».
+### VUS
 
-### 8.3. VUS catalog
-
-Staffing version фиксирует published public VUS catalog version.
-
-Slot может иметь несколько VUS requirements:
+Pinned VUS version имеет published status. Requirements:
 
 ```text
-required
-allowed
-preferred
+required|allowed|preferred
 ```
 
-В v1 запрещено добавлять коды, отсутствующие в разрешенном published catalog.
+Только записи разрешенного existing public catalog; свободный код запрещен.
 
-## 9. Состояние позиции
+## 9. Position state
 
-До появления Assignments domain система не имеет источника истины о занятии slot конкретным лицом.
-
-Поэтому v1 хранит только нормативное состояние позиции:
+V1 хранит только нормативное состояние:
 
 ```text
-active
-suspended
-closed
+active|suspended|closed
 ```
 
-В read model для active slot отображается:
+Фактические `occupied/vacant/temporarily-substituted` отсутствуют до Assignments domain. Read model показывает `assignment_state=not-managed-in-v1` и не делает утверждений об укомплектованности.
 
-```text
-assignment_state=not-managed-in-v1
-```
-
-Система не утверждает фактическую вакантность. Статусы `occupied`, `vacant` и `temporarily-substituted` появятся только вместе с Assignments domain и будут вычисляемыми.
-
-## 10. Предлагаемая схема БД
-
-Migration:
+## 10. База данных
 
 ```text
 database/migrations/013_lowest_unit_staffing_v1.sql
 ```
 
-Таблицы:
+Tables:
 
 ```text
 staffing_registers
@@ -330,60 +228,22 @@ staffing_slot_vus_requirements
 staffing_change_events
 ```
 
-### 10.1. staffing_registers
+Обязательные механизмы:
 
-- unique code;
-- FK `organizational_structure_id`;
-- status `active/archived`;
-- immutable code, structure and creation metadata;
-- archive only without pending version.
-
-### 10.2. staffing_slot_identities
-
-- FK register;
-- immutable identity;
-- stable across staffing versions.
-
-### 10.3. staffing_versions
-
-- unique `(register_id, version_number)`;
-- one pending guard;
-- one active guard;
-- composite FKs to pinned versions;
-- revision > 0;
-- lifecycle checks;
-- effective date checks.
-
-### 10.4. staffing_slots
-
-- unique `(staffing_version_id, slot_identity_id)`;
-- unique internal code within version when not null;
-- unique sort order within organizational element;
-- composite FKs for register/version/catalog consistency;
-- no occupancy flag.
-
-### 10.5. VUS requirements
-
-- primary key `(staffing_slot_id, vus_id)`;
-- requirement type CHECK;
-- catalog version consistency;
-- sort order unique per slot.
-
-### 10.6. Triggers
-
-DB triggers enforce:
-
-- published version immutability;
-- stable identity immutability;
-- lifecycle transitions;
-- pinned catalog compatibility;
-- slot belongs to pinned organizational snapshot;
+- unique register code;
+- pending/active generated guards;
+- unique version number;
+- unique slot identity per version;
+- unique internal code per version when present;
+- unique sort order per organizational element;
+- composite keys/FKs for pinned version consistency;
+- triggers for immutability, lifecycle and cross-table invariants;
 - append-only events;
-- no physical deletion of published/historical data.
+- no physical deletion of published history.
 
 ## 11. Concurrency
 
-Mutation commands lock in this order:
+Lock order:
 
 ```text
 StaffingRegister
@@ -391,13 +251,7 @@ StaffingRegister
 → Documents / Slots / Requirements
 ```
 
-Draft updates require `expected_revision`.
-
-After each successful draft mutation:
-
-- revision increments;
-- change event is appended;
-- stale request receives conflict response and no partial write.
+Каждая draft mutation требует `expected_revision`; success increments revision and appends event. Stale command полностью отклоняется.
 
 ## 12. Permissions
 
@@ -410,126 +264,69 @@ staffing.registers.archive
 staffing.registers.history
 ```
 
-`system.*.*` retains owner access.
+Owner получает доступ через `system.*.*`. Автоматические grants non-owner roles запрещены. V1 применяет permissions ко всему модулю; subtree ACL — отдельный будущий Security increment.
 
-V1 не вводит новый reusable organizational ACL subsystem. Non-owner access предоставляется существующими roles/permissions на уровне всего модуля. Fine-grained subtree scope откладывается до отдельного Security increment перед реальной делегацией по подразделениям.
-
-## 13. Application components
+## 13. Application и UI
 
 ```text
 app/Staffing/
-├── StaffingRepository.php
-├── StaffingService.php
-├── StaffingLifecycleService.php
-├── StaffingSlotService.php
-└── StaffingReadModelRepository.php
+public/admin/staffing/
 ```
 
-No arbitrary SQL is exposed outside repositories.
+Application разделяется на repository/service/traits/functions по существующему Organization pattern.
 
-## 14. HTTP/UI
+HTTP rules:
 
-Proposed routes:
-
-```text
-/admin/content/staffing
-/admin/content/staffing/view
-/admin/content/staffing/create
-/admin/content/staffing/update
-/admin/content/staffing/version/create
-/admin/content/staffing/version/approve
-/admin/content/staffing/version/activate
-/admin/content/staffing/version/cancel
-/admin/content/staffing/document/*
-/admin/content/staffing/slot/*
-/admin/content/staffing/history
-```
-
-Mutation routes:
-
-- POST only;
-- CSRF protected;
-- permission checked;
-- revision checked;
+- GET read-only;
+- POST mutations;
+- authentication, permission, CSRF;
+- revision check;
+- transaction;
 - PRG redirect;
-- safe error messages.
+- safe errors.
 
 Views:
 
-- register list;
-- register card;
-- version summary;
-- organizational subtree;
-- slot list grouped by unit;
-- slot details;
-- documents;
-- history;
-- compare versions.
+- register list/card;
+- version card;
+- slots grouped by organizational element;
+- slot/document forms;
+- compare;
+- history.
 
-UI must render in all three current themes. Desktop acceptance is required. Mobile remains unverified and out of scope.
+Плитка размещается в permission-aware `public/admin/content.php`. Поддерживаются три темы. Desktop acceptance обязателен; mobile остается `NOT TESTED`.
 
-## 15. Testing architecture
+## 14. Testing
 
-### 15.1. Database
+- migration 001–013 on clean DB;
+- migration 013 on current DB after backup;
+- lifecycle and immutable-state constraints;
+- Organization/catalog consistency;
+- stale revision and transaction rollback;
+- permission and CSRF matrix;
+- all lifecycle/use cases;
+- no personnel fields/data;
+- desktop browser in three themes;
+- Organization/Directory/Security/Theme regressions.
 
-- migration on clean DB;
-- migration on current DB through 012;
-- lifecycle constraints;
-- catalog consistency;
-- organizational snapshot consistency;
-- immutable published data;
-- stale revision rejection;
-- test rollback.
+Test fixtures contain only synthetic non-sensitive values.
 
-### 15.2. Application
-
-- permission deny/allow;
-- CSRF;
-- create register;
-- create/copy draft;
-- add/update/remove slot in draft;
-- approve/activate/cancel;
-- no personnel fields;
-- safe validation errors.
-
-### 15.3. Browser
-
-- desktop navigation;
-- list/card/detail;
-- lifecycle workflow;
-- three themes;
-- empty state;
-- large synthetic slot list;
-- access denial.
-
-## 16. Security and test data
-
-Only synthetic non-sensitive data enters repository tests.
-
-The application must not ship real unit names, staffing tables, personnel, documents, locations or restricted classifiers.
-
-## 17. Architecture decisions
+## 15. Architecture decisions
 
 ```text
-ADR-1=Separate Staffing domain, no parallel organization tree
-ADR-2=Stable slot identity plus version snapshots
-ADR-3=Individual slots; quantity excluded
-ADR-4=Pin organizational and catalog versions
-ADR-5=No assignment/vacancy truth before Assignments domain
-ADR-6=Published versions immutable
-ADR-7=Documents metadata only in v1
-ADR-8=Existing RBAC only; subtree ACL deferred
-ADR-9=Personnel and CitizenMilitaryAccounting excluded
+ADR-1=Separate Staffing domain; no parallel organization tree
+ADR-2=Stable slot identity + version snapshots
+ADR-3=One row per slot; quantity excluded
+ADR-4=Organization and catalog versions pinned
+ADR-5=Draft copy keeps the same catalogs; catalog migration deferred
+ADR-6=Root and non-root organization elements permitted
+ADR-7=No vacancy/occupancy truth before Assignments
+ADR-8=Published content immutable
+ADR-9=Documents metadata only
+ADR-10=Existing module-level RBAC; subtree ACL deferred
+ADR-11=Personnel and CitizenMilitaryAccounting excluded
 ```
 
-## 18. Acceptance
+## 16. Acceptance
 
-Architecture is acceptable when Review confirms:
-
-- no conflict with Organization Structure v1;
-- no duplicate organizational hierarchy;
-- exact catalog pinning;
-- individual slot model;
-- no premature personnel/assignment model;
-- no hidden CitizenMilitaryAccounting;
-- implementation can be bounded by an exact changed-path allowlist.
+Architecture passes when Specification and Review confirm the same boundary, invariants, path allowlist and validation plan without unresolved blocking/major findings.
