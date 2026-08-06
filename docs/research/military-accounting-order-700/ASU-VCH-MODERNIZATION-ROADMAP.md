@@ -1,37 +1,76 @@
-# План продолжения разработки и модернизации «АСУ-ВЧ»
+# План развития PersonnelServiceAccounting в «АСУ-ВЧ»
 
 ## 1. Принцип развития
 
-Разработка начинается с нижнего организационного уровня, но авторитетная персональная запись остается в кадровом органе воинской части. Нижнее подразделение получает простой рабочий контур для подтверждения состава, штатных позиций, назначений, отсутствий и задач по актуализации.
+Разработка ведется снизу вверх: от нижнего подразделения и его штатной структуры к персональной карточке, назначениям, служебной истории, документам, отчетности и агрегации на вышестоящих уровнях.
 
-Каждый этап является отдельным material increment и проходит полный процесс:
+Единственный функциональный контур:
 
 ```text
-Research → Analysis → Architecture → Specification → Review → Approval
-→ Implementation → Testing/Validation → Commit → Push → Pull Request
-→ exact-head Actions → Final PR Review → Merge approval → Merge
-→ Post-merge verification → Branch deletion approval → Branch deletion
+PersonnelServiceAccounting
 ```
 
-Исследовательская ветка не разрешает реализацию перечисленных этапов.
+`CitizenMilitaryAccounting` исключен решением владельца и не включается ни в один инкремент.
 
-## 2. Целевая последовательность
+Каждый material increment проходит полный процесс:
+
+```text
+Research
+→ Analysis
+→ Architecture
+→ Specification
+→ Review
+→ Approval
+→ Implementation
+→ Testing/Validation
+→ Commit
+→ Push
+→ Pull Request
+→ exact-head Actions
+→ Final PR Review
+→ Merge approval
+→ Merge
+→ Post-merge verification
+→ Branch deletion approval
+→ Branch deletion
+```
+
+## 2. Общие ограничения roadmap
+
+- отдельная ветка для каждого material scope;
+- зависимый инкремент не реализуется до merge и post-merge verification основания;
+- реальные персональные данные не используются в тестовых сценариях;
+- сведения ограниченного доступа не загружаются до утверждения защищенного контура;
+- mobile acceptance не входит в обычный scope;
+- static CI не заменяет MySQL, migrations, deploy, HTTP/browser и visual acceptance;
+- каждая запись с юридическим значением должна иметь документ-основание и audit trail;
+- государственный Реестр воинского учета, Реестр повесток и учет граждан не имитируются.
+
+## 3. Целевая последовательность
 
 ### Increment 0. Data Classification and Security Foundation
 
-**Цель:** до появления персональных данных определить допустимый контур.
+**Цель:** определить, какие кадровые данные допустимы в текущем контуре до появления персональных карточек.
 
 Scope:
 
-- категории информации: общедоступная, персональные данные, специальные категории, биометрические данные, служебная тайна, государственная тайна;
-- data owner и legal purpose;
-- need-to-know, field-level permissions, scope-based access;
+- категории информации;
+- правовые цели обработки;
+- data owner;
+- need-to-know;
+- field-level permissions;
+- scope/ABAC;
 - аудит просмотра, печати, скачивания и экспорта;
-- модель угроз и требования к размещению;
-- правила хранения/удаления/архива;
-- запрет загрузки секретной информации в общий контур.
+- модель угроз;
+- требования к размещению;
+- сроки хранения;
+- запрет загрузки секретных сведений в общий контур.
 
-Результат: утвержденная security architecture и matrix `data category × role × operation × scope`.
+Результат:
+
+```text
+data category × role × operation × organizational scope
+```
 
 ### Increment 1. Lowest Unit Staffing Structure v1
 
@@ -40,275 +79,396 @@ Scope:
 Scope:
 
 - организационный узел нижнего подразделения;
-- штатный документ/версия;
-- штатная позиция/слот;
-- связь с существующими справочниками должностей, званий и разрешенных ВУС;
-- количество позиций и вакансии;
-- статус позиции: активна, вакантна, занята, временно замещается, закрыта;
-- read-only dashboard нижнего подразделения;
-- область ответственности командира/ответственного;
-- без ФИО, фото, документов и назначений конкретных лиц.
+- штатный документ;
+- версии штатного документа;
+- индивидуальная штатная позиция;
+- связь с должностью;
+- допустимое воинское звание;
+- допустимая ВУС из разрешенного справочника;
+- состояние позиции;
+- read-only desktop dashboard;
+- scoped permissions;
+- audit;
+- без персональных данных.
 
-Почему первым: существующая Organizational Structure v1 уже дает основание; штатные слоты создают корректную структуру для последующих назначений.
+Основные состояния позиции:
 
-### Increment 2. Personnel Identity Card v1
+```text
+draft
+active-vacant
+active-occupied
+temporarily-substituted
+suspended
+closed
+historical
+```
+
+В v1 фактическое состояние `occupied` может быть зарезервировано для будущих назначений и не должно вводиться вручную как ложное кадровое утверждение.
+
+### Increment 2. Personnel Core Card v1
 
 Scope:
 
-- внутренний immutable person identifier;
+- immutable person ID;
 - ФИО и история ФИО;
-- дата/место рождения;
+- дата и место рождения;
 - гражданство;
-- минимальные документы идентификации;
+- минимальные идентификационные реквизиты;
+- личный номер, если разрешен;
 - контакты;
 - фотография без распознавания лица;
-- consent/legal-basis records, где применимо;
 - field-level permissions;
-- без назначения на должность и без полного личного дела.
+- audit;
+- без полного личного дела и назначения на позицию.
 
-### Increment 3. Assignment and Service History v1
+### Increment 3. Assignments and Service History v1
 
 Scope:
 
-- назначение person → staffing slot;
-- постоянное/временное исполнение;
+- person → staffing slot;
+- постоянное и временное назначение;
 - интервалы действия;
-- запрет пересечений;
-- основание/приказ;
+- запрет несовместимых пересечений;
+- основание и приказ;
 - история переводов;
-- звание и служебные события;
+- включение и исключение из списков;
+- служебные периоды;
 - агрегаты штат/список/вакансии.
 
-### Increment 4. Documents and Photo Vault v1
+### Increment 4. Orders and Service Events v1
+
+Scope:
+
+- реестр приказов и выписок;
+- типы служебных событий;
+- связь одного приказа с несколькими событиями;
+- project/verified/approved/cancelled states;
+- effective date;
+- before/after state;
+- correction event вместо удаления истории;
+- маршруты согласования;
+- audit.
+
+### Increment 5. Documents and Photo Vault v1
 
 Scope:
 
 - metadata-first document model;
-- object storage;
-- versioning, hashes, antivirus quarantine;
-- category/classification;
+- защищенное object storage;
+- версии;
+- SHA-256;
+- MIME/signature validation;
+- антивирусный карантин;
+- classification;
 - approval/signature status;
 - physical-original location;
 - retention and legal hold;
-- access/download/print audit;
-- signed document workflow.
+- audit просмотра, скачивания и печати;
+- фотографии и миниатюры без распознавания лица.
 
-### Increment 5. Citizen Military Accounting Boundary v1
-
-Scope:
-
-- отдельная карточка воинского учета гражданина;
-- категории учета, общий/специальный учет;
-- постановка/снятие/переход статуса;
-- разрешенные формы приказа № 700;
-- документ воинского учета;
-- transition events active service ↔ reserve;
-- без несанкционированной интеграции с государственным Реестром.
-
-### Increment 6. GAR/FIAS Address Subsystem v1
+### Increment 6. Ranks, VUS and Qualifications v1
 
 Scope:
 
-- импорт официального XML ГАР/ФИАС;
+- история воинских званий;
+- приказы о присвоении;
+- разрешенные ВУС;
+- классная квалификация;
+- образование;
+- курсы;
+- языки;
+- водительские категории;
+- допуски;
+- сроки действия;
+- document evidence.
+
+Официальные справочники ограниченного доступа не публикуются и не реконструируются.
+
+### Increment 7. GAR/FIAS Address Subsystem v1
+
+Scope:
+
+- импорт официального пакета ГАР/ФИАС;
 - staging/diff/approval/rollback;
 - история адресных объектов;
-- ID FIAS/GAR, ОКТМО/ОКАТО;
+- FIAS/GAR identifiers;
+- ОКТМО/ОКАТО;
 - поиск и нормализация;
+- адрес регистрации;
+- фактический и временный адрес;
 - ручной адрес-исключение;
 - legacy mapping КЛАДР;
-- задачи последующей сверки.
+- quality tasks.
 
-### Increment 7. Reference Data Governance v1
+### Increment 8. Reference Data Governance v1
 
 Scope:
 
-- source packages;
-- official source metadata;
-- checksum/signature where available;
+- source package;
+- официальный источник;
+- checksum/signature, если доступна;
 - version/effective dates;
-- absolute-admin approval;
+- quarantine;
+- staging;
+- diff;
+- approval абсолютным администратором;
 - transactional apply;
-- rejected/quarantined packages;
-- aliases/mappings without изменения official data;
-- import reports.
+- rollback;
+- aliases и legacy mappings без изменения official record;
+- import report.
 
-### Increment 8. Reconciliation and Data Quality v1
+### Increment 9. Personnel Data Quality v1
 
 Scope:
 
-- кампании ежегодной и внеплановой сверки;
+- внутренние кампании проверки данных;
+- обязательность полей;
+- документы-основания;
 - field-level discrepancies;
-- сравнение нескольких источников;
-- ownership and deadlines;
+- расхождение подразделение ↔ кадровый орган;
+- конфликтующие назначения;
+- просроченные документы;
+- ownership и deadlines;
 - resolution evidence;
-- quality indicators;
-- inspection findings and remediation;
-- immutable result snapshot.
+- immutable result snapshot;
+- inspection findings.
 
-### Increment 9. Statutory Forms and Reporting v1
+Это внутренний кадровый процесс, а не ежегодная сверка организации с военным комиссариатом по приказу № 700.
 
-Scope:
-
-- legal editions and form versions;
-- применимые формы приказа № 700;
-- списки сверки и журналы;
-- `as-of` reports;
-- reproducible PDF/print output;
-- signature/approval;
-- report hash and source dataset version;
-- dashboards completeness/accuracy.
-
-### Increment 10. Leave Planning v1
+### Increment 10. Personnel Reporting and Cards v1
 
 Scope:
 
-- annual entitlement;
-- wishes and proposals;
-- unit coverage constraints;
-- approvals;
-- commander order;
-- actual leave and changes;
-- travel time/additional leave where applicable;
+- списочный состав;
+- штат/список/вакансии;
+- назначения;
+- служебная история;
+- звания;
+- ВУС и квалификации;
+- отсутствия;
+- сроки документов;
+- quality dashboards;
+- versioned templates;
+- as-of reports;
+- reproducible PDF/print;
+- approval/signature;
+- output hash;
+- классификация и права экспорта.
+
+Формы первичного воинского учета граждан и формы организаций не входят в scope.
+
+### Increment 11. Leave Planning v1
+
+Scope:
+
+- ежегодное право;
+- основной и дополнительные отпуска;
+- пожелания;
+- предложение подразделения;
+- проверка минимального присутствия;
+- проверка конфликтов;
+- кадровое согласование;
+- решение командира;
+- приказ;
 - plan/fact/balance;
-- conflict calendar;
-- no automatic final approval.
+- перенос, продление и отзыв;
+- версии графика;
+- запрет автоматического окончательного решения.
 
-### Increment 11. Higher-Echelon Aggregation v1
+### Increment 12. Higher-Echelon Personnel Aggregation v1
 
 Scope:
 
 - configurable parent-child hierarchy;
-- aggregated readiness of records, not combat readiness;
-- staffing and vacancy aggregates;
-- data-quality and reconciliation status;
+- staffing aggregates;
+- vacancy aggregates;
+- personnel counts по разрешенным разрезам;
+- data quality;
+- document deadlines;
 - leave load;
-- drill-down only with explicit right;
-- prevention of cross-unit leakage.
+- drill-down только с отдельным правом;
+- prevention of cross-unit leakage;
+- без показателей боевой готовности.
 
-### Increment 12. Authorized External Integration Gateway
+### Increment 13. Authorized Personnel Systems Integration Gateway
 
-Scope only after official authorization:
+Scope только после отдельного официального допуска:
 
 - interface contract;
 - participant identity;
-- qualified electronic signature;
-- certified cryptographic protection;
-- message journal and idempotency;
+- qualified electronic signature, где требуется;
+- certified cryptographic protection, где требуется;
+- message journal;
+- idempotency;
 - data minimization;
-- reconciliation and rejection queues;
+- rejection and reconciliation queues;
 - disaster recovery;
 - legal and security acceptance.
 
-No «scraping» or imitation of the government Register is allowed.
+Интеграция с государственными реестрами воинского учета не является целевой функцией этого roadmap.
 
-## 3. Proposed branch strategy
+## 4. Удаленные направления
 
-Research is maintained in:
+Из roadmap полностью удалены:
+
+- Citizen Military Accounting Boundary v1;
+- карточка гражданина, подлежащего воинскому учету;
+- общий и специальный учет граждан;
+- постановка и снятие с воинского учета;
+- бронирование;
+- повестки;
+- государственный Реестр воинского учета;
+- Реестр повесток;
+- формы № 6–10 приказа № 700;
+- интеграция с процессами военных комиссариатов для учета граждан.
+
+## 5. Ветки
+
+Research:
 
 ```text
 research/military-accounting-order-700
 ```
 
-После утверждения roadmap каждый functional increment получает отдельную ветку, например:
+Примеры будущих веток:
 
 ```text
+feature/data-classification-security-foundation
 feature/lowest-unit-staffing-v1
-feature/personnel-identity-card-v1
-feature/personnel-assignments-v1
+feature/personnel-core-card-v1
+feature/personnel-assignments-service-history-v1
+feature/personnel-orders-events-v1
 feature/personnel-document-vault-v1
-feature/citizen-military-accounting-v1
+feature/personnel-ranks-vus-qualifications-v1
 feature/gar-fias-addresses-v1
-feature/reference-governance-v1
-feature/reconciliation-quality-v1
-feature/reporting-forms-v1
-feature/leave-planning-v1
+feature/reference-data-governance-v1
+feature/personnel-data-quality-v1
+feature/personnel-reporting-v1
+feature/personnel-leave-planning-v1
+feature/personnel-higher-echelon-aggregation-v1
 ```
 
-Одновременные ветки допускаются только для независимых scope с отдельными base/head/allowlist. Не допускается параллельная реализация зависимого этапа до merge и post-merge verification его основания.
+Одновременные ветки допускаются только для независимых scope. Зависимые feature-ветки не должны расходиться до merge основания.
 
-## 4. Acceptance matrix по классам этапов
+## 6. Acceptance matrix
 
-### Documentation/research
+### 6.1. Research/documentation
 
 - official-source traceability;
-- completeness review;
-- internal consistency;
-- no runtime/config/DB diff;
-- exact changed-path allowlist;
-- Markdown validation.
+- точная применимость к `PersonnelServiceAccounting`;
+- отсутствие скрытого `CitizenMilitaryAccounting`;
+- внутренняя согласованность;
+- exact path allowlist;
+- отсутствие runtime/config/DB diff.
 
-### Database/domain implementation
+### 6.2. Database/domain
 
-- migrations on clean and current database;
-- rollback strategy where applicable;
-- constraints and concurrency tests;
+- migration на чистой и текущей БД;
+- ограничения целостности;
+- temporal interval tests;
 - authorization tests;
 - audit tests;
-- data migration/import tests;
+- concurrency tests;
+- rollback/repair strategy;
 - backup/restore impact.
 
-### UI
+### 6.3. UI
 
 - desktop browser acceptance;
 - role/scope visibility;
 - keyboard and validation behavior;
-- no data leakage in errors/search/export;
-- mobile remains out of scope unless separately approved.
+- отсутствие утечки данных в ошибках, поиске и экспорте;
+- mobile acceptance только отдельным инкрементом.
 
-### File storage
+### 6.4. File storage
 
-- antivirus/quarantine tests;
-- content-type spoofing tests;
-- hash/integrity tests;
-- authorization and direct-link denial;
+- MIME/signature spoofing;
+- antivirus/quarantine;
+- hash/integrity;
+- direct-link denial;
+- authorization;
 - backup/restore;
-- retention/deletion workflow;
+- retention/legal hold;
 - audit.
 
-### Reference imports
+### 6.5. Reference import
 
-- official package provenance;
-- malformed/oversized package rejection;
-- staging and diff;
+- provenance;
+- malformed package rejection;
+- oversized package handling;
+- staging/diff;
+- approval;
 - transactional apply;
 - rollback;
 - idempotency;
 - conflict handling;
-- admin approval audit.
+- audit.
 
-## 5. Decision points requiring owner approval
-
-Before Architecture of Increment 1 the owner must decide:
-
-1. Какой конкретный организационный узел считается пилотным нижним подразделением без раскрытия реальных закрытых данных.
-2. Нужна ли в первой версии только одна штатная версия или draft/current/historical.
-3. Требуются ли количественные позиции (`quantity > 1`) или каждая позиция является отдельным slot.
-4. Какие существующие публичные справочники разрешено связывать со штатной позицией.
-5. Какие роли видят подразделение и агрегаты.
-6. Какие поля могут иметь признаки служебной тайны и должны быть исключены из пилота.
-
-## 6. Рекомендация по первому утверждаемому scope
+## 7. Первый функциональный инкремент
 
 ```text
 NAME=Lowest Unit Staffing Structure v1
 CLASSIFICATION=functional
-BASE=current main after re-verification
-IN_SCOPE=organizational node, staffing document versions, individual staffing slots, vacancy state, links to public rank/position/VUS references, read-only desktop views, scoped permissions, audit
-OUT_OF_SCOPE=real personnel, personal data, photos, files, assignments, orders, leave, medical data, citizen military accounting, external integrations, production deployment, mobile acceptance, classified/restricted data
+DEPENDENCY=existing Organizational Structure v1
 ```
 
-Этот scope минимален, создает фундамент снизу и не требует преждевременной обработки персональных данных.
+### In scope
 
-## 7. Текущий статус
+- один или несколько организационных узлов нижнего подразделения;
+- штатный документ;
+- draft/current/historical versions;
+- individual staffing slots;
+- position reference;
+- allowed rank range;
+- allowed VUS links из разрешенного справочника;
+- active/vacant/suspended/closed states;
+- read-only desktop list and details;
+- scoped permissions;
+- audit events;
+- migration after current migration 012;
+- tests and documentation.
+
+### Out of scope
+
+- реальные военнослужащие;
+- ФИО;
+- фотографии;
+- персональные документы;
+- назначения лиц;
+- приказы по лицам;
+- отпуска;
+- медицинские сведения;
+- внешние интеграции;
+- production deployment;
+- mobile acceptance;
+- секретные или ограниченные сведения.
+
+## 8. Решения, требуемые Architecture
+
+Architecture первого инкремента должна определить:
+
+1. отдельный slot или количественная строка;
+2. жизненный цикл штатного документа;
+3. правила effective dates;
+4. связь с существующим Organization Structure;
+5. допустимые существующие справочники;
+6. источник состояния вакансии до появления назначений;
+7. права по подразделению;
+8. audit events;
+9. DB constraints;
+10. read-only UI и маршруты;
+11. migration and validation plan.
+
+## 9. Текущий статус
 
 ```text
-Research: prepared
-Analysis: prepared
-Architecture: NOT STARTED
-Specification: NOT STARTED
-Review: NOT AUTHORIZED YET
-Approval: NOT GRANTED
-Implementation: NOT AUTHORIZED
-Pull Request for research branch: NOT AUTHORIZED
-Merge: NOT AUTHORIZED
+Research: prepared and reframed
+Analysis: prepared and reframed
+Architecture for Increment 1: NEXT
+Specification for Increment 1: NOT COMPLETED
+Review for Increment 1: NOT COMPLETED
+Approval of exact Architecture/Specification: REQUIRED
+Implementation: NOT STARTED
+Research PR: NOT CREATED
+Branch deletion: NOT AUTHORIZED
 ```
