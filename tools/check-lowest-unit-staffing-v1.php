@@ -67,6 +67,9 @@ $allowlist = [
     'public/admin/staffing/views/version-card.php',
     'public/admin/staffing/views/slot-form.php',
     'public/admin/staffing/views/document-form.php',
+    'themes/asu-blue/assets/css/organization.css',
+    'themes/asu-light-blue/assets/css/organization.css',
+    'themes/asu-evgeniya-rostova/assets/css/organization.css',
     'tools/Test-LowestUnitStaffingV1.ps1',
     'tools/check-lowest-unit-staffing-v1.php',
     'docs/domains/STAFFING.md',
@@ -74,7 +77,7 @@ $allowlist = [
     'docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md',
     'docs/design/LOWEST-UNIT-STAFFING-V1-REVIEW.md',
 ];
-check(count($allowlist) === 44 && count(array_unique($allowlist)) === 44, 'approved allowlist contains exactly 44 unique paths');
+check(count($allowlist) === 47 && count(array_unique($allowlist)) === 47, 'approved allowlist contains exactly 47 unique paths');
 
 $existingApprovedDocuments = [
     'docs/domains/README.md',
@@ -189,6 +192,26 @@ $contentPage = contents($root, 'public/admin/content.php');
 check(str_contains($contentPage, "has_permission('staffing.registers.view')"), 'content navigation is staffing-permission-aware');
 check(str_contains($contentPage, '/admin/staffing/registers.php'), 'content navigation links to staffing module');
 
+$versionCard = contents($root, 'public/admin/staffing/views/version-card.php');
+check(str_contains($versionCard, 'staffing-document-card'), 'staffing document card uses scoped compact layout');
+check(str_contains($versionCard, 'staffing-document-card__actions'), 'staffing document edit action has a dedicated layout container');
+check(str_contains($versionCard, 'organization-disclosure--edit'), 'staffing document edit action uses themed disclosure control');
+
+$themePaths = [
+    'themes/asu-blue/assets/css/organization.css',
+    'themes/asu-light-blue/assets/css/organization.css',
+    'themes/asu-evgeniya-rostova/assets/css/organization.css',
+];
+$themeCss = [];
+foreach ($themePaths as $themePath) {
+    $css = contents($root, $themePath);
+    $themeCss[] = $css;
+    check(str_contains($css, '.staffing-document-card {'), "compact staffing document card styles exist: {$themePath}");
+    check(str_contains($css, '.staffing-document-card__actions[open]'), "expanded staffing document editor styles exist: {$themePath}");
+    check(str_contains($css, '.staffing-document-card__editor'), "staffing document editor spacing exists: {$themePath}");
+}
+check(count(array_unique($themeCss)) === 1, 'staffing document card CSS is identical across all three themes');
+
 $runtimePaths = array_values(array_filter(
     $required,
     static fn (string $path): bool => str_starts_with($path, 'app/')
@@ -219,7 +242,7 @@ if (is_dir($gitDirectory) && function_exists('exec')) {
     check($code === 0, 'git diff path inventory command succeeds');
     if ($code === 0) {
         $unexpected = array_values(array_diff($output, $allowlist));
-        check(count($output) <= 44, 'changed path count does not exceed 44');
+        check(count($output) <= 47, 'changed path count does not exceed 47');
         check($unexpected === [], 'all changed paths are inside approved allowlist');
         if ($unexpected !== []) {
             echo 'UNEXPECTED_PATHS=' . implode(',', $unexpected) . "\n";
