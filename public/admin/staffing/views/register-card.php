@@ -65,7 +65,6 @@
     </section>
 
     <?php if ($selectedVersion !== null): require __DIR__ . '/version-card.php'; endif; ?>
-    <p class="organization-footnote">`assignment_state=not-managed-in-v1`: интерфейс не утверждает, что позиция занята или вакантна.</p>
 </div></main>
 </body>
 </html>
