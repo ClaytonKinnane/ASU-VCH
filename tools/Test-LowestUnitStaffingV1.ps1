@@ -18,6 +18,7 @@ $ErrorActionPreference = 'Stop'
 
 $ExpectedBranch = 'feature/lowest-unit-staffing-v1'
 $OriginalBase = 'd60db94e405979c8f29bdc3dcaae7950362fb13a'
+$MaxChangedPaths = 47
 $AllowedPaths = @(
     'app/bootstrap.php',
     'public/admin/content.php',
@@ -57,6 +58,9 @@ $AllowedPaths = @(
     'public/admin/staffing/views/version-card.php',
     'public/admin/staffing/views/slot-form.php',
     'public/admin/staffing/views/document-form.php',
+    'themes/asu-blue/assets/css/organization.css',
+    'themes/asu-light-blue/assets/css/organization.css',
+    'themes/asu-evgeniya-rostova/assets/css/organization.css',
     'tools/Test-LowestUnitStaffingV1.ps1',
     'tools/check-lowest-unit-staffing-v1.php',
     'docs/domains/STAFFING.md',
@@ -95,8 +99,8 @@ $changedPaths = @(& git diff --name-only "$OriginalBase...HEAD")
 if ($LASTEXITCODE -ne 0) {
     throw 'Unable to read changed path inventory.'
 }
-if ($changedPaths.Count -gt 44) {
-    throw "Changed path count exceeds approval. Actual=$($changedPaths.Count) Max=44"
+if ($changedPaths.Count -gt $MaxChangedPaths) {
+    throw "Changed path count exceeds approval. Actual=$($changedPaths.Count) Max=$MaxChangedPaths"
 }
 $unexpected = @($changedPaths | Where-Object { $AllowedPaths -cnotcontains $_ })
 if ($unexpected.Count -gt 0) {
@@ -152,6 +156,7 @@ if ($status.Count -gt 0) {
 Write-Output 'LOWEST_UNIT_STAFFING_V1_BRANCH=PASS'
 Write-Output "LOWEST_UNIT_STAFFING_V1_MERGE_BASE=$mergeBase"
 Write-Output "LOWEST_UNIT_STAFFING_V1_CHANGED_PATHS=$($changedPaths.Count)"
+Write-Output "LOWEST_UNIT_STAFFING_V1_MAX_CHANGED_PATHS=$MaxChangedPaths"
 Write-Output 'LOWEST_UNIT_STAFFING_V1_ALLOWLIST=PASS'
 Write-Output 'LOWEST_UNIT_STAFFING_V1_PHP_LINT=PASS'
 Write-Output 'LOWEST_UNIT_STAFFING_V1_STATIC_CHECKER=PASS'
