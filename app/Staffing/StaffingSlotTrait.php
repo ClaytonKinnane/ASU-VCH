@@ -37,7 +37,7 @@ trait StaffingSlotTrait
                 . 'minimum_rank_id,maximum_rank_id,preferred_rank_id,internal_code,display_name,normative_state,note,sort_order,created_by,created_at,updated_by,updated_at) '
                 . 'VALUES (:register_id,:version_id,:identity_id,:structure_id,:organization_version_id,:element_id,:position_catalog_id,:position_type_id,'
                 . ':position_variant_id,:rank_catalog_id,:vus_catalog_id,:minimum_rank_id,:maximum_rank_id,:preferred_rank_id,:internal_code,:display_name,'
-                . ':normative_state,:note,:sort_order,:actor,NOW(),:actor,NOW())'
+                . ':normative_state,:note,:sort_order,:created_actor,NOW(),:updated_actor,NOW())'
             );
             $insert->execute([
                 'register_id' => $registerId,
@@ -59,7 +59,8 @@ trait StaffingSlotTrait
                 'normative_state' => $normalized['normative_state'],
                 'note' => $normalized['note'],
                 'sort_order' => $normalized['sort_order'],
-                'actor' => $actorId,
+                'created_actor' => $actorId,
+                'updated_actor' => $actorId,
             ]);
             $slotId = (int) $this->pdo->lastInsertId();
             $this->replaceVusRequirements(
