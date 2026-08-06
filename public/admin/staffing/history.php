@@ -226,7 +226,7 @@ $formatHistoryState = static function (?string $json) use ($translateHistoryStat
         </article>
     <?php endforeach; endif; ?>
     </section>
-    <p class="organization-footnote">История является append-only предметным журналом и не заменяет будущий общий Security Audit.</p>
+    <p class="organization-footnote">История является неизменяемым предметным журналом и не заменяет будущий общий аудит безопасности.</p>
 </div></main>
 </body>
 </html>
