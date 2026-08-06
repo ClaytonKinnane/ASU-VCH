@@ -4,6 +4,7 @@
 
 ```text
 DOCUMENT=Specification
+VERSION=0.2
 INCREMENT=Lowest Unit Staffing Structure v1
 BASE_SHA=d60db94e405979c8f29bdc3dcaae7950362fb13a
 FEATURE_BRANCH=feature/lowest-unit-staffing-v1
@@ -12,57 +13,32 @@ DOMAIN=docs/domains/STAFFING.md
 IMPLEMENTATION=NOT STARTED
 ```
 
-## 2. Пользовательская цель
+## 2. Цель
 
-Уполномоченный владелец системы должен иметь возможность создать и вести версионную штатную структуру нижних подразделений на базе уже опубликованной Organizational Structure v1, не внося сведения о конкретных военнослужащих.
+System owner ведет версионную нормативную штатную структуру на базе Organization Structure v1 без персональных данных, назначений и утверждений о фактической укомплектованности.
 
-## 3. Actors
+## 3. Actors и permissions
 
-### 3.1. System owner
+```text
+staffing.registers.view
+staffing.registers.create
+staffing.registers.update
+staffing.registers.publish
+staffing.registers.archive
+staffing.registers.history
+```
 
-Имеет `system.*.*` и выполняет полный management lifecycle.
-
-### 3.2. Staffing viewer
-
-Имеет `staffing.registers.view` и просматривает registers, versions, slots и документы.
-
-### 3.3. Staffing editor
-
-Имеет view/create/update и изменяет только draft data.
-
-### 3.4. Staffing publisher
-
-Имеет publish и выполняет approve/activate/cancel.
-
-### 3.5. Staffing historian
-
-Имеет history и просматривает events/compare.
-
-V1 не реализует subtree-level delegation. Permission действует на весь модуль.
+Owner имеет `system.*.*`. Новые permissions не назначаются автоматически другим ролям. V1 не реализует subtree ACL.
 
 ## 4. Functional requirements
 
-### FR-01. Module visibility
+### FR-01. Navigation
 
-Плитка «Штатная структура» отображается в разделе «Контент» только пользователю с `staffing.registers.view` либо `system.*.*`.
+Permission-aware плитка «Штатная структура» в `public/admin/content.php` ведет на `/admin/staffing/registers.php` и видна при view permission или owner wildcard.
 
 ### FR-02. Register list
 
-Список показывает:
-
-- code;
-- name;
-- linked organizational structure;
-- current active version;
-- pending version;
-- status;
-- updated timestamp.
-
-Фильтры:
-
-- active/archived/all;
-- search by code/name;
-- organizational structure.
+Отображает code, name, OrganizationalStructure, active/pending version, status и updated_at. Поддерживает search, status и structure filters.
 
 ### FR-03. Create register
 
@@ -77,108 +53,66 @@ note nullable
 
 Validation:
 
-- code: lower ASCII `[a-z0-9][a-z0-9._-]{1,63}`;
-- unique forever;
-- name length 1–255;
-- structure exists and is active;
-- CSRF and permission required.
+- code `[a-z0-9][a-z0-9._-]{1,63}`;
+- globally unique and never reused;
+- name 1–255;
+- structure exists and is not archived;
+- POST, CSRF, permission.
 
-Result:
-
-- register created without automatic draft;
-- `StaffingRegisterCreated` event;
-- PRG redirect to card.
+Creates register only; draft is a separate command.
 
 ### FR-04. Update register
 
-Only name/note may change. Code and organizational structure are immutable.
+Name/note only. Code and structure immutable. Requires expected updated token. Archived register is read-only.
 
-Update requires expected timestamp/revision token. Archive data cannot be edited.
+### FR-05. Archive/restore
 
-### FR-05. Archive/restore register
+Archive requires archive permission and absence of pending version. Restore preserves all versions/history.
 
-Archive allowed when no pending version exists.
-
-Restore returns register to active administrative state. Published versions remain unchanged.
-
-### FR-06. Create initial draft
+### FR-06. Initial draft
 
 User selects:
 
-- active or superseded organizational structure version;
-- current published position catalog;
-- compatible rank catalog;
-- current published public VUS catalog;
+- active/superseded version of the register OrganizationalStructure;
+- current compatible published position catalog;
+- rank catalog pinned by that position catalog;
+- published public VUS catalog;
 - version label;
 - effective_from;
-- change reason.
+- reason.
 
-An empty draft version is created with revision 1.
+Creates empty draft, revision 1.
 
-### FR-07. Create draft from active
+### FR-07. Draft from active
 
-If active staffing version exists, user can create a new draft by copying:
+Copies active slots, requirements and document links by copy-on-write rules. Pinned Organization/position/rank/VUS versions remain exactly the same.
 
-- slot identities and slot snapshots;
-- VUS requirements;
-- linked documents using copy-on-write rules;
-- catalog pinning, unless user explicitly selects compatible newer versions.
-
-New version receives new version number and revision 1.
+Catalog upgrade/remapping is rejected in v1 and requires a future approved increment.
 
 ### FR-08. Version card
 
-Shows:
+Shows status, label/number, effective dates, pinned versions, revision, documents, slot totals by organizational element and lifecycle actions.
 
-- status;
-- version number/label;
-- effective interval;
-- pinned organizational version;
-- pinned catalogs;
-- revision;
-- documents;
-- slot counts by organizational element and normative state;
-- lifecycle actions allowed to current actor.
+### FR-09. Document create/link
 
-### FR-09. Add document
-
-Draft-only.
-
-Input:
+Draft-only fields:
 
 ```text
-document_type
+document_type=staffing_order|amendment_order|approval_act|other_basis
 document_date
 document_number
 title
 note nullable
-role
+role=primary_basis|additional_basis|amendment
 sort_order
 expected_revision
 ```
 
-Document type in v1 is a controlled local enum:
+No file upload. Published metadata uses copy-on-write.
 
-```text
-staffing_order
-amendment_order
-approval_act
-other_basis
-```
+### FR-10. Slot create
 
-No file upload.
-
-### FR-10. Update/unlink document
-
-Draft-only. Document used by a published version is not updated in place. A new draft copy is created when changed.
-
-Unlinking does not physically delete a document already referenced by published history.
-
-### FR-11. Add individual slot
-
-Draft-only.
-
-Input:
+Draft-only fields:
 
 ```text
 organizational_structure_element_id
@@ -189,157 +123,112 @@ display_name
 minimum_rank_id nullable
 maximum_rank_id nullable
 preferred_rank_id nullable
-normative_state
+normative_state=active|suspended|closed
 note nullable
-VUS requirement list
+VUS requirements
 sort_order
 expected_revision
 ```
 
 Validation:
 
-- organizational element exists in pinned structure version;
-- element is not root;
-- position type belongs to pinned position catalog;
-- optional variant belongs to type/version;
-- position catalog permits the organizational element type when such relation exists;
-- rank values belong to pinned rank catalog;
-- rank range is valid;
-- VUS values belong to pinned VUS catalog;
+- organizational element is present in pinned Organization version;
+- root and non-root elements are allowed;
+- position type belongs to pinned position version;
+- optional variant belongs to selected type/version;
+- element type is compatible with position catalog relation when relation is defined;
+- ranks belong to pinned rank version and form valid range;
+- VUS values belong to pinned VUS version;
 - duplicate VUS forbidden;
-- internal code unique in version;
-- sort order unique within element;
-- normative state is `active`, `suspended` or `closed`.
+- internal code unique within version when present;
+- sort order unique within organization element.
 
-Creation generates a new `staffing_slot_identity` and one slot snapshot.
+Creates stable slot identity and its first snapshot.
 
-### FR-12. Edit slot
+### FR-11. Slot update/remove
 
-Draft-only. Stable identity remains unchanged. All mutable snapshot fields may change with the validations from FR-11.
+Draft-only and expected-revision protected. Update preserves stable identity. Remove deletes only current draft snapshot; published snapshots and identity remain.
 
-### FR-13. Remove slot from draft
-
-Removal deletes the slot snapshot from the current draft only. Stable identity and published snapshots remain.
-
-Confirmation page/message must display slot code/name and organizational unit.
-
-### FR-14. Approve version
+### FR-12. Approve
 
 Preconditions:
 
-- status draft;
+- draft;
 - exactly one primary basis;
 - at least one active slot;
-- no validation errors;
+- all validations pass;
+- effective_from exists;
 - expected revision matches;
-- effective_from set;
-- publisher permission.
+- publish permission.
 
-Effect:
+Effect: approved, approved metadata, immutable content, event.
 
-- status approved;
-- approved_by/approved_at recorded;
-- content becomes immutable;
-- `StaffingVersionApproved` event.
+### FR-13. Cancel
 
-### FR-15. Cancel draft/approved version
+Draft/approved only. Requires reason and expected revision. Result immutable and releases pending guard.
 
-Requires reason and expected revision.
+### FR-14. Activate
 
-Effect:
+Approved only. In one transaction:
 
-- status cancelled;
-- no content mutation afterward;
-- register can create a new draft;
-- event recorded.
+- previous active → superseded;
+- previous effective_to = new effective_from;
+- approved → active;
+- guards and events updated.
 
-### FR-16. Activate approved version
+Activation checks pinned references still exist and effective periods do not overlap.
 
-Preconditions:
+### FR-15. Read staffing by organization element
 
-- status approved;
-- activation date equals effective_from;
-- no other pending version;
-- current active version, if present, has earlier effective_from;
-- all pinned source versions still exist;
-- publisher permission.
+Groups slots by Organization tree order and displays:
 
-Effect in one transaction:
-
-- previous active version → superseded;
-- its effective_to = new effective_from;
-- approved version → active;
-- active guard updated;
-- events appended.
-
-### FR-17. Read active staffing by unit
-
-Read model groups slots by organizational tree order and shows:
-
-- unit name/type;
+- organizational element/type;
 - slot code/name;
 - position type/variant;
 - rank requirement;
 - VUS requirements;
 - normative state;
-- assignment state `not-managed-in-v1`.
+- `assignment_state=not-managed-in-v1`.
 
-UI must not call an active slot «занятым» or «вакантным».
+UI must not label slots `occupied` or `vacant`.
 
-### FR-18. Compare versions
+### FR-16. Compare
 
-Comparison identifies:
+Compares slot identity presence and changes in organization binding, position, rank, VUS, normative state and documents.
 
-- added slot identities;
-- removed identities;
-- changed organization binding;
-- changed position type/variant;
-- changed rank requirement;
-- changed VUS list;
-- changed normative state;
-- changed documents.
+### FR-17. History
 
-### FR-19. History
+Append-only events with actor, time, event, version, target and safe summary.
 
-History shows append-only events ordered newest first, with actor, timestamp, event, reason, version and safe summary.
+### FR-18. Explicit data exclusion
 
-### FR-20. No personnel fields
+No person ID, ФИО, personal number, person document, assignment, reserve/conscription/accounting fields in DB, requests, views, fixtures or reports.
 
-No request, table, view or test fixture may contain:
+## 5. Lifecycle and concurrency
 
-- person/soldier ID;
-- ФИО;
-- personal number;
-- document of a person;
-- assignment to a person;
-- citizen military-accounting status.
+```text
+draft → approved → active → superseded
+draft → cancelled
+approved → cancelled
+```
 
-## 5. Database specification
+- one pending and one active per register;
+- content mutation only in draft;
+- `[effective_from,effective_to)`;
+- canonical lock order `register → version → children`;
+- every draft mutation requires `expected_revision`;
+- success increments revision and appends event;
+- stale command rolls back entirely.
 
-### 5.1. Migration
+## 6. Database specification
+
+Migration:
 
 ```text
 database/migrations/013_lowest_unit_staffing_v1.sql
 ```
 
-Migration follows existing runner conventions and MySQL 8.4 syntax.
-
-### 5.2. Permissions seed
-
-Migration creates six permissions:
-
-```text
-staffing.registers.view
-staffing.registers.create
-staffing.registers.update
-staffing.registers.publish
-staffing.registers.archive
-staffing.registers.history
-```
-
-Permissions are not granted to non-owner roles automatically.
-
-### 5.3. Required tables
+Tables:
 
 ```text
 staffing_registers
@@ -352,89 +241,61 @@ staffing_slot_vus_requirements
 staffing_change_events
 ```
 
-### 5.4. Referential integrity
+Migration creates six permissions without role grants.
 
-Required FKs include:
+Required DB enforcement:
 
-- register → organizational structure;
-- version → register and organizational structure version;
-- version → position/rank/VUS catalog versions;
-- slot identity → register;
-- slot → version, identity, organization element, position type/variant, rank references;
-- VUS requirement → slot and VUS;
-- document/version relation → same register.
-
-Where MySQL cannot express cross-table version consistency with a simple FK, composite unique keys and BEFORE triggers are required.
-
-### 5.5. Immutability
-
-Triggers reject UPDATE/DELETE of:
-
-- stable slot identity keys;
-- published version content;
+- unique code/version/internal code/sibling sort order;
+- pending and active generated guards;
+- FKs and composite version-consistency keys;
+- triggers for cross-table Organization/catalog consistency;
+- published immutability;
+- stable identity immutability;
 - append-only events;
-- immutable register code/structure;
-- documents referenced by published versions.
+- prohibited lifecycle transitions;
+- no physical deletion of published history.
 
-### 5.6. Transaction isolation
+## 7. HTTP/security
 
-Services use explicit transactions and `SELECT ... FOR UPDATE` in canonical order.
+- every route authenticated;
+- GET read-only;
+- POST mutations;
+- CSRF required;
+- permission checked before target disclosure;
+- integer IDs and enum inputs validated;
+- expected revision required;
+- PRG after success;
+- safe user-facing errors;
+- escaped output;
+- no query-string mutation;
+- no new settings/branch-protection changes.
 
-## 6. UI specification
+## 8. UI
 
-### 6.1. Location
+Location:
 
 ```text
 /admin/content.php
-→ tile «Штатная структура»
+→ Штатная структура
 → /admin/staffing/registers.php
 ```
 
-### 6.2. Visual language
+Screens:
 
-- existing glass tile/components;
-- dark-blue default presentation with turquoise accents through theme assets;
-- no hardcoded theme-specific colors in feature markup;
-- all three registered themes supported;
-- desktop layout required;
-- mobile status explicitly `NOT TESTED`.
+- register list/card;
+- version card;
+- grouped slot list;
+- register, document and slot forms;
+- compare;
+- history.
 
-### 6.3. Accessibility
+Existing theme components/assets are reused; no feature-hardcoded theme colors. Desktop acceptance for all three current themes is required. Mobile status remains `NOT TESTED`.
 
-- semantic headings;
-- labels for all fields;
-- keyboard-accessible actions;
-- visible focus from themes;
-- table headers/scopes;
-- errors linked to fields where practical;
-- no action represented by color alone.
+## 9. Exact proposed implementation path allowlist
 
-### 6.4. Safe output
+Any path outside this list requires fail-closed re-approval.
 
-- all user-entered values escaped;
-- no SQL or stack details;
-- permission-denied does not reveal register existence;
-- change event payload is summarized, not dumped raw.
-
-## 7. HTTP and security requirements
-
-- authentication required for every route;
-- GET is read-only;
-- POST for every mutation;
-- CSRF token required;
-- permission check before reading mutation target details;
-- integer IDs validated;
-- expected revision required for draft mutation/lifecycle;
-- PRG redirect after successful POST;
-- no mutation through query string;
-- session cookie behavior unchanged;
-- no new repository settings or branch protection changes.
-
-## 8. Proposed implementation paths
-
-The implementation approval allowlist must be a subset of the following exact paths. Any additional path requires fail-closed re-approval.
-
-### 8.1. Existing files to modify
+### Existing files
 
 ```text
 app/bootstrap.php
@@ -445,7 +306,7 @@ docs/ROADMAP.md
 docs/TRACEABILITY.md
 ```
 
-### 8.2. New database/domain files
+### Database/domain
 
 ```text
 database/migrations/013_lowest_unit_staffing_v1.sql
@@ -459,7 +320,7 @@ app/Staffing/StaffingService.php
 app/Staffing/functions.php
 ```
 
-### 8.3. New HTTP/UI files
+### HTTP/UI
 
 ```text
 public/admin/staffing/registers.php
@@ -487,14 +348,14 @@ public/admin/staffing/views/slot-form.php
 public/admin/staffing/views/document-form.php
 ```
 
-### 8.4. New validation files
+### Validation
 
 ```text
 tools/Test-LowestUnitStaffingV1.ps1
 tools/check-lowest-unit-staffing-v1.php
 ```
 
-### 8.5. Process documents already present
+### Process documents already changed in the branch
 
 ```text
 docs/domains/STAFFING.md
@@ -503,112 +364,104 @@ docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md
 docs/design/LOWEST-UNIT-STAFFING-V1-REVIEW.md
 ```
 
-Maximum implementation changed paths under this proposal: 42, including four process documents already committed.
+```text
+MAX_EXPECTED_CHANGED_PATHS=44
+```
 
-## 9. Test specification
+## 10. Test specification
 
-### TS-01. Static
+### Static
 
-- PHP syntax all tracked PHP;
-- no BOM/encoding regressions;
-- no forbidden real data;
-- exact path allowlist;
-- documentation references resolve.
+- PHP syntax;
+- exact paths;
+- UTF-8/no BOM regressions;
+- no real/restricted data;
+- documentation links.
 
-### TS-02. Clean database
+### Clean DB
 
-- migrations 001–013 apply;
-- expected permissions = previous count + 6;
-- all tables/triggers/indexes exist;
-- no seed staffing records.
+- migrations 001–013;
+- six new permissions;
+- eight new tables and expected triggers/indexes;
+- no staffing seed records.
 
-### TS-03. Current database
+### Current DB
 
-- backup before migration;
-- apply 013 after current 012;
-- existing Organization/Directory/Security data unchanged;
+- backup first;
+- migration after 012;
+- existing data unchanged;
 - migration recorded once;
-- re-run is no-op through runner.
+- runner repeat is no-op.
 
-### TS-04. DB constraints
+### Constraints
 
-Synthetic scenarios verify:
+Synthetic tests reject:
 
-- duplicate register code rejected;
-- cross-structure version rejected;
-- organization element absent in pinned version rejected;
-- root element slot rejected;
-- wrong position/rank/VUS catalog rejected;
-- invalid rank range rejected;
-- duplicate slot identity in version rejected;
-- duplicate VUS rejected;
-- second pending/active version rejected;
-- published content mutation rejected;
-- stale revision rejected;
-- event update/delete rejected.
+- duplicate register code;
+- structure/version mismatch;
+- element absent from pinned snapshot;
+- wrong position/rank/VUS versions;
+- invalid rank range;
+- duplicate identity/VUS/internal code/sort order;
+- second pending/active;
+- published mutation;
+- stale revision;
+- event update/delete.
 
-### TS-05. Service
+Root and non-root element slots must both be accepted when catalog-compatible.
 
-- all use cases FR-03–FR-19;
-- transaction rollback on each failed invariant;
+### Service/HTTP
+
+- FR-03–FR-17 success and failure;
+- transaction rollback;
 - permission matrix;
 - CSRF;
 - safe errors;
-- no person fields.
+- no personnel fields.
 
-### TS-06. HTTP/browser desktop
+### Browser desktop
 
-- owner navigation and lifecycle;
+- owner lifecycle;
 - viewer read-only;
-- user without permission denied;
-- three themes;
-- validation messages;
+- denied user;
+- all three themes;
+- empty/populated synthetic states;
 - compare/history;
-- empty register and populated synthetic register;
 - no mobile PASS.
 
-### TS-07. Regression
+### Regression
 
 - login/logout;
 - content landing;
 - Organization Structure v1;
-- directories ranks/positions/VUS;
+- ranks/positions/VUS directories;
 - user management;
-- theme activation;
+- themes;
 - existing CI-safe checkers.
 
-## 10. Acceptance criteria
-
-Increment is accepted only if:
+## 11. Acceptance criteria
 
 1. exact base/head/path checks pass;
-2. migration passes on clean and current MySQL;
-3. all DB invariants pass;
-4. no real or personal data is committed;
-5. all permissions are fail-closed;
-6. published versions are immutable;
-7. active version switching is atomic;
-8. UI does not claim actual vacancy/occupancy;
-9. desktop visual acceptance passes in all themes;
-10. mobile remains honestly untested;
-11. existing functionality regression passes;
-12. documentation matches exact implementation;
-13. Final PR Review has no blocking/major findings;
-14. merge occurs only after separate explicit approval;
-15. branches are not deleted without separate approval.
+2. migration passes clean/current MySQL;
+3. DB and service invariants pass;
+4. no real/personal/restricted data committed;
+5. permissions fail closed;
+6. published content immutable;
+7. activation atomic;
+8. catalog copy rule enforced;
+9. root and non-root elements supported;
+10. no false vacancy/occupancy statement;
+11. desktop visual acceptance in three themes;
+12. mobile honestly untested;
+13. regressions pass;
+14. docs match implementation;
+15. Final PR Review has no blocking/major findings;
+16. merge and branch deletion remain separately controlled.
 
-## 11. Explicit non-requirements
+## 12. Non-requirements
 
-- no Personnel Core;
-- no Assignments;
-- no CitizenMilitaryAccounting;
-- no file upload;
-- no external integration;
-- no import/export;
-- no production deployment;
-- no branch protection changes;
-- no mobile verification.
+No Personnel, Assignments, CitizenMilitaryAccounting, file upload, import/export, external integration, production deployment, branch protection or mobile verification.
 
-## 12. Implementation gate
+## 13. Gate
 
-This Specification does not itself authorize runtime changes. Implementation begins only after the Review document records PASS and the owner approves exact branch, head, scope and changed-path allowlist.
+Implementation begins only after formal Review PASS and owner approval of exact feature head, scope and 44-path allowlist.
