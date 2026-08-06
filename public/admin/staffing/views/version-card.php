@@ -12,10 +12,15 @@ $versionStatusLabels = $versionStatusLabels ?? [
     'canceled' => 'Отменена',
 ];
 $documentRoleLabels = [
-    'primary' => 'Основной',
-    'supporting' => 'Дополнительный',
-    'amending' => 'Изменяющий',
-    'cancelling' => 'Отменяющий',
+    'primary_basis' => 'Основное основание',
+    'additional_basis' => 'Дополнительное основание',
+    'amendment' => 'Изменение',
+];
+$documentTypeLabels = [
+    'staffing_order' => 'Штатный приказ',
+    'amendment_order' => 'Приказ об изменении',
+    'approval_act' => 'Акт утверждения',
+    'other_basis' => 'Иное основание',
 ];
 $slotStateLabels = [
     'active' => 'Действующая',
@@ -23,6 +28,14 @@ $slotStateLabels = [
     'removed' => 'Исключена',
     'abolished' => 'Упразднена',
 ];
+$formatStaffingDate = static function (?string $value): string {
+    if ($value === null || $value === '') {
+        return '—';
+    }
+
+    $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+    return $date instanceof DateTimeImmutable ? $date->format('d.m.Y') : $value;
+};
 ?>
 <section class="organization-panel glass-tile">
     <div class="organization-section-heading"><div><span class="status-badge <?= in_array((string) $selectedVersion['status'], ['superseded', 'cancelled', 'canceled'], true) ? 'is-muted' : '' ?>"><?= e($versionStatusLabels[(string) $selectedVersion['status']] ?? (string) $selectedVersion['status']) ?></span><h2>Версия № <?= (int) $selectedVersion['version_number'] ?> · <?= e((string) $selectedVersion['version_label']) ?></h2></div><span>Ревизия <?= (int) $selectedVersion['revision'] ?></span></div>
@@ -31,7 +44,7 @@ $slotStateLabels = [
         <div><dt>Должности</dt><dd><?= e((string) $selectedVersion['position_catalog_name']) ?></dd></div>
         <div><dt>Звания</dt><dd><?= e((string) $selectedVersion['rank_catalog_name']) ?></dd></div>
         <div><dt>Публичные ВУС</dt><dd><?= e((string) $selectedVersion['vus_catalog_name']) ?></dd></div>
-        <div><dt>Период</dt><dd><?= e((string) $selectedVersion['effective_from']) ?> — <?= e((string) ($selectedVersion['effective_to'] ?? '…')) ?></dd></div>
+        <div><dt>Период</dt><dd><?= e($formatStaffingDate((string) $selectedVersion['effective_from'])) ?> — <?= e($selectedVersion['effective_to'] !== null ? $formatStaffingDate((string) $selectedVersion['effective_to']) : '…') ?></dd></div>
         <div><dt>Назначения</dt><dd>Не ведутся в v1</dd></div>
     </dl>
     <p><?= nl2br(e((string) $selectedVersion['change_reason'])) ?></p>
@@ -52,7 +65,7 @@ $slotStateLabels = [
 <section class="organization-panel glass-tile">
     <div class="organization-section-heading"><h2>Документы-основания</h2><span><?= count($documents) ?></span></div>
     <?php if ($documents === []): ?><p>Документы не связаны.</p><?php else: ?><div class="organization-list"><?php foreach ($documents as $document): ?>
-        <article class="organization-card"><div><span class="status-badge"><?= e($documentRoleLabels[(string) $document['document_role']] ?? (string) $document['document_role']) ?></span><h3><?= e((string) $document['title']) ?></h3><p><?= e((string) $document['document_type']) ?> · № <?= e((string) $document['document_number']) ?> от <?= e((string) $document['document_date']) ?></p></div>
+        <article class="organization-card"><div><span class="status-badge"><?= e($documentRoleLabels[(string) $document['document_role']] ?? 'Неизвестная роль') ?></span><h3><?= e((string) $document['title']) ?></h3><p><?= e($documentTypeLabels[(string) $document['document_type']] ?? 'Неизвестный тип документа') ?> · № <?= e((string) $document['document_number']) ?> от <?= e($formatStaffingDate((string) $document['document_date'])) ?></p></div>
         <?php if ($isDraft && $canUpdate): ?><details><summary>Изменить</summary><?php $documentForm = $document; require __DIR__ . '/document-form.php'; ?><form method="post" action="/admin/staffing/documents/unlink.php" class="organization-actions"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="register_id" value="<?= $registerId ?>"><input type="hidden" name="version_id" value="<?= (int) $selectedVersion['id'] ?>"><input type="hidden" name="document_id" value="<?= (int) $document['id'] ?>"><input type="hidden" name="expected_revision" value="<?= (int) $selectedVersion['revision'] ?>"><label>Основание исключения<input name="reason" maxlength="1000" required placeholder="Укажите основание"></label><button class="danger-button" type="submit">Исключить</button></form></details><?php endif; ?>
         </article>
     <?php endforeach; ?></div><?php endif; ?>
