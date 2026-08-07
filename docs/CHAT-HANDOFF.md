@@ -1,24 +1,23 @@
-# АСУ-ВЧ — постоянный handoff для нового чата
+# АСУ-ВЧ — handoff активного инкремента
 
-## 1. Обязательный порядок начала
+## 1. Обязательный старт следующего чата
 
-Перед material-действиями:
+1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
+2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
+3. Сопоставить live state с exact base/branch/allowlist ниже.
+4. Продолжать с незавершённого validation/commit/push/PR gate; не повторять уже выданное Implementation Approval.
+5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
-1. прочитать `docs/PROJECT-WORKING-RULES.md` и этот документ;
-2. самостоятельно проверить live GitHub state: `main`, branches, PR, Issues, Actions и reviews;
-3. сопоставить live state с exact anchors ниже;
-4. продолжить с текущего незавершенного gate;
-5. не повторять уже полученные разрешения;
-6. fail closed при изменении base/head/scope/path allowlist.
+GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
 
-GitHub/Git — canonical source mutable lifecycle. SHA всегда перепроверяются.
-
-## 2. Репозиторий и среда
+## 2. Репозиторий и локальная среда
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
-main at snapshot: d60db94e405979c8f29bdc3dcaae7950362fb13a
+exact implementation base: 9ae05b9928903cc483ce415d7378b546e419264c
+base merge: PR #35 / Lowest Unit Staffing Structure v1
+implementation branch: feature/military-positions-directory-v1
 local repository: C:\Project\ASU-VCH
 deploy: C:\OSPanel\home\asu-vch.local
 domain: https://asu-vch.local
@@ -29,205 +28,154 @@ MySQL: 8.4
 PowerShell: 5.1
 ```
 
-GitHub operations выполняются ассистентом. Локальная машина используется для sync/deploy/MySQL/migrations/runtime/HTTP/browser/visual desktop acceptance. Длинные PowerShell-сценарии хранятся файлами в репозитории и совместимы с Windows PowerShell 5.1.
-
-## 3. Постоянный lifecycle
+## 3. Permanent lifecycle and exclusions
 
 ```text
 Research → Analysis → Architecture → Specification → Review → Approval
 → Implementation → Testing/Validation → Commit → Push → Pull Request
 → exact-head Actions → Final PR Review → separate Merge approval
 → Merge → Post-merge verification → separate Branch deletion approval
-→ Branch deletion
 ```
 
-Static CI не заменяет MySQL, migrations, deploy, HTTP/browser и visual acceptance. Mobile не считается проверенным без отдельного инкремента.
-
-## 4. Standing authorization governance
-
-Без повторных permission prompts можно поддерживать только:
-
-```text
-docs/PROJECT-WORKING-RULES.md
-docs/CHAT-HANDOFF.md
-```
-
-Разрешены отдельная docs branch, commit, PR, exact-head Actions, Final PR Review, merge после PASS и post-merge verification. Standing authorization не распространяется на третий путь, runtime, DB, migrations, workflows, themes, deploy, tools или settings.
-
-Branch deletion остается отдельно контролируемым. Новый recursive PR только ради записи merge SHA/cleanup самого handoff запрещен; merged governance PR + successful post-merge check является terminal evidence.
-
-## 5. Stable baseline
-
-```text
-runtime baseline: PR #24 / migrations through 012
-static CI baseline: PR #25
-GitHub/Git governance: PR #28
-local automation: PR #29 and #30
-permanent rules/handoff: PR #32
-latest handoff merge before this update: PR #33 / d60db94e405979c8f29bdc3dcaae7950362fb13a
-```
-
-Реализованы authentication, CSRF, user lifecycle, 4 system roles, 25 permissions, 3 themes, public ranks/positions/VUS, organizational element types, Organizational Structure v1 и migrations 001–012.
-
-## 6. Неизменное решение по продукту
+Static checks do not replace MySQL, backup, migrations, deploy, HTTP/browser or visual desktop acceptance. Mobile is `NOT RUN / OUT OF SCOPE`. Production deployment, workflow/settings changes and real staffing/personnel data are prohibited.
 
 ```text
 TARGET_CONTOUR=PersonnelServiceAccounting
 CitizenMilitaryAccounting=EXCLUDED
-```
-
-Не разрабатываются учет призывников/запаса, общий и специальный учет граждан, бронирование, учет работников организаций, муниципальный первичный учет, повестки, Реестр воинского учета и Реестр повесток.
-
-Приказ Минобороны России № 700 используется только как дополнительный источник применимых требований к документальному основанию, штатной должности, ВУС, приказам и действиям штаба воинской части. Полное кадрово-служебное регулирование требует иных официальных актов.
-
-## 7. Research branch
-
-```text
-SCOPE=Military Accounting Order 700 Research reframed for PersonnelServiceAccounting only
-BRANCH=research/military-accounting-order-700
-ORIGINAL_BASE_SHA=7ae5bcf77826870d6beee7293f101f679a521c56
-CURRENT_HEAD=69bf9c9e1609a40c7f4c27ff41b0ddeebabe2ffe
-AHEAD_FROM_ORIGINAL_BASE=8
-BEHIND_FROM_ORIGINAL_BASE=0
-CHANGED_PATHS=6
-RUNTIME_CONFIG_DB_DIFF=0
-REBASE=NO
-PULL_REQUEST=NOT CREATED
-BRANCH_DELETION=NOT AUTHORIZED
-```
-
-Allowlist:
-
-```text
-docs/research/military-accounting-order-700/README.md
-docs/research/military-accounting-order-700/OFFICIAL-SOURCE-REGISTER.md
-docs/research/military-accounting-order-700/LEGAL-AND-PROCESS-ANALYSIS.md
-docs/research/military-accounting-order-700/TARGET-ACCOUNTING-MODEL.md
-docs/research/military-accounting-order-700/ASU-VCH-MODERNIZATION-ROADMAP.md
-docs/research/military-accounting-order-700/SCOPE-DECISION-PERSONNEL-SERVICE-ONLY.md
-```
-
-Research conclusions and roadmap now consistently exclude `CitizenMilitaryAccounting`.
-
-## 8. Active functional increment
-
-```text
-NAME=Lowest Unit Staffing Structure v1
-CLASSIFICATION=functional
-CONTOUR=PersonnelServiceAccounting
-BASE_BRANCH=main
-BASE_SHA=d60db94e405979c8f29bdc3dcaae7950362fb13a
-FEATURE_BRANCH=feature/lowest-unit-staffing-v1
-CURRENT_FEATURE_HEAD=3af453f1e093e3a5b1c1d69365211a2abe7c8215
-MERGE_BASE=d60db94e405979c8f29bdc3dcaae7950362fb13a
-AHEAD=7
-BEHIND=0
-CURRENT_CHANGED_PATHS=4
-CURRENT_DIFF=documentation-only
-```
-
-Current paths:
-
-```text
-docs/domains/STAFFING.md
-docs/design/LOWEST-UNIT-STAFFING-V1-ARCHITECTURE.md
-docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md
-docs/design/LOWEST-UNIT-STAFFING-V1-REVIEW.md
-```
-
-## 9. Completed stages for active increment
-
-```text
-Research=COMPLETE
-Analysis=COMPLETE
-Architecture=COMPLETE / version 0.2
-Specification=COMPLETE / version 0.2
-Formal Review=PASS
-BLOCKING_FINDINGS=0
-MAJOR_FINDINGS=0
-MINOR_FINDINGS=0
-Approval=PENDING
-Implementation=NOT STARTED
-Testing=NOT STARTED
-Pull Request=NOT AUTHORIZED YET
-Merge=NOT AUTHORIZED
-Branch deletion=NOT AUTHORIZED
-```
-
-Resolved review findings:
-
-1. root organizational element is allowed; rollout from lower level is not a DB prohibition;
-2. draft copied from active keeps the same catalog versions; catalog migration is deferred;
-3. exact proposed implementation maximum is 44 paths, not 42.
-
-## 10. Approved design summary
-
-- separate `Staffing` domain; no parallel organizational tree;
-- link to stable `organizational_structure_elements.id` and pinned Organization version;
-- one row per individual staffing slot;
-- stable slot identity across versions;
-- version lifecycle `draft → approved → active → superseded`, cancellation before activation;
-- pinned position/rank/public-VUS catalogs;
-- no person, assignment, occupancy or actual vacancy in v1;
-- documents are metadata-only;
-- six new module permissions, no automatic non-owner grants;
-- module-level RBAC only; subtree ACL deferred;
-- migration planned as `013_lowest_unit_staffing_v1.sql`;
-- protected management UI plus read-only representations;
-- synthetic-only tests and documentation.
-
-Operational condition:
-
-```text
 NO_REAL_STAFFING_DATA_BEFORE_SECURITY_FOUNDATION
 ```
 
-Development/testing may use synthetic data. Real штатные сведения are not operationally accepted until a separate Data Classification and Security Foundation defines information category, deployment boundary, need-to-know, threat model and protection requirements.
-
-## 11. Proposed implementation scope
-
-The Specification enumerates exactly 44 maximum paths:
-
-- 4 current process documents;
-- migration 013;
-- `app/Staffing/*` exact files;
-- `public/admin/staffing/*` exact files;
-- `app/bootstrap.php` and `public/admin/content.php`;
-- two validation tools;
-- six living project documentation files.
-
-The authoritative exact list is section 9 of `docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md`. Any path outside it requires re-approval.
-
-## 12. Next gate
-
-Owner must approve exact feature head `3af453f1e093e3a5b1c1d69365211a2abe7c8215`, Architecture/Specification/Review, functional scope and 44-path implementation allowlist.
-
-After approval, permitted sequence:
+## 4. Completed dependency
 
 ```text
-Implementation → exact validation → local MySQL/deploy/HTTP/browser instructions
-→ commit/push validation → separate PR gate
+INCREMENT=Lowest Unit Staffing Structure v1
+PR=35
+MERGED_MAIN=9ae05b9928903cc483ce415d7378b546e419264c
+MIGRATION=013_lowest_unit_staffing_v1.sql
+POST_MERGE_ACTIONS=SUCCESS
 ```
 
-No PR, merge or deletion should be inferred from implementation approval unless explicitly included in the owner’s next exact authorization.
+Open PR and Issues were both zero at implementation preflight.
 
-## 13. Branch inventory warning
-
-At this snapshot, known non-main branches include:
+## 5. Active increment
 
 ```text
-research/military-accounting-order-700
-feature/lowest-unit-staffing-v1
-docs/handoff-military-accounting-research
+NAME=Military Positions Directory v1
+CLASSIFICATION=functional
+BASE_BRANCH=main
+EXPECTED_BASE_SHA=9ae05b9928903cc483ce415d7378b546e419264c
+FEATURE_BRANCH=feature/military-positions-directory-v1
+MIGRATION=database/migrations/014_military_positions_directory_v1.sql
+MAX_CHANGED_PATHS=38
+POST_STAFFING_RECONCILIATION=PASS
+BLOCKING_FINDINGS=0
+MAJOR_FINDINGS=0
+MINOR_FINDINGS=0
+OPEN_FINDINGS=0
+IMPLEMENTATION_APPROVAL=GRANTED
+PULL_REQUEST=NOT AUTHORIZED
+MERGE=NOT AUTHORIZED
+BRANCH_DELETION=NOT AUTHORIZED
+```
+
+The branch was created exactly from the expected base after live preflight confirmed main, missing implementation branch, migrations 001–013, absent migration 014 and no unexpected material increment.
+
+## 6. Design source and post-Staffing documents
+
+```text
+DESIGN_SOURCE_BRANCH=design/military-positions-directory-v1
+DESIGN_SOURCE_HEAD=bad4057251f9ebf996d83b3e246df24127a5d5cc
+DESIGN_SOURCE_MERGE_BASE=3d8a491ff2433994e8580152f190b298c765c66e
+DESIGN_BRANCH_AHEAD=3
+DESIGN_BRANCH_BEHIND=37
+```
+
+Never use the old design branch as implementation base. Its Architecture, Specification and Formal Review were transferred and reconciled as version 0.2 on the exact feature branch before runtime edits.
+
+## 7. Frozen product contract
+
+- evolve existing `military_position_catalog_versions` + `military_position_types`; no parallel catalog;
+- standalone migration 014; migration-010 marker, loader and five payload parts remain untouched;
+- lifecycle `draft → published → superseded` and `draft → cancelled`;
+- stable identity, normalized uniqueness, optimistic revisions and append-only history;
+- legacy classifier remains current published; migration creates one canonical draft;
+- exact 24 approved synthetic names and exact nine explicit combined flags;
+- explicit publication atomically supersedes legacy without deletion;
+- four permissions, no automatic non-owner grants;
+- Russian managed UI and readable history, no raw JSON;
+- existing Staffing versions remain pinned; no hidden catalog remap;
+- archived canonical entries are excluded from new Staffing selectors;
+- desktop layouts for `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova` use theme variables;
+- no VUS/rank/unit/person/equipment/occupancy fields in canonical position entity.
+
+## 8. Implementation inventory
+
+Implementation is contained by the exact approved 38-path allowlist. Major components:
+
+```text
+database/migrations/014_military_positions_directory_v1.sql
+app/Directory/MilitaryPositionCatalogRepository.php
+app/Directory/MilitaryPositionCatalogService.php
+app/Directory/MilitaryPositionCatalogFunctions.php
+app/Staffing/StaffingRepository.php
+public/admin/directories/military-positions.php
+public/admin/directories/military-positions/version.php
+public/admin/directories/military-positions/history.php
+public/admin/directories/military-positions/{versions,entries,views}/* approved files
+themes/{asu-blue,asu-light-blue,asu-evgeniya-rostova}/assets/css/directories.css
+tools/Test-MilitaryPositionsDirectoryV1.ps1
+tools/check-military-positions-directory-v1.php
+three design 0.2 docs and nine living docs
+```
+
+Use the exact list in the PowerShell runner or static checker; do not infer additional paths.
+
+## 9. Validation contract
+
+Prepared command for the target local machine:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Test-MilitaryPositionsDirectoryV1.ps1 `
+  -RepositoryPath C:\Project\ASU-VCH `
+  -ExpectedHead <EXACT_FEATURE_HEAD> `
+  -RunInitialization `
+  -RunHttpSmoke `
+  -AllowInvalidCertificate
+```
+
+The runner enforces branch/base/head, maximum 38 paths, exact allowlist, clean worktree, `git diff --check`, PHP lint, static checker, protected migration-010 hashes, mandatory pre-migration backup, initialization, repeat installer, DB checker and optional HTTP smoke.
+
+Required remaining evidence:
+
+```text
+AVAILABLE_STATIC_VALIDATION=PENDING/RE-RUN ON EXACT HEAD
+CLEAN_DB_001_014=PENDING
+EXISTING_DB_BACKUP_MIGRATION_REPEAT=PENDING
+LIFECYCLE_AND_REVISION_TESTS=PENDING
+STAFFING_PINNING_REGRESSION=PENDING
+HTTP_SMOKE=PENDING
+DESKTOP_THREE_THEMES=PENDING
+MOBILE_ACCEPTANCE=NOT RUN / OUT OF SCOPE
+```
+
+Only actual output may turn a pending item into PASS.
+
+## 10. Remote branch warning
+
+At preflight the repository contained:
+
+```text
+main
+design/military-positions-directory-v1
 docs/handoff-lowest-unit-staffing-design
+docs/handoff-military-accounting-research
+research/military-accounting-order-700
 ```
 
-Do not delete any branch without explicit authorization.
+The implementation branch was then added. No branch may be deleted without separate authorization.
 
-## 14. Current action on chat restart
+## 11. Next gate
 
-1. Verify live `main` and feature head.
-2. Read the four active design documents.
-3. Confirm Review remains PASS and compare remains 4-path documentation-only.
-4. Wait for or process the exact owner Approval gate.
-5. Do not begin runtime implementation from a moved head or expanded path list.
+If implementation is not yet committed/pushed, finish available validation, inspect exact diff and commit/push only to `feature/military-positions-directory-v1`. If already pushed, verify the live feature head and report results.
+
+Do not create a Pull Request. The next owner-controlled gate after implementation push is separate exact-head PR authorization. Merge, branch deletion and production deployment remain forbidden.

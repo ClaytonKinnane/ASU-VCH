@@ -1,124 +1,118 @@
 # Матрица трассируемости проекта АСУ-ВЧ
 
-## 1. Статус документа
+## 1. Текущий increment
 
 ```text
-DOCUMENT=TRACEABILITY
-INCREMENT=Lowest Unit Staffing Structure v1
+INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
-CitizenMilitaryAccounting=EXCLUDED
-BASE_SHA=d60db94e405979c8f29bdc3dcaae7950362fb13a
-FEATURE_BRANCH=feature/lowest-unit-staffing-v1
-IMPLEMENTATION_COMMIT=59da90e335f0253a55539fb1697c0c73f17abbad
-INTEGRITY_FIX_COMMIT=ab5a5cf935c5dd0cb2a4e8c7578fd24d33b7c367
-IMPLEMENTATION_STATUS=IMPLEMENTED
-LOCAL_VALIDATION_STATUS=IN_PROGRESS
-OPERATIONAL_CONDITION=NO_REAL_STAFFING_DATA_BEFORE_SECURITY_FOUNDATION
+BASE_SHA=9ae05b9928903cc483ce415d7378b546e419264c
+FEATURE_BRANCH=feature/military-positions-directory-v1
+MIGRATION=014_military_positions_directory_v1.sql
+ARCHITECTURE=0.2
+SPECIFICATION=0.2
+FORMAL_REVIEW=PASS
+IMPLEMENTATION=PREPARED
+LOCAL_DB_HTTP_DESKTOP_VALIDATION=NOT RUN
+MOBILE_ACCEPTANCE=NOT RUN / OUT OF SCOPE
+REAL_STAFFING_DATA=PROHIBITED
 ```
 
-Документ связывает утвержденные требования Specification 0.2 с реализацией и проверками. Он не является свидетельством прохождения MySQL, deploy, HTTP, browser или mobile acceptance до появления соответствующих фактических результатов.
+GitHub/Git is canonical for the final feature head. This document does not claim MySQL, deploy, HTTP, browser or manual desktop results without actual exact-head output.
 
-## 2. Нормативные и проектные основания
+## 2. Design and implementation sources
 
-- `docs/domains/STAFFING.md` — границы домена и инварианты.
-- `docs/design/LOWEST-UNIT-STAFFING-V1-ARCHITECTURE.md` — Architecture 0.2.
-- `docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md` — Specification 0.2.
-- `docs/design/LOWEST-UNIT-STAFFING-V1-REVIEW.md` — Formal Review PASS.
-- `database/migrations/013_lowest_unit_staffing_v1.sql` — схема, permissions и DB-level guards.
-- `tools/check-lowest-unit-staffing-v1.php` — статическая проверка реализации.
-- `tools/Test-LowestUnitStaffingV1.ps1` — локальный validation orchestrator.
+- `docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md`;
+- `docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md`;
+- `docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md`;
+- `database/migrations/014_military_positions_directory_v1.sql`;
+- `app/Directory/MilitaryPositionCatalogRepository.php`;
+- `app/Directory/MilitaryPositionCatalogService.php`;
+- `app/Directory/MilitaryPositionCatalogFunctions.php`;
+- `tools/check-military-positions-directory-v1.php`;
+- `tools/Test-MilitaryPositionsDirectoryV1.ps1`.
 
 ## 3. Functional requirements
 
-| Requirement | Реализация | Проверка | Текущий статус |
-|---|---|---|---|
-| FR-01 Navigation | `public/admin/content.php`, `public/admin/staffing/registers.php` | permission-aware link checks в static checker; HTTP/browser gate | Implemented; runtime validation pending |
-| FR-02 Register list | `StaffingRepository.php`, `registers.php`, `views/register-list.php` | PHP lint; static path checks; HTTP/browser gate | Implemented; runtime validation pending |
-| FR-03 Create register | `StaffingCreateUpdateTrait.php`, `registers/create.php` | route permission/CSRF/PRG checks; synthetic service tests pending | Implemented; DB/service validation pending |
-| FR-04 Update register | `StaffingCreateUpdateTrait.php`, `registers/update.php` | expected token and permission paths; synthetic stale-token test pending | Implemented; DB/service validation pending |
-| FR-05 Archive/restore | `StaffingCreateUpdateTrait.php`, `registers/archive.php`, `registers/restore.php` | route checks; lifecycle tests pending | Implemented; DB/service validation pending |
-| FR-06 Initial draft | `StaffingCreateUpdateTrait.php`, `versions/create.php` | pinned catalog/Organization checks; clean/current DB tests pending | Implemented; DB/service validation pending |
-| FR-07 Draft from active | `StaffingCreateUpdateTrait.php` | copy-on-write and no catalog remapping; synthetic tests pending | Implemented; DB/service validation pending |
-| FR-08 Version card | `register.php`, `views/register-card.php`, `views/version-card.php` | PHP lint; HTTP/browser gate | Implemented; runtime validation pending |
-| FR-09 Document create/link | `StaffingDocumentTrait.php`, document routes and view | published immutability guards; synthetic tests pending | Implemented; DB/service validation pending |
-| FR-10 Slot create | `StaffingSlotTrait.php`, `slots/create.php`, `views/slot-form.php` | Organization/catalog/rank/VUS guards; synthetic tests pending | Implemented; DB/service validation pending |
-| FR-11 Slot update/remove | `StaffingSlotTrait.php`, slot update/remove routes | draft-only and stable identity guards; synthetic tests pending | Implemented; DB/service validation pending |
-| FR-12 Approve | `StaffingLifecycleTrait.php`, `versions/approve.php` | primary basis/active slot/revision checks; lifecycle tests pending | Implemented; DB/service validation pending |
-| FR-13 Cancel | `StaffingLifecycleTrait.php`, `versions/cancel.php` | lifecycle and revision tests pending | Implemented; DB/service validation pending |
-| FR-14 Activate | `StaffingLifecycleTrait.php`, `versions/activate.php` | transactional activation/guards; current DB tests pending | Implemented; DB/service validation pending |
-| FR-15 Read by organization element | repository queries, `version-card.php` | no occupied/vacant static check; browser gate | Implemented; runtime validation pending |
-| FR-16 Compare | `public/admin/staffing/compare.php` | PHP lint; synthetic compare/browser tests pending | Implemented; runtime validation pending |
-| FR-17 History | `staffing_change_events`, `history.php` | append-only triggers/static checks; DB tests pending | Implemented; DB validation pending |
-| FR-18 Explicit data exclusion | migration, domain service, routes and views | static scan for personnel and CitizenMilitaryAccounting fields | Static PASS; real data prohibited |
-
-## 4. Cross-cutting requirements
-
-| Область | Реализация | Проверка |
+| Requirement | Реализация | Verification status |
 |---|---|---|
-| Permissions | six `staffing.registers.*` permissions in migration 013; no non-owner grants | static checker; clean/current DB inspection pending |
-| Authentication and authorization | common application authentication plus route-specific permission checks | static route checks; HTTP permission matrix pending |
-| CSRF and POST/Redirect/GET | common `staffing_handle_action()` | static checker; HTTP mutation tests pending |
-| Optimistic concurrency | expected register token and version revision | synthetic stale-command tests pending |
-| Transaction boundaries | repository/service transaction wrappers and canonical locking | DB rollback/concurrency tests pending |
-| Published immutability | DB triggers for versions, slots, VUS requirements and documents | static trigger checks; MySQL negative tests pending |
-| Stable slot identity | `staffing_slot_identities` and immutable linkage | static schema checks; cross-version tests pending |
-| Append-only history | `staffing_change_events` plus update/delete rejection triggers | static checks; MySQL negative tests pending |
-| Catalog pinning | Organization, position, rank and public VUS versions on `staffing_versions` | static schema/trigger checks; MySQL mismatch tests pending |
-| Output safety | shared escaping helpers and safe error handling | PHP lint/static review; browser inspection pending |
-| Theme reuse | existing layout/components without feature-specific theme colors | desktop browser acceptance for three themes pending |
-| Personal/restricted data exclusion | no person assignment, ФИО, occupied/vacant facts or real staffing seed | static PASS; operational prohibition remains active |
+| FR-01 permission-aware navigation | `content.php`, `directories.php`, main route | Static checker prepared; HTTP pending |
+| FR-02 four permissions/no grants | migration 014 | Static/DB checks prepared; DB pending |
+| FR-03 version list/current/draft/history | repository, main/version views | PHP/browser pending |
+| FR-04 initial canonical draft | migration 014 | Exact 24/9 static + DB checks prepared |
+| FR-05 create next draft | service + `versions/create.php` | DB/service test pending |
+| FR-06 canonical entry model | altered `military_position_types`, service/forms | Static/schema checks prepared |
+| FR-07 normalized unique name | normalized column/unique key/service | Duplicate negative test pending |
+| FR-08 stable identity | `stable_key`, copy logic, immutable trigger | Cross-version test pending |
+| FR-09 create/update entry | service + explicit request-field routes | CSRF/revision/static; runtime pending |
+| FR-10 archive/restore | service/routes, no physical delete | Lifecycle and selector tests pending |
+| FR-11 atomic publish | service transaction + version trigger | MySQL transaction test pending |
+| FR-12 cancel draft | service/route + terminal immutability | MySQL lifecycle test pending |
+| FR-13 filters | repository + version page | HTTP/browser pending |
+| FR-14 entry card/usage | entry view + Staffing count | Browser/data check pending |
+| FR-15 readable append-only history | history table/triggers/functions/page | Static prepared; DB/browser pending |
+| FR-16 exact 24 synthetic names | migration seed + checker exact ordered set | Static checker prepared; DB pending |
+| FR-17 exact combined flags | nine explicit seed values, no parser | Static checker prepared; DB pending |
 
-## 5. Database objects
+## 4. Transition and compatibility
 
-| Object | Purpose | Verification |
+| Contract | Реализация | Verification status |
 |---|---|---|
-| `staffing_registers` | stable staffing register identity | migration static check; MySQL pending |
-| `staffing_slot_identities` | stable slot identity across versions | migration static check; MySQL pending |
-| `staffing_versions` | versioned lifecycle and pinned catalogs | guards/static check; MySQL pending |
-| `staffing_documents` | basis-document metadata without files | immutability/static check; MySQL pending |
-| `staffing_version_documents` | version-to-document role and ordering | draft/published guards; MySQL pending |
-| `staffing_slots` | normative slot snapshots | catalog/Organization guards; MySQL pending |
-| `staffing_slot_vus_requirements` | public VUS requirements per slot | pinned version/delete guards; MySQL pending |
-| `staffing_change_events` | append-only domain history | append-only triggers; MySQL pending |
+| one catalog, no parallel entity | existing version/type tables altered | Static/schema review prepared |
+| migration 010 untouched | protected hashes in checker | Hash check prepared |
+| legacy rows/metadata preserved | no destructive DROP or remap | Existing DB backup/regression pending |
+| legacy initially stays published | migration creates canonical `draft` only | DB check pending |
+| explicit publish supersedes legacy | atomic service transaction | Lifecycle test pending |
+| existing Staffing pins unchanged | migration contains no Staffing update | DB referential check pending |
+| canonical type uses null optional variant | existing Staffing schema retained | Synthetic slot test pending |
+| archived canonical entry not newly selectable | `StaffingRepository::positionTypes()` | Repository/static prepared; browser pending |
 
-## 6. Acceptance criteria status
+## 5. Security and integrity
 
-| AC | Criterion | Status |
-|---|---|---|
-| AC-01 | Exact base/head/path checks | PASS before local validation; must repeat on final head |
-| AC-02 | Clean/current MySQL migration | NOT RUN |
-| AC-03 | DB and service invariants | Static PASS; runtime NOT RUN |
-| AC-04 | No real/personal/restricted data committed | PASS by static inspection |
-| AC-05 | Permissions fail closed | Implemented; runtime permission matrix NOT RUN |
-| AC-06 | Published content immutable | Implemented and statically checked; MySQL negative tests NOT RUN |
-| AC-07 | Activation atomic | Implemented; MySQL transaction test NOT RUN |
-| AC-08 | Catalog copy rule enforced | Implemented; synthetic test NOT RUN |
-| AC-09 | Root and non-root elements supported | Implemented; synthetic/browser test NOT RUN |
-| AC-10 | No false vacancy/occupancy statement | Static PASS |
-| AC-11 | Desktop acceptance in three themes | NOT RUN |
-| AC-12 | Mobile honestly untested | NOT RUN / no PASS claimed |
-| AC-13 | Regressions | NOT RUN |
-| AC-14 | Documentation matches implementation | IN PROGRESS; this matrix added after implementation |
-| AC-15 | Final PR Review without blocking/major findings | NOT STARTED; PR not authorized/created |
-| AC-16 | Separate merge and branch deletion control | ENFORCED; neither operation performed |
+| Area | Contract |
+|---|---|
+| Authentication/RBAC | view/manage/publish/history permissions; owner wildcard only |
+| Mutations | POST, permission-first, CSRF, transaction, expected revision, PRG |
+| Concurrency | version and entry rows locked; stale revisions roll back |
+| Published state | published/superseded/cancelled content immutable |
+| Deletion | no user or DB physical delete path for versions/entries/history |
+| History | append-only events; UI renders Russian field/value pairs, not raw JSON |
+| Data boundary | no VUS/rank/unit/person/equipment/occupancy fields in canonical entry requests |
+| Test data | exactly 24 approved synthetic names; no real staffing/person data |
 
-## 7. Current validation evidence
+## 6. Exact path and test gates
 
-The first local run on the implementation head completed PHP syntax checks for all changed PHP files and produced 122 static passes. It then stopped before initialization because this traceability document, listed in the approved allowlist, had not yet been created.
+```text
+APPROVED_ALLOWLIST_PATHS=38
+MAX_CHANGED_PATHS=38
+MIGRATION_010_PROTECTED_FILES=7
+PHP_LINT=PENDING
+STATIC_CHECKER=PENDING
+CLEAN_DB=PENDING
+EXISTING_DB_BACKUP_AND_MIGRATION=PENDING
+REPEAT_INSTALLER=PENDING
+STAFFING_REGRESSION=PENDING
+HTTP_SMOKE=PENDING
+DESKTOP_ASU_BLUE=PENDING
+DESKTOP_ASU_LIGHT_BLUE=PENDING
+DESKTOP_ASU_EVGENIYA_ROSTOVA=PENDING
+MOBILE_ACCEPTANCE=NOT RUN / OUT OF SCOPE
+```
 
-After this document is synchronized locally, the complete command must be repeated. Only its actual output may change MySQL, deploy, HTTP and browser statuses in this matrix or other project documentation.
+The exact runner accepts `-ExpectedHead` after an implementation commit exists. Its actual output is the only authority for changing these statuses.
 
-## 8. Explicit exclusions
+## 7. Prior increment closure
 
-This increment does not implement:
+`Lowest Unit Staffing Structure v1` is no longer active work:
 
-- `CitizenMilitaryAccounting`;
-- personnel records or person-to-slot assignments;
-- actual occupied/vacant state;
-- real staffing data;
-- file or photo storage;
-- leave planning;
-- medical data;
-- import/export or external integration;
-- production deployment;
-- mobile acceptance.
+```text
+MERGED_PR=35
+MERGED_MAIN_SHA=9ae05b9928903cc483ce415d7378b546e419264c
+MIGRATION=013_lowest_unit_staffing_v1.sql
+POST_MERGE_ACTIONS=SUCCESS
+```
+
+Its catalog pinning is preserved by this increment. Personnel assignments, occupied/vacant facts, real staffing data and `CitizenMilitaryAccounting` remain excluded.
+
+## 8. Remaining gates
+
+Implementation Approval authorizes commit and push only to the feature branch. Pull Request, merge, branch deletion, repository/workflow/settings changes and production deployment remain unauthorized.

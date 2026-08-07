@@ -6,10 +6,11 @@
 
 ```text
 INCREMENT=Lowest Unit Staffing Structure v1
-VERSION=0.2
-BASE_SHA=d60db94e405979c8f29bdc3dcaae7950362fb13a
-FEATURE_BRANCH=feature/lowest-unit-staffing-v1
-IMPLEMENTATION=NOT STARTED
+VERSION=1.0
+MERGED_MAIN_SHA=9ae05b9928903cc483ce415d7378b546e419264c
+MERGED_PR=35
+MIGRATION=013_lowest_unit_staffing_v1.sql
+IMPLEMENTATION=MERGED
 ```
 
 Он описывает штатные документы и индивидуальные позиции, но не хранит военнослужащих и не утверждает фактическую занятость.
@@ -187,6 +188,7 @@ The product begins with lower units, but this is a rollout rule, not a DB prohib
 5. Rank IDs belong to rank version; min ≤ max; preferred lies within range.
 6. VUS IDs belong to pinned VUS version.
 7. Free-form official codes are prohibited.
+8. Archived entries of a canonical military-position catalog are unavailable for new slots; existing slot/history reads remain intact.
 
 ## 10. Assignment-state semantics
 
@@ -284,3 +286,14 @@ Only synthetic non-sensitive codes, units, documents and slots enter migrations,
 ## 17. Explicit exclusion
 
 No fields or processes for conscripts, reserve, booking, summons, citizen registration or state military-accounting registries may enter this domain.
+
+## 18. Military Positions Directory v1 compatibility
+
+Migration 014 evolves the existing position catalog without changing Staffing version pins:
+
+- existing `staffing_versions.position_catalog_version_id` values are never remapped;
+- existing `position_type_id` and optional `position_variant_id` remain readable;
+- a new register pins whichever catalog version is current published at creation time;
+- draft-from-active retains the original pinned catalog version;
+- canonical entries use `position_variant_id = NULL`;
+- `StaffingRepository::positionTypes()` filters archived canonical entries from new selectors while keeping legacy classifier rows selectable for legacy-pinned versions.

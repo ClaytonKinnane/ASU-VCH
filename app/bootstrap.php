@@ -14,6 +14,8 @@ $config = array_replace_recursive($app, $local);
 require_once __DIR__ . '/BootstrapOwnerService.php';
 require_once __DIR__ . '/Directory/MilitaryRankCatalogRepository.php';
 require_once __DIR__ . '/Directory/MilitaryPositionCatalogRepository.php';
+require_once __DIR__ . '/Directory/MilitaryPositionCatalogService.php';
+require_once __DIR__ . '/Directory/MilitaryPositionCatalogFunctions.php';
 require_once __DIR__ . '/Directory/MilitaryOccupationalSpecialtyCatalogRepository.php';
 require_once __DIR__ . '/Directory/OrganizationalElementCatalogRepository.php';
 require_once __DIR__ . '/Security/AuthorizationService.php';
@@ -172,6 +174,15 @@ function military_position_catalog_repository(): MilitaryPositionCatalogReposito
         $repository = new MilitaryPositionCatalogRepository(db());
     }
     return $repository;
+}
+
+function military_position_catalog_service(): MilitaryPositionCatalogService
+{
+    static $service = null;
+    if (!$service instanceof MilitaryPositionCatalogService) {
+        $service = new MilitaryPositionCatalogService(db(), military_position_catalog_repository());
+    }
+    return $service;
 }
 
 function military_occupational_specialty_catalog_repository(): MilitaryOccupationalSpecialtyCatalogRepository

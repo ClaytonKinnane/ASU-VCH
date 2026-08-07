@@ -1,0 +1,388 @@
+# Military Positions Directory v1 — Specification
+
+## 1. Статус
+
+```text
+DOCUMENT=Specification
+VERSION=0.2
+INCREMENT=Military Positions Directory v1
+CONTOUR=PersonnelServiceAccounting
+ARCHITECTURE=docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
+IMPLEMENTATION_BASE_SHA=9ae05b9928903cc483ce415d7378b546e419264c
+MIGRATION=database/migrations/014_military_positions_directory_v1.sql
+POST_STAFFING_RECONCILIATION=PASS
+IMPLEMENTATION=AUTHORIZED
+```
+
+## 2. Functional scope
+
+V1 реализует управляемый глобальный версионируемый справочник канонических наименований воинских должностей на существующих `military_position_catalog_versions` и `military_position_types`.
+
+### FR-01. Directory navigation
+
+Плитка `Воинские должности` ведёт на `/admin/directories/military-positions.php` и описывается как `Единый версионируемый справочник канонических наименований воинских должностей.`
+
+Модуль доступен из `/admin/content.php` обладателю view permission. Перечень плиток `/admin/directories.php` permission-aware и не раскрывает недоступный модуль.
+
+### FR-02. Permissions
+
+```text
+directories.military_positions.view
+directories.military_positions.manage
+directories.military_positions.publish
+directories.military_positions.history
+```
+
+Owner wildcard сохраняется. Migration не добавляет `role_permissions` для non-owner roles.
+
+### FR-03. Version list/current version
+
+Экран показывает current published, optional draft, superseded и cancelled versions: code/name/version number, status, effective dates, revision, entry count и legacy/canonical mode.
+
+Одновременно допускается максимум одна draft и одна current published version.
+
+### FR-04. Initial canonical draft
+
+Migration 014 сохраняет legacy classifier current published и создаёт ровно одну canonical draft version с ровно 24 записями FR-16. Автоматическая публикация migration запрещена.
+
+### FR-05. Create next draft version
+
+После публикации canonical version следующая draft создаётся копированием current published version с сохранением stable keys.
+
+Input:
+
+```text
+version_label          required, 1..255
+effective_from         required date
+change_reason          required, 1..1000
+expected_catalog_revision required positive integer
+```
+
+Создание draft атомарно копирует canonical entries и добавляет history event.
+
+### FR-06. Position entry model
+
+Editable:
+
+```text
+name                     required, 1..255
+full_name                nullable, <=255
+short_name               nullable, <=128
+is_combined              boolean
+source_type              official|local|imported
+source_reference         nullable, <=1000
+note                     nullable, <=5000
+status                   active|archived
+sort_order               positive integer
+```
+
+System-managed:
+
+```text
+id
+stable_key
+code
+normalized_name
+catalog_version_id
+created_at / created_by
+updated_at / updated_by
+revision
+```
+
+No VUS, rank, unit, person, equipment, occupancy or staffing quantity field is accepted or persisted.
+
+### FR-07. Canonical name rules
+
+- trim leading/trailing whitespace;
+- collapse repeated Unicode whitespace for normalized comparison;
+- compare normalized names case-insensitively;
+- unique normalized name inside one version;
+- archived entry remains unique and addressable;
+- internal IDs/keys are not shown as business codes.
+
+### FR-08. Stable identity across versions
+
+Copy preserves `stable_key`. Rename in draft preserves stable identity. New logical position receives a new random stable key. Stable identity and catalog binding are immutable.
+
+### FR-09. Create/update entry
+
+Manage permission, POST, CSRF, draft only, expected catalog and entry revision. Allowed request fields are exactly FR-06 editable fields plus revision/reason controls.
+
+### FR-10. Archive/restore entry
+
+Manage permission, POST, CSRF, draft only, expected revisions and mandatory reason. Archive sets `status=archived`; restore sets `status=active`. Physical delete is absent.
+
+Archived entry is excluded from new Staffing slot selectors while historical references remain readable.
+
+### FR-11. Publish version
+
+Preconditions:
+
+- draft exists and revision matches;
+- at least one active entry;
+- no invalid/duplicate normalized names;
+- stable identities unique;
+- all entry values valid;
+- publish permission and mandatory reason.
+
+Atomic effect:
+
+```text
+previous published → superseded
+previous valid_to = draft effective_from
+draft → published
+published_at / published_by recorded
+history event appended
+```
+
+Published content becomes immutable. Initial canonical publication supersede-ит legacy version without destroying it.
+
+### FR-12. Cancel draft
+
+Draft can be cancelled with expected revision and mandatory reason. Cancelled content is immutable and cannot become current.
+
+### FR-13. Search/filter
+
+```text
+q
+status=active|archived
+is_combined=0|1
+source_type=official|local|imported
+```
+
+Search covers name, full name, short name and source reference. Filters are read-only query parameters and do not bypass version binding.
+
+### FR-14. Entry card
+
+Card shows name, full/short name, combined flag, source, source reference, note, status and read-only Staffing usage count. It never renders VUS/rank/unit/person as position properties.
+
+### FR-15. History
+
+Append-only events:
+
+```text
+catalog.version.created
+catalog.version.published
+catalog.version.cancelled
+position.created
+position.updated
+position.archived
+position.restored
+```
+
+History stores actor/time/version/target/before/after/reason. UI renders readable Russian field labels and values; raw JSON is never displayed.
+
+### FR-16. Initial synthetic dataset
+
+Initial canonical draft contains exactly:
+
+```text
+Командир роты
+Заместитель командира роты по военно-политической работе
+Старшина
+Санитарный инструктор
+Командир взвода
+Начальник аппаратной-техник
+Техник
+Оператор
+Командир отделения
+Старший механик
+Механик
+Начальник радиостанции
+Механик-радиотелефонист
+Радиотелеграфист
+Водитель-электрик
+Радиотелефонист
+Водитель-радиотелефонист
+Заместитель командира взвода-командир отделения
+Регулировщик
+Регулировщик-наводчик
+Регулировщик-радиотелефонист
+Водитель-регулировщик
+Водитель
+Водитель-гранатометчик
+```
+
+Source file is not committed. All records use synthetic/local source metadata; real staffing data is prohibited.
+
+### FR-17. Combined flag seed
+
+Exactly these initial entries have `is_combined=true`:
+
+```text
+Начальник аппаратной-техник
+Механик-радиотелефонист
+Водитель-электрик
+Водитель-радиотелефонист
+Заместитель командира взвода-командир отделения
+Регулировщик-наводчик
+Регулировщик-радиотелефонист
+Водитель-регулировщик
+Водитель-гранатометчик
+```
+
+Other initial entries are false. No hyphen parser is used.
+
+## 3. Existing catalog transition
+
+### TR-01. Existing physical schema
+
+Migration 014 alters existing migration-010 tables. It does not create a competing catalog and does not modify migration-010 marker/loader/payloads.
+
+### TR-02. Legacy published version
+
+Legacy version remains published until explicit canonical draft publication, then becomes superseded. Existing rows, variants, families, scopes, org relations and source/legal provenance remain intact and readable.
+
+### TR-03. Canonical version
+
+The first canonical writable version is a new draft, never an in-place mutation of legacy published rows.
+
+### TR-04. Legacy compatibility values
+
+Migration assigns safe canonical defaults to legacy rows only where new non-null schema requires them; it must not rewrite legacy names/codes/classification. New entries do not require legacy variants/families/scopes/org relations.
+
+### TR-05. Legacy UI
+
+Main route is canonical managed UI. Any legacy/superseded version is inspectable read-only on the version page. No historical provenance is destroyed.
+
+## 4. Staffing compatibility
+
+### ST-01. Version pinning
+
+Existing StaffingVersion remains pinned. No migration or service silently remaps `position_catalog_version_id`, `position_type_id` or `position_variant_id`.
+
+### ST-02. New Staffing register
+
+New initial Staffing draft can select only a published position catalog. After canonical publication it can pin that version.
+
+### ST-03. Draft from active
+
+Staffing draft-from-active continues copying the same pinned catalog version. Catalog upgrade/remap is a future increment.
+
+### ST-04. Slot fields
+
+`position_type_id` continues to reference `military_position_types`; `position_variant_id` remains optional. Canonical entries use null variant.
+
+### ST-05. Archived entries
+
+Repository selectors for new Staffing slots return only active canonical entries for canonical versions. Existing slot/history reads retain archived entries. Legacy version behavior remains compatible.
+
+## 5. Database requirements
+
+Migration 014 must:
+
+- extend lifecycle from `building/published/superseded` to `draft/published/superseded/cancelled` while handling legacy `building` safely;
+- add version revision, dates/audit/cancellation metadata and single-draft guard;
+- extend `military_position_types` with stable key, normalized name, full/short names, combined flag, source metadata, note, status, revision and audit fields;
+- add unique version/stable and version/normalized-name constraints;
+- add append-only history table;
+- create four permissions without non-owner grants;
+- create one initial canonical draft and exactly 24 approved records;
+- preserve all legacy data/FKs and catalog-level compatibility links;
+- enforce immutable terminal versions, draft-only entry mutations and valid transitions;
+- be repeat-safe for clean/existing installer execution.
+
+No destructive DROP of legacy classifier schema is allowed.
+
+## 6. Service/action behavior
+
+All mutations are POST-only, authenticated, permission-first, CSRF-protected, expected-revision guarded, transaction-bound and PRG redirected. Validation and database errors become safe Russian messages; raw SQL/exception details are not disclosed.
+
+Repository and service methods must bind every entry operation to its catalog version. Expected-revision mismatch rolls back the whole transaction.
+
+## 7. UI requirements
+
+Screens:
+
+```text
+/admin/directories/military-positions.php
+/admin/directories/military-positions/version.php
+/admin/directories/military-positions/history.php
+```
+
+Actions/forms:
+
+```text
+create draft
+create position
+update position
+archive position
+restore position
+publish version
+cancel version
+```
+
+Uses theme assets/variables only. Desktop validation covers all three current themes. Mobile is `NOT RUN / OUT OF SCOPE`.
+
+## 8. Exact implementation boundary
+
+```text
+MAX_CHANGED_PATHS=38
+EXACT_CHANGED_PATH_ALLOWLIST_COUNT=38
+```
+
+The exact path list is the owner-approved allowlist in the 2026-08-07 Implementation Approval. No migration compatibility file, workflow, configuration, repository setting or production deployment path is permitted.
+
+## 9. Tests
+
+### Static
+
+- exact base/branch/merge-base and 38-path allowlist;
+- PHP lint and `git diff --check`;
+- exact migration filename and no changes to migration 010 compatibility files;
+- no personal/real staffing data and no forbidden entity fields;
+- no destructive legacy DROP or hidden Staffing remap;
+- Russian UI and no raw JSON history.
+
+### Clean DB
+
+- migrations 001–014;
+- legacy version remains published;
+- exactly one initial canonical draft with exactly 24 approved names/flags;
+- four permissions without non-owner grants;
+- repeat installer no-op.
+
+### Existing DB with backup
+
+- all legacy catalog counts/data and Staffing references preserved;
+- migration repeat no-op;
+- draft/lifecycle guards and history work after upgrade.
+
+### Functional/lifecycle
+
+- create/update/archive/restore entry in draft;
+- duplicate normalized name and stale revision rejection;
+- publish/cancel; terminal mutation rejection;
+- stable key survives version copy/rename;
+- history is append-only/readable;
+- legacy version read-only;
+- existing Staffing pin unchanged;
+- archived canonical entry unavailable for new slot.
+
+### Desktop and HTTP
+
+Validate list, filters, version/entry cards, editor, history and actions in three themes, then authenticated HTTP smoke. Mobile is not claimed.
+
+## 10. Non-goals
+
+- VUS/rank profiles;
+- Excel importer or source workbook in runtime;
+- catalog upgrade/remap for an existing StaffingVersion;
+- personnel, occupancy, equipment or real staffing data;
+- external integration or production deployment;
+- mobile acceptance;
+- destructive legacy cleanup.
+
+## 11. Implementation gate result
+
+```text
+POST_STAFFING_RECONCILIATION=PASS
+BLOCKING_FINDINGS=0
+MAJOR_FINDINGS=0
+MINOR_FINDINGS=0
+OPEN_FINDINGS=0
+OWNER_IMPLEMENTATION_APPROVAL=GRANTED
+PR=NOT AUTHORIZED
+MERGE=NOT AUTHORIZED
+```

@@ -1,6 +1,6 @@
 # Текущее состояние проекта АСУ-ВЧ
 
-Дата актуализации durable functional и technical baseline: `2026-08-05`.
+Дата актуализации durable functional и active implementation state: `2026-08-07`.
 
 ## Репозиторий и anchors
 
@@ -14,7 +14,8 @@ git rev-parse origin/main
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
-latest functional runtime baseline: PR #24 / migration 012
+latest merged functional baseline: PR #35 / migration 013
+current main SHA: 9ae05b9928903cc483ce415d7378b546e419264c
 static CI baseline: PR #25
 documentation governance baseline: PR #28
 local automation foundation: PR #29
@@ -26,12 +27,14 @@ PR #25 merge commit: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
 PR #29 merge commit: 375f941be3f50f9f1f264da244f0dc31496e2a6f
 PR #30 corrected implementation head: fede2aa8c9c7b896f142075caa69b35219d4016d
 PR #30 merge commit: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
-migrations: 001–012
+migrations on main: 001–013
+implementation target migration: 014
 system roles: 4
-system permissions: 25
+system permissions on main: 31
+target permissions after migration 014: 35
 built-in themes: 3
 required CSS assets per theme: 10
-active functional increment: none
+active functional increment: Military Positions Directory v1
 active material technical increment: none
 ```
 
@@ -40,12 +43,13 @@ Documentation-only commits после runtime-tested head не объявляю�
 ## Реализованные functional области
 
 - bootstrap owner, authentication, protected sessions и CSRF;
-- 4 system roles и 25 permissions;
+- 4 system roles и 31 permissions on current main;
 - full user lifecycle и required password change;
 - 3 trusted themes и 10 required CSS-assets per theme;
-- owner-only read-only directories: ranks, organizational element types, military positions, public VUS;
+- owner-only read-only directories: ranks, organizational element types and public VUS;
+- merged Lowest Unit Staffing Structure v1 / migration 013;
 - Organizational Structure v1;
-- migrations 001–012.
+- migrations 001–013.
 
 ## Functional PR #24 — Military Ranks Directory v2
 
@@ -65,7 +69,7 @@ new system permissions: 0
 
 Реализованы version switching, historical v1 view, current v2, search/filtering, source cards, derived/staffing badges и Reference-owned read-only compatibility service.
 
-Не реализованы Staffing tables, штатные slots, Organization bindings, personnel assignments, реальные unit/personnel data и mutation UI.
+Staffing tables/slots and protected management UI were later implemented and merged through PR #35. Personnel assignments and real unit/personnel data remain excluded.
 
 ### PR #24 testing and post-merge
 
@@ -179,7 +183,23 @@ git status --short
 
 ## Следующий инкремент
 
-Новый functional или material technical scope не выбран и не утверждён. Любой material increment начинается с Research → Analysis → Architecture → Specification → Review → Approval.
+Active approved functional increment:
+
+```text
+name: Military Positions Directory v1
+base: main@9ae05b9928903cc483ce415d7378b546e419264c
+branch: feature/military-positions-directory-v1
+migration: 014_military_positions_directory_v1.sql
+design: Architecture/Specification/Formal Review 0.2
+implementation: present in worktree
+allowed paths: 38 / maximum 38
+local MySQL/deploy/HTTP/desktop validation: NOT RUN
+Pull Request: NOT AUTHORIZED / NOT CREATED
+merge: NOT AUTHORIZED
+branch deletion: NOT AUTHORIZED
+```
+
+The increment evolves the existing migration-010 catalog into a managed canonical directory, seeds one 24-entry synthetic draft, preserves legacy/Staffing history and adds four permissions without non-owner grants. No production deployment or mobile acceptance is included.
 
 ## Постоянные gates
 

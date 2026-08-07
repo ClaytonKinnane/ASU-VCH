@@ -174,8 +174,10 @@ final class StaffingRepository
     public function positionTypes(int $catalogVersionId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT id,code,name,description,sort_order FROM military_position_types '
-            . 'WHERE catalog_version_id=:id ORDER BY sort_order,id'
+            'SELECT t.id,t.code,t.name,t.description,t.sort_order FROM military_position_types t '
+            . 'JOIN military_position_catalog_versions v ON v.id=t.catalog_version_id '
+            . "WHERE t.catalog_version_id=:id AND (v.catalog_kind='legacy' OR t.status='active') "
+            . 'ORDER BY t.sort_order,t.id'
         );
         $stmt->execute(['id' => $catalogVersionId]);
         return $stmt->fetchAll();

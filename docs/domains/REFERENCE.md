@@ -334,3 +334,17 @@ Orders
 3. ревью ERD;
 4. спецификация миграций;
 5. архитектурное утверждение домена.
+
+## 17. Domain-specific managed catalogs
+
+Общее ограничение раздела 13 не запрещает отдельно спроектированные предметные каталоги с собственным lifecycle. `Military Positions Directory v1` является таким утверждённым расширением Reference:
+
+```text
+tables: military_position_catalog_versions + military_position_types
+lifecycle: draft → published → superseded; draft → cancelled
+identity: stable_key across copied canonical versions
+history: military_position_change_events / append-only
+permissions: directories.military_positions.view|manage|publish|history
+```
+
+Каталог хранит только канонические наименования и их metadata. ВУС, rank requirements, organizational binding, person, equipment и occupancy остаются за пределами сущности должности. Legacy migration-010 classifier сохраняется как историческая версия; параллельный каталог не создаётся.
