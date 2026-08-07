@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Architecture
-VERSION=0.4
+VERSION=0.5
 INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
 IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
@@ -15,7 +15,8 @@ DESIGN_SOURCE_MERGE_BASE=3d8a491ff2433994e8580152f190b298c765c66e
 POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -328,7 +329,7 @@ Runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/
 ```text
 DESKTOP_ACCEPTANCE=FAIL
 UI_F04=OPEN
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 ```
 
 ### 19.2 Common entry action row
@@ -353,7 +354,7 @@ MIGRATION_CHANGE=NO
 ROUTE_OR_PERMISSION_CHANGE=NO
 JAVASCRIPT_CHANGE=NO
 SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 ```
 
 Exact second corrective allowlist:
@@ -380,13 +381,75 @@ Owner Approval was granted against exact documentation head `294cd91e26513217187
 - the checker enforces the nine-path commit inventory and UI-C06 structure.
 
 ```text
-SECOND_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
-SECOND_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
-SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
-SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+SECOND_CORRECTIVE_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 BRANCH_DELETION=NOT_AUTHORIZED
 ```
 
 Runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts and JavaScript remain unchanged. Pull Request, merge, force-push and branch deletion remain unauthorized.
+
+
+## 20. Third corrective desktop action layout (2026-08-07)
+
+### 20.1 Acceptance findings
+
+Полный автоматический gate exact runtime head `297c9e6566c0010556324506bb0c9947b4ed6f43` прошёл: second corrective inventory `9/9`, итоговый DB/runtime checker `148 PASS`, initialization и HTTP smoke — PASS. Owner-provided desktop screenshot темы `asu-blue` затем подтвердил два presentation finding:
+
+- UI-F04 остаётся открытым: `Изменить` и `Архивировать должность` визуально разнесены, несмотря на требование соседнего размещения;
+- UI-F05 открыт: раскрытая форма основания построена вертикальной колонкой и не читается как одно связанное действие.
+
+```text
+DESKTOP_ACCEPTANCE=FAIL
+UI_F04_RETEST=FAIL_OPEN
+UI_F05=OPEN
+OPEN_UI_FINDINGS=5_PENDING_RETEST
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+```
+
+### 20.2 Deterministic adjacent controls
+
+Native `details[name]` и взаимное исключение форм сохраняются. Для desktop layout summary редактирования и summary lifecycle-действия получают явные соседние grid columns; автоматическое размещение browser layout больше не определяет расстояние между ними. Между controls остаётся один фиксированный малый `column-gap`, обе кнопки имеют прежний общий compact style.
+
+### 20.3 Single-line lifecycle reason
+
+В раскрытой форме на обычной desktop-ширине подпись `Основание архивирования` / `Основание восстановления`, текстовое поле и подтверждающая кнопка находятся в одной горизонтальной строке:
+
+- подпись не отрывается от поля;
+- поле занимает доступную ширину;
+- подтверждающая кнопка остаётся content-sized;
+- весь lifecycle form по-прежнему расположен отдельной полноширинной строкой под двумя action controls;
+- существующий narrow-viewport fallback может складывать элементы вертикально и не входит в mobile acceptance.
+
+PHP markup, native disclosure semantics, archive/restore payload, POST, CSRF, expected revisions, PRG и routes не меняются.
+
+### 20.4 Third corrective boundary
+
+```text
+THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
+RUNTIME_OR_DATABASE_MODEL_CHANGE=NO
+PHP_TEMPLATE_CHANGE=NO
+MIGRATION_CHANGE=NO
+ROUTE_OR_PERMISSION_CHANGE=NO
+JAVASCRIPT_CHANGE=NO
+THIRD_CORRECTIVE_DESIGN_REVIEW=PASS
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+```
+
+Exact third corrective allowlist:
+
+```text
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Implementation, commit and fast-forward push require a new owner Approval tied to the exact documentation head. Pull Request, merge, force-push, branch deletion, `main` changes and scope expansion remain unauthorized.

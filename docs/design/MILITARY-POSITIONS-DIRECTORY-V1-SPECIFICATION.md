@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Specification
-VERSION=0.4
+VERSION=0.5
 INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
 ARCHITECTURE=docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
@@ -14,7 +14,8 @@ MIGRATION=database/migrations/014_military_positions_directory_v1.sql
 POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 DESKTOP_ACCEPTANCE=FAIL
 ```
 
@@ -490,7 +491,7 @@ Required on the new exact head:
 ```text
 SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
 SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
@@ -509,10 +510,60 @@ Static implementation mapping:
 - UI-C08: checker assertions and exact nine-path commit inventory are fail-closed.
 
 ```text
-SECOND_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
-SECOND_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
-SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
-SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+SECOND_CORRECTIVE_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+
+## 16. Third corrective desktop UI requirements (version 0.5)
+
+### UI-C09. Deterministic adjacent entry actions
+
+For every manageable draft entry on normal desktop width:
+
+- `Изменить` occupies the first action column;
+- `Архивировать должность` / `Восстановить должность` occupies the immediately adjacent second action column;
+- the controls retain identical compact styling and a fixed small gap;
+- the browser must not derive their spacing from auto-placement or the width of opened form content;
+- native per-entry disclosure mutual exclusion remains unchanged.
+
+### UI-C10. Single-line lifecycle reason form
+
+When the lifecycle disclosure is open on normal desktop width:
+
+- reason label, reason input and confirmation button render in one horizontal row;
+- label and input remain one accessible label/input unit;
+- input grows into available space and the confirmation button remains content-sized;
+- the form remains a full-width row below both action controls;
+- no archive, restore, revision, CSRF, PRG or route contract changes;
+- below the existing narrow-screen breakpoint the row may stack; mobile acceptance remains out of scope.
+
+### UI-C11. Third corrective boundary and acceptance
+
+Exactly eight paths may change: three managed theme CSS files, the static checker and four design/handoff documents. `entry-card.php`, database, migration, repository, service, routes, permissions, JavaScript, workflow and configuration are excluded.
+
+Required on the future exact implementation head:
+
+- exact 8-path third corrective commit inventory and unchanged 38-path total increment inventory;
+- PHP lint, `git diff --check`, static assertions and byte-identical managed CSS across three themes;
+- full local runner with backup, initialization/repeat DB checks and HTTP smoke;
+- desktop verification in `asu-blue`, `asu-light-blue` and `asu-evgeniya-rostova` that the two controls are adjacent;
+- open lifecycle action and verify label, input and confirmation in one horizontal row;
+- open edit and lifecycle actions in turn and verify native mutual exclusion;
+- submit no edit, archive, restore, publish or cancel action;
+- mobile remains `NOT RUN / OUT OF SCOPE`.
+
+```text
+SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+THIRD_CORRECTIVE_DESIGN_REVIEW=PASS
+THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```

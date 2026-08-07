@@ -5,7 +5,7 @@
 1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
 2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
 3. Сопоставить live state с exact base/branch/allowlist ниже.
-4. Продолжать с second corrective Testing/Validation gate; Approval получен и implementation patch опубликован только в feature-ветку.
+4. Продолжать с third corrective UI Approval gate; second corrective automatic validation прошла, но desktop acceptance выявила UI-F04 retest failure и UI-F05.
 5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
 GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
@@ -78,9 +78,13 @@ FIRST_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 FIRST_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
 FIRST_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
-OPEN_UI_FINDINGS=4_PENDING_RETEST
+OPEN_UI_FINDINGS=5_PENDING_RETEST
 SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
 PULL_REQUEST=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
@@ -187,11 +191,11 @@ The implementation branch was then added. No branch may be deleted without separ
 
 ## 11. Next gate
 
-Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`, and the nine-path second corrective implementation is published only in the feature branch. Next gate is full local validation on the live exact implementation head, followed by desktop acceptance in all three themes. Pull Request, merge, branch deletion and production deployment remain forbidden.
+The nine-path second corrective implementation is published at exact head `297c9e6566c0010556324506bb0c9947b4ed6f43`; its full local automatic gate passed, including `148 PASS` DB/runtime checks and HTTP smoke. Subsequent desktop evidence failed the UI-F04 retest and opened UI-F05. Next gate is owner Approval of Architecture/Specification/Review 0.5 for the exact eight-path third corrective scope. Runtime changes, Pull Request, merge, branch deletion and production deployment remain forbidden.
 
 ## 12. Corrective desktop UI gate
 
-First corrective design 0.3 implemented the approved version-card and hidden-reason behavior. Architecture/Specification/Review 0.4 add the pending second correction:
+First corrective design 0.3 implemented the approved version-card and hidden-reason behavior. Architecture/Specification/Review 0.4 defined the approved second correction; its automatic validation passed, while desktop retest remains failed:
 
 - list cards retain compact `Открыть` controls;
 - opened version cards show `История этой версии` and functional `Закрыть` in the top action group; `Открыть` is absent;
@@ -212,8 +216,8 @@ FIRST_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
 SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
 SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
-OPEN_UI_FINDINGS=4_PENDING_RETEST
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+OPEN_UI_FINDINGS=5_PENDING_RETEST
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 BRANCH_DELETION=NOT_AUTHORIZED
@@ -247,7 +251,7 @@ UI-F04 is limited to the entry-card action layout. Approved design review 0.4 re
 SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
 SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
 SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 PULL_REQUEST=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
@@ -267,4 +271,47 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`. The implementation changes exactly the nine paths above: both entry actions are adjacent peers, native entry-scoped disclosure grouping enforces mutual exclusion, opened forms span below the controls, and lifecycle reason/confirmation remain grouped. Next gate is exact-head local validation and three-theme desktop acceptance. PR, merge, force-push, branch deletion and scope expansion remain forbidden.
+Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`. The implementation changed exactly the nine paths above. Its exact-head automatic validation passed; the later desktop screenshot showed that UI-F04 is still visible and opened UI-F05. The next gate is the third corrective Approval described in section 14. PR, merge, force-push, branch deletion and scope expansion remain forbidden.
+
+
+## 14. Third corrective compact action-form gate
+
+Exact runtime head `297c9e6566c0010556324506bb0c9947b4ed6f43` passed the full automatic gate. Owner-provided desktop evidence then showed that automatic grid placement still separates `Изменить` from `Архивировать должность` and that the opened lifecycle reason form is vertically fragmented.
+
+Architecture/Specification/Review 0.5 require:
+
+- explicit adjacent grid columns for the two equal action summaries;
+- one fixed small gap between the controls;
+- on desktop, `Основание архивирования` / `Основание восстановления`, its input and the confirmation button in one horizontal row;
+- the form remains full-width below the action controls;
+- native mutual exclusion and all backend contracts remain unchanged;
+- the existing narrow-screen stacking fallback is retained; mobile acceptance remains out of scope.
+
+```text
+SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+UI_F04_RETEST=FAIL_OPEN
+UI_F05=OPEN
+THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
+THIRD_CORRECTIVE_DESIGN_REVIEW=PASS
+THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Third corrective paths:
+
+```text
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Implementation, commit and fast-forward push are not authorized until the owner approves the live exact documentation head. PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
