@@ -17,7 +17,7 @@ ORIGINAL_IMPLEMENTATION=AUTHORIZED
 CORRECTIVE_DESIGN_REVIEW=PASS
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 ## 2. Review scope
@@ -362,9 +362,34 @@ THIRD_CORRECTIVE_MAJOR_FINDINGS=0
 THIRD_CORRECTIVE_MINOR_FINDINGS=2
 THIRD_CORRECTIVE_OPEN_FINDINGS=2
 THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
 
 The eight-path boundary is a strict subset of the approved 38-path increment allowlist and of the previous corrective boundary. It changes CSS presentation, checker assertions and living design/handoff documents only. PHP markup, native disclosure behavior, archive/restore payloads, CSRF/revision/PRG controls, routes and all database/runtime-domain contracts remain unchanged.
+
+## 19. Third corrective implementation review
+
+Owner Approval was granted against exact documentation head `b1768ad5ffce5e1da1057096bcf6e02063cea3a1`. Patch review confirms direct traceability to UI-C09–UI-C11:
+
+- explicit summary columns eliminate browser-dependent action auto-placement;
+- the equal controls retain one fixed 10px gap;
+- opened edit and lifecycle forms still span the full row below both controls;
+- lifecycle label, growing input and content-sized submit render in one desktop row;
+- the narrow breakpoint restores vertical stacking;
+- entry-card PHP, native `details[name]`, archive/restore payload, CSRF, revisions, PRG and routes are unchanged;
+- all three managed CSS blocks remain symmetric and variable-only;
+- the current commit is constrained to the exact eight-path third corrective allowlist.
+
+```text
+THIRD_CORRECTIVE_IMPLEMENTATION_REVIEW=PASS
+THIRD_CORRECTIVE_SCOPE_REVIEW=PASS
+THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
+THIRD_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+THIRD_CORRECTIVE_OPEN_FINDINGS=2_PENDING_RETEST
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```

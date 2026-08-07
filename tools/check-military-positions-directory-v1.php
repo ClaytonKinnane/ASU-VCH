@@ -113,6 +113,21 @@ foreach ($secondCorrectiveAllowlist as $path) {
     mpv1_check(in_array($path, $correctiveAllowlist, true), "second corrective path is inside first corrective allowlist: {$path}");
 }
 
+$thirdCorrectiveAllowlist = [
+    'themes/asu-blue/assets/css/directories.css',
+    'themes/asu-light-blue/assets/css/directories.css',
+    'themes/asu-evgeniya-rostova/assets/css/directories.css',
+    'tools/check-military-positions-directory-v1.php',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md',
+    'docs/CHAT-HANDOFF.md',
+];
+mpv1_check(count($thirdCorrectiveAllowlist) === 8 && count(array_unique($thirdCorrectiveAllowlist)) === 8, 'third corrective allowlist contains exactly 8 unique paths');
+foreach ($thirdCorrectiveAllowlist as $path) {
+    mpv1_check(in_array($path, $secondCorrectiveAllowlist, true), "third corrective path is inside second corrective allowlist: {$path}");
+}
+
 $protectedHashes = [
     'database/migrations/010_military_positions_directory.sql' => 'b42c68de5961b005634fa136ebae8ef5a0984ea671e5101a71354289274c0a1f',
     'database/MilitaryPositionMigrationCompatibility.php' => '5249006019bff7f2679e1ebc9e41c75cc65ece6656d66dd13b74baf0e5e64707',
@@ -274,9 +289,14 @@ mpv1_check(!preg_match('/#[0-9a-f]{3,8}|rgba?\(/i', $featureCss[0] ?? ''), 'mana
 mpv1_check(
     str_contains($featureCss[0] ?? '', '.military-position-entry-action { display: contents; }')
     && str_contains($featureCss[0] ?? '', 'grid-template-columns: max-content max-content minmax(0,1fr)')
+    && str_contains($featureCss[0] ?? '', '.military-position-entry-action:first-of-type > summary { grid-column: 1; }')
+    && str_contains($featureCss[0] ?? '', '.military-position-state-action > summary { grid-column: 2; }')
     && str_contains($featureCss[0] ?? '', 'grid-column: 1 / -1; grid-row: 2')
+    && str_contains($featureCss[0] ?? '', 'grid-template-columns: minmax(0,1fr) max-content; align-items: center; gap: 10px')
+    && str_contains($featureCss[0] ?? '', 'grid-template-columns: max-content minmax(0,1fr); align-items: center; gap: 10px')
+    && str_contains($featureCss[0] ?? '', '.military-position-state-form, .military-position-state-form label { grid-template-columns: 1fr; }')
     && !str_contains($featureCss[0] ?? '', '.military-position-state-action { padding:'),
-    'entry actions are adjacent equal controls with full-width opened forms and no collapsed lifecycle shell'
+    'entry controls use explicit adjacent columns and lifecycle reason renders as one desktop row'
 );
 
 $gitDirectory = $root . DIRECTORY_SEPARATOR . '.git';
@@ -304,11 +324,11 @@ if (is_dir($gitDirectory) && function_exists('exec')) {
     mpv1_check($correctiveCode === 0, 'corrective commit path inventory succeeds');
     if ($correctiveCode === 0) {
         $actualCorrectivePaths = array_values(array_filter($correctiveOutput, static fn(string $path): bool => $path !== ''));
-        $expectedCorrectivePaths = $secondCorrectiveAllowlist;
+        $expectedCorrectivePaths = $thirdCorrectiveAllowlist;
         sort($actualCorrectivePaths);
         sort($expectedCorrectivePaths);
-        mpv1_check(count($actualCorrectivePaths) === 9, 'second corrective commit changes exactly 9 paths');
-        mpv1_check($actualCorrectivePaths === $expectedCorrectivePaths, 'second corrective commit matches exact 9-path allowlist');
+        mpv1_check(count($actualCorrectivePaths) === 8, 'third corrective commit changes exactly 8 paths');
+        mpv1_check($actualCorrectivePaths === $expectedCorrectivePaths, 'third corrective commit matches exact 8-path allowlist');
         $unexpectedCorrectivePaths = array_values(array_diff($actualCorrectivePaths, $expectedCorrectivePaths));
         if ($unexpectedCorrectivePaths !== []) {
             echo 'UNEXPECTED_CORRECTIVE_PATHS=' . implode(',', $unexpectedCorrectivePaths) . "\n";

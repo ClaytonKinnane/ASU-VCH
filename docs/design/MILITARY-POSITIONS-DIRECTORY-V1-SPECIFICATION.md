@@ -15,7 +15,7 @@ POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 DESKTOP_ACCEPTANCE=FAIL
 ```
 
@@ -563,7 +563,30 @@ SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
 SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 THIRD_CORRECTIVE_DESIGN_REVIEW=PASS
 THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+## 17. Third corrective implementation record
+
+Owner Approval was granted against exact documentation head `b1768ad5ffce5e1da1057096bcf6e02063cea3a1`.
+
+Static implementation mapping:
+
+- UI-C09: explicit first/second summary columns make the two compact controls deterministically adjacent;
+- UI-C09: the existing 10px column gap remains the only desktop spacing between the controls;
+- UI-C10: the full-width lifecycle form uses a growing label/input area plus a content-sized submit column;
+- UI-C10: the label itself uses a text column plus a growing input column, producing one horizontal desktop row;
+- UI-C10: the existing 760px breakpoint stacks both form and label without JavaScript;
+- UI-C11: exactly eight approved paths change; PHP and all backend contracts stay outside the patch;
+- UI-C11: checker assertions and exact eight-path commit inventory are fail-closed.
+
+```text
+THIRD_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
+THIRD_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```

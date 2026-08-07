@@ -16,7 +16,7 @@ POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -407,7 +407,7 @@ DESKTOP_ACCEPTANCE=FAIL
 UI_F04_RETEST=FAIL_OPEN
 UI_F05=OPEN
 OPEN_UI_FINDINGS=5_PENDING_RETEST
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 ### 20.2 Deterministic adjacent controls
@@ -436,7 +436,7 @@ MIGRATION_CHANGE=NO
 ROUTE_OR_PERMISSION_CHANGE=NO
 JAVASCRIPT_CHANGE=NO
 THIRD_CORRECTIVE_DESIGN_REVIEW=PASS
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 Exact third corrective allowlist:
@@ -452,4 +452,23 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Implementation, commit and fast-forward push require a new owner Approval tied to the exact documentation head. Pull Request, merge, force-push, branch deletion, `main` changes and scope expansion remain unauthorized.
+Owner Approval was granted against exact documentation head `b1768ad5ffce5e1da1057096bcf6e02063cea3a1`. The implementation changes exactly the eight paths above:
+
+- both action summaries receive explicit first and second desktop grid columns;
+- the fixed 10px action gap is no longer affected by opened-form auto-placement;
+- the lifecycle form remains a full-width second row;
+- the lifecycle label/input unit and confirmation button render in one desktop row;
+- the existing 760px fallback stacks the form and label;
+- the checker enforces UI-C09–UI-C11 and the exact eight-path commit inventory.
+
+```text
+THIRD_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
+THIRD_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+PHP markup, runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts and JavaScript remain unchanged. Pull Request, merge, force-push, branch deletion, `main` changes and scope expansion remain unauthorized.

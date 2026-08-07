@@ -84,7 +84,8 @@ SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
 SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
 SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
-THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
@@ -191,7 +192,7 @@ The implementation branch was then added. No branch may be deleted without separ
 
 ## 11. Next gate
 
-The nine-path second corrective implementation is published at exact head `297c9e6566c0010556324506bb0c9947b4ed6f43`; its full local automatic gate passed, including `148 PASS` DB/runtime checks and HTTP smoke. Subsequent desktop evidence failed the UI-F04 retest and opened UI-F05. Next gate is owner Approval of Architecture/Specification/Review 0.5 for the exact eight-path third corrective scope. Runtime changes, Pull Request, merge, branch deletion and production deployment remain forbidden.
+The nine-path second corrective implementation is published at exact head `297c9e6566c0010556324506bb0c9947b4ed6f43`; its full local automatic gate passed, including `148 PASS` DB/runtime checks and HTTP smoke. Subsequent desktop evidence failed the UI-F04 retest and opened UI-F05. Owner Approval is now granted for the exact eight-path third corrective implementation against documentation head `b1768ad5ffce5e1da1057096bcf6e02063cea3a1`; the next gate is exact-head local automatic validation followed by three-theme desktop retest. Pull Request, merge, branch deletion and production deployment remain forbidden.
 
 ## 12. Corrective desktop UI gate
 
@@ -295,7 +296,8 @@ UI_F04_RETEST=FAIL_OPEN
 UI_F05=OPEN
 THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
 THIRD_CORRECTIVE_DESIGN_REVIEW=PASS
-THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 BRANCH_DELETION=NOT_AUTHORIZED
@@ -314,4 +316,4 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Implementation, commit and fast-forward push are not authorized until the owner approves the live exact documentation head. PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
+Owner Approval was granted against exact documentation head `b1768ad5ffce5e1da1057096bcf6e02063cea3a1`. The current implementation changes exactly the eight paths above: explicit adjacent summary columns, a single-row desktop reason/input/confirmation layout, retained full-width opened form and retained 760px stacking fallback. The checker is fail-closed on UI-C09–UI-C11 and exact third-corrective inventory. Next gate is exact-head local runner and three-theme desktop retest. PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
