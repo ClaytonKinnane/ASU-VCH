@@ -128,6 +128,22 @@ foreach ($thirdCorrectiveAllowlist as $path) {
     mpv1_check(in_array($path, $secondCorrectiveAllowlist, true), "third corrective path is inside second corrective allowlist: {$path}");
 }
 
+$fourthCorrectiveAllowlist = [
+    'public/admin/directories/military-positions/views/entry-card.php',
+    'themes/asu-blue/assets/css/directories.css',
+    'themes/asu-light-blue/assets/css/directories.css',
+    'themes/asu-evgeniya-rostova/assets/css/directories.css',
+    'tools/check-military-positions-directory-v1.php',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md',
+    'docs/CHAT-HANDOFF.md',
+];
+mpv1_check(count($fourthCorrectiveAllowlist) === 9 && count(array_unique($fourthCorrectiveAllowlist)) === 9, 'fourth corrective allowlist contains exactly 9 unique paths');
+foreach ($fourthCorrectiveAllowlist as $path) {
+    mpv1_check(in_array($path, $correctiveAllowlist, true), "fourth corrective path is inside approved corrective allowlist: {$path}");
+}
+
 $protectedHashes = [
     'database/migrations/010_military_positions_directory.sql' => 'b42c68de5961b005634fa136ebae8ef5a0984ea671e5101a71354289274c0a1f',
     'database/MilitaryPositionMigrationCompatibility.php' => '5249006019bff7f2679e1ebc9e41c75cc65ece6656d66dd13b74baf0e5e64707',
@@ -255,12 +271,19 @@ mpv1_check(
     'version history action is in the contextual card header'
 );
 mpv1_check(
-    str_contains($entryCardView, 'military-position-entry-action military-position-state-action')
-    && str_contains($entryCardView, "\$entryActionGroupName = 'military-position-entry-actions-'")
+    str_contains($entryCardView, 'military-position-entry-action military-position-entry-edit-action')
+    && str_contains($entryCardView, 'military-position-entry-action military-position-state-action')
+    && str_contains($entryCardView, "\$entryEditPanelId = 'military-position-entry-edit-'")
+    && str_contains($entryCardView, "\$entryStatePanelId = 'military-position-entry-state-'")
     && substr_count($entryCardView, 'name="<?= e($entryActionGroupName) ?>"') === 2
-    && str_contains($entryCardView, '$stateReasonLabel')
-    && strpos($entryCardView, 'name="change_reason"') > strpos($entryCardView, 'military-position-state-action'),
-    'entry actions share one native exclusive disclosure group and contain the lifecycle reason'
+    && substr_count($entryCardView, 'aria-controls="<?= e($entry') === 2
+    && substr_count($entryCardView, 'military-position-entry-action-panel') === 2
+    && substr_count($entryCardView, '</details>') === 2
+    && strrpos($entryCardView, '</details>') < strpos($entryCardView, 'military-position-entry-edit-panel')
+    && strpos($entryCardView, 'military-position-entry-edit-panel') < strpos($entryCardView, "require __DIR__ . '/entry-form.php'")
+    && strpos($entryCardView, 'military-position-entry-state-panel') < strpos($entryCardView, 'name="change_reason"')
+    && str_contains($entryCardView, '$stateReasonLabel'),
+    'entry actions use one native exclusive summary-only toolbar and control sibling entry-scoped panels'
 );
 $staffingRepository = mpv1_contents($root, 'app/Staffing/StaffingRepository.php');
 mpv1_check(str_contains($staffingRepository, "v.catalog_kind='legacy' OR t.status='active'"), 'Staffing excludes archived canonical entries from selectors');
@@ -287,16 +310,19 @@ foreach ($themePaths as $path) {
 mpv1_check(count(array_unique($featureCss)) === 1, 'managed directory CSS is symmetric across three themes');
 mpv1_check(!preg_match('/#[0-9a-f]{3,8}|rgba?\(/i', $featureCss[0] ?? ''), 'managed styles use theme variables without hardcoded colors');
 mpv1_check(
-    str_contains($featureCss[0] ?? '', '.military-position-entry-action { display: contents; }')
+    !str_contains($featureCss[0] ?? '', '.military-position-entry-action { display: contents; }')
     && str_contains($featureCss[0] ?? '', 'grid-template-columns: max-content max-content minmax(0,1fr)')
-    && str_contains($featureCss[0] ?? '', '.military-position-entry-action:first-of-type > summary { grid-column: 1; }')
-    && str_contains($featureCss[0] ?? '', '.military-position-state-action > summary { grid-column: 2; }')
-    && str_contains($featureCss[0] ?? '', 'grid-column: 1 / -1; grid-row: 2')
-    && str_contains($featureCss[0] ?? '', 'grid-template-columns: minmax(0,1fr) max-content; align-items: center; gap: 10px')
-    && str_contains($featureCss[0] ?? '', 'grid-template-columns: max-content minmax(0,1fr); align-items: center; gap: 10px')
-    && str_contains($featureCss[0] ?? '', '.military-position-state-form, .military-position-state-form label { grid-template-columns: 1fr; }')
+    && str_contains($featureCss[0] ?? '', '.military-position-entry-action { grid-row: 1; width: fit-content; min-width: 0; }')
+    && str_contains($featureCss[0] ?? '', '.military-position-entry-action:first-of-type { grid-column: 1; }')
+    && str_contains($featureCss[0] ?? '', '.military-position-state-action { grid-column: 2; }')
+    && str_contains($featureCss[0] ?? '', '.military-position-entry-action-panel { display: none; grid-column: 1 / -1; grid-row: 2; min-width: 0; }')
+    && str_contains($featureCss[0] ?? '', '.military-position-entry-edit-action[open] ~ .military-position-entry-edit-panel { display: block; }')
+    && str_contains($featureCss[0] ?? '', '.military-position-state-action[open] ~ .military-position-entry-state-panel { display: block; }')
+    && str_contains($featureCss[0] ?? '', 'grid-template-columns: minmax(280px,360px) max-content; align-items: end; justify-content: start; gap: 10px')
+    && str_contains($featureCss[0] ?? '', '.military-position-state-form label { display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 7px; width: 100%; }')
+    && str_contains($featureCss[0] ?? '', '.military-position-state-form { grid-template-columns: 1fr; }')
     && !str_contains($featureCss[0] ?? '', '.military-position-state-action { padding:'),
-    'entry controls use explicit adjacent columns and lifecycle reason renders as one desktop row'
+    'entry summary-only toolbar is stable and lifecycle reason uses a vertical label with bounded desktop input'
 );
 
 $gitDirectory = $root . DIRECTORY_SEPARATOR . '.git';
@@ -324,11 +350,11 @@ if (is_dir($gitDirectory) && function_exists('exec')) {
     mpv1_check($correctiveCode === 0, 'corrective commit path inventory succeeds');
     if ($correctiveCode === 0) {
         $actualCorrectivePaths = array_values(array_filter($correctiveOutput, static fn(string $path): bool => $path !== ''));
-        $expectedCorrectivePaths = $thirdCorrectiveAllowlist;
+        $expectedCorrectivePaths = $fourthCorrectiveAllowlist;
         sort($actualCorrectivePaths);
         sort($expectedCorrectivePaths);
-        mpv1_check(count($actualCorrectivePaths) === 8, 'third corrective commit changes exactly 8 paths');
-        mpv1_check($actualCorrectivePaths === $expectedCorrectivePaths, 'third corrective commit matches exact 8-path allowlist');
+        mpv1_check(count($actualCorrectivePaths) === 9, 'fourth corrective commit changes exactly 9 paths');
+        mpv1_check($actualCorrectivePaths === $expectedCorrectivePaths, 'fourth corrective commit matches exact 9-path allowlist');
         $unexpectedCorrectivePaths = array_values(array_diff($actualCorrectivePaths, $expectedCorrectivePaths));
         if ($unexpectedCorrectivePaths !== []) {
             echo 'UNEXPECTED_CORRECTIVE_PATHS=' . implode(',', $unexpectedCorrectivePaths) . "\n";

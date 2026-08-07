@@ -17,7 +17,7 @@ ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -491,7 +491,7 @@ THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
 THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 UI_F04_RETEST_2=FAIL_OPEN
 UI_F05_RETEST=FAIL_OPEN
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 ### 21.2 Stable action-toolbar boundary
@@ -522,7 +522,7 @@ MIGRATION_CHANGE=NO
 ROUTE_OR_PERMISSION_CHANGE=NO
 JAVASCRIPT_CHANGE=NO
 FOURTH_CORRECTIVE_DESIGN_REVIEW=PASS
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 Exact fourth corrective allowlist:
@@ -539,4 +539,29 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-До отдельного owner Approval разрешена только публикация этого четырёхдокументного checkpoint. Runtime implementation, Pull Request, merge, force-push, branch deletion, изменение `main` и расширение scope не разрешены.
+Owner Approval was granted against exact documentation head `bc660b4e211269bb0f63379ad300bb5e6e72d427`. The approved runtime implementation remains constrained to the exact nine paths above. Pull Request, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
+
+## 22. Fourth corrective implementation record
+
+Owner Approval was granted against exact documentation head `bc660b4e211269bb0f63379ad300bb5e6e72d427`.
+
+Implementation mapping:
+
+- two summary-only native `details[name]` controls are ordinary adjacent grid items with one fixed `10px` gap;
+- edit and lifecycle forms are entry-scoped sibling panels, so opened form content cannot resize or separate the controls;
+- each summary references its uniquely identified panel through `aria-controls`;
+- the lifecycle label stays above its input, whose desktop grid track is bounded at approximately `360px`;
+- the confirmation control remains content-sized and bottom-aligned to the right of the input;
+- the `760px` fallback stacks lifecycle input and confirmation;
+- payload, CSRF, expected revisions, PRG, routes, permissions, database model and JavaScript remain unchanged.
+
+```text
+FOURTH_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```

@@ -5,7 +5,7 @@
 1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
 2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
 3. Сопоставить live state с exact base/branch/allowlist ниже.
-4. Продолжать с fourth corrective UI Approval gate; third corrective automatic validation прошла, но desktop acceptance повторно подтвердила UI-F04 и UI-F05.
+4. Продолжать с exact-head validation gate fourth corrective UI; owner Approval выдан, implementation опубликована только в feature-ветку, local runtime и desktop retest ещё не выполнены.
 5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
 GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
@@ -85,7 +85,14 @@ SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
 SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
 SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
 PULL_REQUEST=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
@@ -192,7 +199,7 @@ The implementation branch was then added. No branch may be deleted without separ
 
 ## 11. Next gate
 
-The nine-path second corrective implementation is published at exact head `297c9e6566c0010556324506bb0c9947b4ed6f43`; its full local automatic gate passed, including `148 PASS` DB/runtime checks and HTTP smoke. Subsequent desktop evidence failed the UI-F04 retest and opened UI-F05. Owner Approval is now granted for the exact eight-path third corrective implementation against documentation head `b1768ad5ffce5e1da1057096bcf6e02063cea3a1`; the next gate is exact-head local automatic validation followed by three-theme desktop retest. Pull Request, merge, branch deletion and production deployment remain forbidden.
+Fourth corrective owner Approval was granted against exact documentation head `bc660b4e211269bb0f63379ad300bb5e6e72d427`. The implementation is constrained to the exact nine-path allowlist: stable adjacent summary-only disclosures, sibling edit/state panels, a vertical lifecycle label above an approximately `360px` field and a content-sized confirmation control. The next gate is the full local runner on the exact implementation head followed by three-theme desktop retest. Pull Request, merge, branch deletion and production deployment remain forbidden.
 
 ## 12. Corrective desktop UI gate
 
@@ -297,7 +304,7 @@ UI_F05=OPEN
 THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
 THIRD_CORRECTIVE_DESIGN_REVIEW=PASS
 THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 BRANCH_DELETION=NOT_AUTHORIZED
@@ -346,7 +353,8 @@ UI_F04_RETEST_2=FAIL_OPEN
 UI_F05_RETEST=FAIL_OPEN
 FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
 FOURTH_CORRECTIVE_DESIGN_REVIEW=PASS
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 BRANCH_DELETION=NOT_AUTHORIZED
@@ -366,4 +374,36 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Only this four-document checkpoint may be published before Approval. Runtime implementation, PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
+Owner Approval was granted against exact documentation head `bc660b4e211269bb0f63379ad300bb5e6e72d427`. The runtime implementation is limited to the exact nine paths above. PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
+
+## 16. Fourth corrective implementation gate
+
+The approved implementation uses two summary-only native `details[name]` controls as adjacent toolbar items. Their forms are uniquely identified sibling panels selected by the corresponding open disclosure without JavaScript. The lifecycle label is above its input; the desktop input track is bounded at approximately `360px`; confirmation remains content-sized on the right; the `760px` stacking fallback is retained.
+
+```text
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Fourth corrective paths:
+
+```text
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Next gate: run `tools/Test-MilitaryPositionsDirectoryV1.ps1` on the exact fourth-corrective head with initialization and HTTP smoke, then repeat desktop acceptance in all three themes. Mobile remains `NOT RUN / OUT OF SCOPE`.

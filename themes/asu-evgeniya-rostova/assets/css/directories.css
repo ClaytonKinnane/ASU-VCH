@@ -114,15 +114,17 @@
 .military-position-entry-card.is-archived { opacity: .78; }
 .military-position-order { flex: 0 0 auto; color: var(--focus-color); font-weight: 850; }
 .military-position-entry-actions { display: grid; grid-template-columns: max-content max-content minmax(0,1fr); column-gap: 10px; row-gap: 14px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--input-border); }
-.military-position-entry-action { display: contents; }
-.military-position-entry-action > summary { grid-row: 1; display: inline-flex; width: fit-content; min-height: 43px; align-items: center; padding: 10px 14px; border: 1px solid var(--button-border); border-radius: var(--control-radius); color: var(--text-primary); background: var(--tab-active-background); cursor: pointer; font-weight: 800; }
-.military-position-entry-action:first-of-type > summary { grid-column: 1; }
-.military-position-state-action > summary { grid-column: 2; }
-.military-position-entry-action:not([open]) > :not(summary) { display: none; }
-.military-position-entry-action[open] > .military-position-form-grid, .military-position-entry-action[open] > .military-position-state-form { grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
-.military-position-state-form { box-sizing: border-box; display: grid; grid-template-columns: minmax(0,1fr) max-content; align-items: center; gap: 10px; width: 100%; padding: 14px; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--input-background); }
-.military-position-state-form label { display: grid; grid-template-columns: max-content minmax(0,1fr); align-items: center; gap: 10px; width: 100%; }
-.military-position-state-form .secondary-button { width: auto; align-self: center; justify-self: start; }
+.military-position-entry-action { grid-row: 1; width: fit-content; min-width: 0; }
+.military-position-entry-action:first-of-type { grid-column: 1; }
+.military-position-state-action { grid-column: 2; }
+.military-position-entry-action > summary { display: inline-flex; width: fit-content; min-height: 43px; align-items: center; padding: 10px 14px; border: 1px solid var(--button-border); border-radius: var(--control-radius); color: var(--text-primary); background: var(--tab-active-background); cursor: pointer; font-weight: 800; }
+.military-position-entry-action-panel { display: none; grid-column: 1 / -1; grid-row: 2; min-width: 0; }
+.military-position-entry-edit-action[open] ~ .military-position-entry-edit-panel { display: block; }
+.military-position-state-action[open] ~ .military-position-entry-state-panel { display: block; }
+.military-position-entry-edit-panel > .military-position-form-grid { margin-top: 0; }
+.military-position-state-form { box-sizing: border-box; display: grid; grid-template-columns: minmax(280px,360px) max-content; align-items: end; justify-content: start; gap: 10px; width: 100%; padding: 14px; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--input-background); }
+.military-position-state-form label { display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 7px; width: 100%; }
+.military-position-state-form .secondary-button { width: auto; align-self: end; justify-self: start; }
 .military-position-empty { padding: 28px; text-align: center; }
 .military-position-empty h2 { margin: 0; }
 .military-position-empty p { margin-bottom: 0; color: var(--text-secondary); }
@@ -141,7 +143,7 @@
 @media (max-width: 760px) {
     .military-position-version-card > header, .military-position-entry-card > header, .military-position-history-card > header { flex-direction: column; }
     .military-position-version-metrics, .military-position-entry-fields, .military-position-form-grid, .military-position-lifecycle-grid, .military-position-filters, .military-position-source-list { grid-template-columns: 1fr; }
-    .military-position-state-form, .military-position-state-form label { grid-template-columns: 1fr; }
+    .military-position-state-form { grid-template-columns: 1fr; }
     .military-position-form-grid .span-2, .military-position-entry-fields .span-2 { grid-column: auto; }
     .military-position-version-actions { justify-content: flex-start; }
     .military-position-history-fields dd { grid-template-columns: 1fr; }

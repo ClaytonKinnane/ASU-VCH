@@ -18,7 +18,7 @@ CORRECTIVE_DESIGN_REVIEW=PASS
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 ## 2. Review scope
@@ -422,11 +422,37 @@ FOURTH_CORRECTIVE_MAJOR_FINDINGS=0
 FOURTH_CORRECTIVE_MINOR_FINDINGS=2
 FOURTH_CORRECTIVE_OPEN_FINDINGS=2
 FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
 
 The nine-path boundary is the minimum reliable correction: one presentation-only PHP template, three managed CSS files, the fail-closed checker and four living design/handoff documents. Database/runtime-domain model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts, workflows and JavaScript remain unchanged.
 
-Architecture 0.6 and Specification 0.6 are internally consistent and directly address the observed evidence. Review passes with no blocking or major findings. Implementation remains blocked until separate owner Approval tied to the exact documentation head.
+Architecture 0.6 and Specification 0.6 are internally consistent and directly address the observed evidence. Review passes with no blocking or major findings. Owner Approval was subsequently granted against exact documentation head `bc660b4e211269bb0f63379ad300bb5e6e72d427`.
+
+## 21. Fourth corrective implementation review
+
+Owner Approval was granted against exact documentation head `bc660b4e211269bb0f63379ad300bb5e6e72d427`. Patch review confirms direct traceability to UI-C12–UI-C14:
+
+- native `details[name]` elements now contain summaries only and remain mutually exclusive;
+- edit and lifecycle content moved into uniquely identified sibling panels controlled by the matching open disclosure;
+- removing `display: contents` prevents opened content from participating in toolbar track sizing;
+- the two controls remain in explicit adjacent columns with the sole `10px` gap;
+- lifecycle label/input hierarchy is vertical, the input track is approximately `360px`, and confirmation is bottom-aligned on the right;
+- the narrow breakpoint remains stacked;
+- three managed CSS blocks remain symmetric and variable-only;
+- PHP changes are presentation-only and preserve action URLs, names, CSRF, revisions and return path;
+- the current commit is constrained to the exact nine-path fourth corrective allowlist.
+
+```text
+FOURTH_CORRECTIVE_IMPLEMENTATION_REVIEW=PASS
+FOURTH_CORRECTIVE_SCOPE_REVIEW=PASS
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+FOURTH_CORRECTIVE_OPEN_FINDINGS=2_PENDING_RETEST
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
