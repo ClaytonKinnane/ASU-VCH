@@ -13,7 +13,7 @@ IMPLEMENTATION_BASE_SHA=9ae05b9928903cc483ce415d7378b546e419264c
 MIGRATION=database/migrations/014_military_positions_directory_v1.sql
 POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
-CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 DESKTOP_ACCEPTANCE=FAIL
 ```
 
@@ -428,7 +428,27 @@ Required after implementation on the new exact head:
 - `Открыть` absent on detail pages; `Закрыть` returns to the anchored version card; `История этой версии` is visible at the top; reason fields are absent until their lifecycle action is opened.
 
 ```text
-CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+## 13. Corrective implementation record
+
+Corrective UI реализован в пределах exact 12-path allowlist после owner Approval на documentation head `c7d2c08c918ae5f0a3ade569c1b504efc1b54ad1`.
+
+Static implementation mapping:
+
+- UI-C01: list caller задаёт `list`, а action group принудительно content-sized;
+- UI-C02: detail caller задаёт `detail`; history и `Закрыть` находятся в card header; close target использует version anchor;
+- UI-C03: state transition перенесён в отдельный `details`, где reason и submit находятся вместе;
+- UI-C04: JavaScript и backend contracts не менялись; managed CSS идентичен для трёх тем;
+- UI-C05: checker дополнен assertions и exact 12-path commit inventory.
+
+```text
+CORRECTIVE_IMPLEMENTATION=COMPLETE
+CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT RUN
+CORRECTIVE_DESKTOP_ACCEPTANCE=NOT RUN
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```

@@ -5,7 +5,7 @@
 1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
 2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
 3. Сопоставить live state с exact base/branch/allowlist ниже.
-4. Продолжать с corrective UI Approval gate; не повторять исходное Implementation Approval и не начинать runtime correction без нового exact-head разрешения.
+4. Продолжать с corrective Testing/Validation gate; Implementation Approval уже получен и corrective patch опубликован на feature-ветке.
 5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
 GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
@@ -73,9 +73,11 @@ ORIGINAL_MAJOR_FINDINGS=0
 ORIGINAL_MINOR_FINDINGS=0
 ORIGINAL_OPEN_FINDINGS=0
 ORIGINAL_IMPLEMENTATION_APPROVAL=GRANTED
-DESKTOP_ACCEPTANCE=FAIL
-OPEN_UI_FINDINGS=3
-CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+PRE_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+OPEN_UI_FINDINGS=3_PENDING_RETEST
+CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+CORRECTIVE_DESKTOP_ACCEPTANCE=NOT RUN
 PULL_REQUEST=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
@@ -182,7 +184,7 @@ The implementation branch was then added. No branch may be deleted without separ
 
 ## 11. Next gate
 
-Desktop acceptance on runtime head `7751430288d2b0669dee4fe14101f809f5828db5` is `FAIL`. Do not create a Pull Request and do not begin corrective runtime changes before new exact-head owner approval. Merge, branch deletion and production deployment remain forbidden.
+Corrective UI implementation is complete on the feature branch after exact-head owner Approval. Obtain the live feature head, then run the full PowerShell validation/deploy command with initialization, HTTP smoke and local-certificate bypass. If it passes, repeat desktop acceptance in all three themes. Pull Request, merge, branch deletion and production deployment remain forbidden.
 
 ## 12. Corrective desktop UI gate
 
@@ -197,7 +199,11 @@ Current corrective design is Architecture/Specification/Review version 0.3. Appr
 ```text
 CORRECTIVE_ALLOWLIST_PATHS=12
 CORRECTIVE_DESIGN_REVIEW=PASS
-CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT RUN
+CORRECTIVE_DESKTOP_ACCEPTANCE=NOT RUN
+OPEN_UI_FINDINGS=3_PENDING_RETEST
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 BRANCH_DELETION=NOT_AUTHORIZED
@@ -220,4 +226,4 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Next gate: obtain owner approval tied to the live documentation head, then implement only these 12 paths on the existing feature branch. After push, run the full PowerShell validation/deploy command on the new exact head and repeat desktop acceptance in all three themes. Do not create a Pull Request before successful corrective validation and separate PR authorization.
+Owner Approval was granted against documentation head `c7d2c08c918ae5f0a3ade569c1b504efc1b54ad1`, and corrective implementation changed exactly the 12 paths above. Next gate: resolve the live feature head, run the full PowerShell validation/deploy command on that exact head, then repeat desktop acceptance in all three themes. Do not create a Pull Request before successful corrective validation and separate PR authorization.

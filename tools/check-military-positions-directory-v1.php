@@ -78,6 +78,25 @@ foreach ($allowlist as $path) {
     mpv1_check(is_file($root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path)), "approved path exists: {$path}");
 }
 
+$correctiveAllowlist = [
+    'public/admin/directories/military-positions.php',
+    'public/admin/directories/military-positions/version.php',
+    'public/admin/directories/military-positions/views/version-card.php',
+    'public/admin/directories/military-positions/views/entry-card.php',
+    'themes/asu-blue/assets/css/directories.css',
+    'themes/asu-light-blue/assets/css/directories.css',
+    'themes/asu-evgeniya-rostova/assets/css/directories.css',
+    'tools/check-military-positions-directory-v1.php',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md',
+    'docs/CHAT-HANDOFF.md',
+];
+mpv1_check(count($correctiveAllowlist) === 12 && count(array_unique($correctiveAllowlist)) === 12, 'corrective allowlist contains exactly 12 unique paths');
+foreach ($correctiveAllowlist as $path) {
+    mpv1_check(in_array($path, $allowlist, true), "corrective path is inside approved allowlist: {$path}");
+}
+
 $protectedHashes = [
     'database/migrations/010_military_positions_directory.sql' => 'b42c68de5961b005634fa136ebae8ef5a0984ea671e5101a71354289274c0a1f',
     'database/MilitaryPositionMigrationCompatibility.php' => '5249006019bff7f2679e1ebc9e41c75cc65ece6656d66dd13b74baf0e5e64707',
@@ -183,6 +202,33 @@ $contentPage = mpv1_contents($root, 'public/admin/content.php');
 $directoryPage = mpv1_contents($root, 'public/admin/directories.php');
 mpv1_check(str_contains($contentPage, "has_permission('directories.military_positions.view')"), 'content navigation is permission-aware');
 mpv1_check(str_contains($directoryPage, "has_permission('directories.military_positions.view')"), 'directory tile list is permission-aware');
+
+$versionListPage = mpv1_contents($root, 'public/admin/directories/military-positions.php');
+$versionDetailPage = mpv1_contents($root, 'public/admin/directories/military-positions/version.php');
+$versionCardView = mpv1_contents($root, 'public/admin/directories/military-positions/views/version-card.php');
+$entryCardView = mpv1_contents($root, 'public/admin/directories/military-positions/views/entry-card.php');
+mpv1_check(
+    str_contains($versionListPage, "\$versionCardMode = 'list';")
+    && str_contains($versionDetailPage, "\$versionCardMode = 'detail';"),
+    'version card presentation modes are explicit'
+);
+mpv1_check(
+    str_contains($versionCardView, "'military-position-version-'")
+    && str_contains($versionCardView, '>Открыть</a>')
+    && str_contains($versionCardView, '>Закрыть</a>'),
+    'version cards expose anchored open and close navigation'
+);
+mpv1_check(
+    str_contains($versionCardView, 'История этой версии')
+    && !str_contains($versionDetailPage, 'military-position-history-link'),
+    'version history action is in the contextual card header'
+);
+mpv1_check(
+    str_contains($entryCardView, 'military-position-entry-action military-position-state-action')
+    && str_contains($entryCardView, '$stateReasonLabel')
+    && strpos($entryCardView, 'name="change_reason"') > strpos($entryCardView, 'military-position-state-action'),
+    'entry lifecycle reason is contained by its disclosure panel'
+);
 $staffingRepository = mpv1_contents($root, 'app/Staffing/StaffingRepository.php');
 mpv1_check(str_contains($staffingRepository, "v.catalog_kind='legacy' OR t.status='active'"), 'Staffing excludes archived canonical entries from selectors');
 
@@ -222,6 +268,25 @@ if (is_dir($gitDirectory) && function_exists('exec')) {
         mpv1_check($unexpected === [], 'all committed changes are inside approved allowlist');
         if ($unexpected !== []) {
             echo 'UNEXPECTED_PATHS=' . implode(',', $unexpected) . "\n";
+        }
+    }
+
+    $correctiveCommand = 'git -C ' . escapeshellarg($root)
+        . ' diff-tree --no-commit-id --name-only -r HEAD 2>&1';
+    $correctiveOutput = [];
+    $correctiveCode = 0;
+    exec($correctiveCommand, $correctiveOutput, $correctiveCode);
+    mpv1_check($correctiveCode === 0, 'corrective commit path inventory succeeds');
+    if ($correctiveCode === 0) {
+        $actualCorrectivePaths = array_values(array_filter($correctiveOutput, static fn(string $path): bool => $path !== ''));
+        $expectedCorrectivePaths = $correctiveAllowlist;
+        sort($actualCorrectivePaths);
+        sort($expectedCorrectivePaths);
+        mpv1_check(count($actualCorrectivePaths) === 12, 'corrective commit changes exactly 12 paths');
+        mpv1_check($actualCorrectivePaths === $expectedCorrectivePaths, 'corrective commit matches exact 12-path allowlist');
+        $unexpectedCorrectivePaths = array_values(array_diff($actualCorrectivePaths, $expectedCorrectivePaths));
+        if ($unexpectedCorrectivePaths !== []) {
+            echo 'UNEXPECTED_CORRECTIVE_PATHS=' . implode(',', $unexpectedCorrectivePaths) . "\n";
         }
     }
 }

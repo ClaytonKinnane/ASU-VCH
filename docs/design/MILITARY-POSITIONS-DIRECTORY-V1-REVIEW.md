@@ -15,7 +15,7 @@ POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_FORMAL_REVIEW=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 CORRECTIVE_DESIGN_REVIEW=PASS
-CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 ## 2. Review scope
@@ -247,9 +247,33 @@ MAJOR_FINDINGS=1
 MINOR_FINDINGS=2
 OPEN_FINDINGS=3
 IMPLEMENTATION_ACCEPTANCE_REVIEW=CHANGES_REQUIRED
-CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
 
 The 12-path corrective allowlist is a subset of the already approved 38-path increment allowlist. Any database, migration, service, repository, action-route, permission, JavaScript, workflow, configuration or additional path change requires a new review and approval.
+## 15. Corrective implementation review
+
+Patch review confirms direct traceability to UI-C01–UI-C05:
+
+- explicit version-card modes remove the detail-page self-link;
+- `Закрыть` targets the exact list-card anchor without JavaScript;
+- version history is permission-aware and contextual;
+- lifecycle reason and confirmation are contained inside a dedicated disclosure;
+- all backend POST/CSRF/revision/PRG contracts are preserved;
+- managed CSS remains symmetric and variable-only;
+- corrective commit inventory is fail-closed at exactly 12 paths.
+
+```text
+CORRECTIVE_IMPLEMENTATION_REVIEW=PASS
+CORRECTIVE_SCOPE_REVIEW=PASS
+CORRECTIVE_ALLOWLIST_PATHS=12
+CORRECTIVE_RUNTIME_VALIDATION=NOT RUN
+CORRECTIVE_DESKTOP_ACCEPTANCE=NOT RUN
+OPEN_UI_FINDINGS=3_PENDING_RETEST
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+The three acceptance findings remain open until the new exact implementation head passes local runtime validation and owner desktop acceptance in all three themes.

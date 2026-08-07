@@ -42,6 +42,7 @@ $error = flash('military_positions_error');
     <?php if ($success !== null): ?><div class="form-message is-success is-visible"><?= e($success) ?></div><?php endif; ?>
     <?php if ($error !== null): ?><div class="form-message is-error is-visible"><?= e($error) ?></div><?php endif; ?>
 
+    <?php $versionCardMode = 'detail'; ?>
     <?php require __DIR__ . '/views/version-card.php'; ?>
 
     <?php if ($sources !== []): ?><section class="military-position-panel glass-tile"><h2>Источники исторической версии</h2><div class="military-position-source-list"><?php foreach ($sources as $source): ?><article><strong><?= e((string) $source['document_type']) ?> от <?= e(military_positions_date((string) $source['document_date'])) ?> № <?= e((string) $source['document_number']) ?></strong><p><?= e((string) $source['title']) ?></p><a href="<?= e((string) $source['official_url']) ?>" target="_blank" rel="noopener noreferrer">Официальный источник →</a></article><?php endforeach; ?></div></section><?php endif; ?>
@@ -92,7 +93,6 @@ $error = flash('military_positions_error');
         <?php foreach ($result['items'] as $entry): ?><?php require __DIR__ . '/views/entry-card.php'; ?><?php endforeach; ?>
         <?php endif; ?>
     </section>
-    <?php if ($canViewHistory): ?><p class="military-position-history-link"><a class="secondary-button" href="/admin/directories/military-positions/history.php?version_id=<?= $versionId ?>">История этой версии</a></p><?php endif; ?>
 </div></main>
 </body>
 </html>

@@ -14,7 +14,7 @@ DESIGN_SOURCE_HEAD=bad4057251f9ebf996d83b3e246df24127a5d5cc
 DESIGN_SOURCE_MERGE_BASE=3d8a491ff2433994e8580152f190b298c765c66e
 POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
-CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -284,7 +284,7 @@ RUNTIME_OR_DATABASE_MODEL_CHANGE=NO
 MIGRATION_CHANGE=NO
 ROUTE_OR_PERMISSION_CHANGE=NO
 JAVASCRIPT_CHANGE=NO
-CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 Corrective allowlist:
@@ -303,3 +303,16 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
 docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
+## 18. Corrective implementation mapping
+
+Owner Approval на exact documentation head получен 2026-08-07. Реализация ограничена утверждёнными presentation paths:
+
+- caller явно задаёт list/detail mode для version card;
+- list card имеет стабильный anchor и компактное действие `Открыть`;
+- detail card показывает contextual `История этой версии` и `Закрыть`;
+- entry editor и archive/restore являются двумя полноширинными disclosure actions;
+- reason input существует внутри state disclosure и скрыт, пока действие не раскрыто;
+- три managed CSS block остаются симметричными и используют только theme variables;
+- checker контролирует поведение и exact corrective commit allowlist.
+
+Runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts и JavaScript не изменены. Следующий gate — exact-head local validation и повторная desktop acceptance во всех трёх темах.

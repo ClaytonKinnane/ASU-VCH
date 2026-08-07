@@ -56,6 +56,7 @@ $error = flash('military_positions_error');
     <?php endif; ?>
 
     <section class="military-position-version-list" aria-label="Версии справочника">
+        <?php $versionCardMode = 'list'; ?>
         <?php foreach ($versions as $version): ?>
             <?php require __DIR__ . '/military-positions/views/version-card.php'; ?>
         <?php endforeach; ?>
