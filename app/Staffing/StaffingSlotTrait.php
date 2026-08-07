@@ -121,6 +121,14 @@ trait StaffingSlotTrait
                 throw new DomainException('Штатная позиция не найдена.');
             }
 
+            $oldRequirementsStmt = $this->pdo->prepare(
+                'SELECT public_disclosure_id,requirement_role,sort_order FROM staffing_slot_vus_requirements '
+                . 'WHERE staffing_slot_id=:slot_id ORDER BY sort_order'
+            );
+            $oldRequirementsStmt->execute(['slot_id' => $slotId]);
+            $oldRequirements = $oldRequirementsStmt->fetchAll();
+            $beforeState = $slot + ['vus_requirements' => $oldRequirements];
+
             $update = $this->pdo->prepare(
                 'UPDATE staffing_slots SET organizational_structure_element_id=:element_id,position_type_id=:position_type_id,'
                 . 'position_variant_id=:position_variant_id,minimum_rank_id=:minimum_rank_id,maximum_rank_id=:maximum_rank_id,'
@@ -159,7 +167,7 @@ trait StaffingSlotTrait
                 'slot.updated',
                 'slot',
                 $slotId,
-                $slot,
+                $beforeState,
                 $normalized + ['vus_requirements' => $requirements]
             );
         });
