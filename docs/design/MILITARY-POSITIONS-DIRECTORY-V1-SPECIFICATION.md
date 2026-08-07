@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Specification
-VERSION=0.3
+VERSION=0.4
 INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
 ARCHITECTURE=docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
@@ -13,7 +13,7 @@ IMPLEMENTATION_BASE_SHA=9ae05b9928903cc483ce415d7378b546e419264c
 MIGRATION=database/migrations/014_military_positions_directory_v1.sql
 POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
-CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 DESKTOP_ACCEPTANCE=FAIL
 ```
 
@@ -428,7 +428,7 @@ Required after implementation on the new exact head:
 - `Открыть` absent on detail pages; `Закрыть` returns to the anchored version card; `История этой версии` is visible at the top; reason fields are absent until their lifecycle action is opened.
 
 ```text
-CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
@@ -446,9 +446,50 @@ Static implementation mapping:
 
 ```text
 CORRECTIVE_IMPLEMENTATION=COMPLETE
-CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
-CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT RUN
-CORRECTIVE_DESKTOP_ACCEPTANCE=NOT RUN
+FIRST_CORRECTIVE_STATIC_VALIDATION=PASS
+FIRST_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FIRST_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+
+## 14. Second corrective desktop UI requirements (version 0.4)
+
+### UI-C06. Equal adjacent entry actions
+
+For every manageable draft entry:
+
+- `Изменить` and `Архивировать должность` / `Восстановить должность` are content-sized controls in one shared action row;
+- the lifecycle control uses the same visual component, height, padding, border, background and typography as `Изменить`;
+- no full-width border/background shell is visible around a collapsed lifecycle control;
+- controls stay adjacent while both disclosures are closed;
+- opening either disclosure renders its form as one full-width row below the shared controls;
+- disclosures are mutually exclusive per entry, so edit and lifecycle forms cannot remain open simultaneously;
+- the lifecycle reason remains hidden until its control is opened and stays grouped with the confirmation button.
+
+The archive/restore form payload and server behavior remain unchanged. The same rule applies to active and archived entries.
+
+### UI-C07. Second corrective implementation boundary
+
+Exactly nine paths may change: `entry-card.php`, three managed theme CSS files, the static checker and four design/handoff documents. No database, migration, repository, service, route, permission, JavaScript, workflow or configuration change is allowed.
+
+### UI-C08. Second corrective acceptance
+
+Required on the new exact head:
+
+- exact 9-path corrective commit inventory and unchanged 38-path total increment inventory;
+- PHP lint, `git diff --check`, static assertions and CSS symmetry;
+- full local runner with backup, initialization/repeat DB checks and HTTP smoke;
+- desktop verification in all three themes that the two collapsed controls are visually identical and adjacent;
+- open `Изменить`, then open lifecycle action and verify mutual exclusion;
+- verify that the lifecycle reason and confirmation appear below the shared action row and no operation is submitted;
+- mobile remains `NOT RUN / OUT OF SCOPE`.
+
+```text
+SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
+SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```

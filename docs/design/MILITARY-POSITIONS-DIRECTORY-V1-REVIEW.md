@@ -4,10 +4,10 @@
 
 ```text
 DOCUMENT=Formal Review
-VERSION=0.3
+VERSION=0.4
 INCREMENT=Military Positions Directory v1
-ARCHITECTURE_VERSION=0.3
-SPECIFICATION_VERSION=0.3
+ARCHITECTURE_VERSION=0.4
+SPECIFICATION_VERSION=0.4
 IMPLEMENTATION_BASE=main@9ae05b9928903cc483ce415d7378b546e419264c
 IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
 MIGRATION=014_military_positions_directory_v1.sql
@@ -15,7 +15,7 @@ POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_FORMAL_REVIEW=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 CORRECTIVE_DESIGN_REVIEW=PASS
-CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 ```
 
 ## 2. Review scope
@@ -247,7 +247,7 @@ MAJOR_FINDINGS=1
 MINOR_FINDINGS=2
 OPEN_FINDINGS=3
 IMPLEMENTATION_ACCEPTANCE_REVIEW=CHANGES_REQUIRED
-CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
@@ -269,11 +269,40 @@ Patch review confirms direct traceability to UI-C01–UI-C05:
 CORRECTIVE_IMPLEMENTATION_REVIEW=PASS
 CORRECTIVE_SCOPE_REVIEW=PASS
 CORRECTIVE_ALLOWLIST_PATHS=12
-CORRECTIVE_RUNTIME_VALIDATION=NOT RUN
-CORRECTIVE_DESKTOP_ACCEPTANCE=NOT RUN
+FIRST_CORRECTIVE_RUNTIME_VALIDATION=PASS
+FIRST_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 OPEN_UI_FINDINGS=3_PENDING_RETEST
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
 
-The three acceptance findings remain open until the new exact implementation head passes local runtime validation and owner desktop acceptance in all three themes.
+The automatic gate passed on exact head `6b63efd6d3a6e7567cc48106bd8c12bd9371e585`. The original findings remain pending a complete three-theme retest; owner desktop evidence additionally opened UI-F04 below.
+
+
+## 16. Second corrective desktop design review (2026-08-07)
+
+Evidence: owner-provided desktop screenshot of a canonical draft on exact runtime head `6b63efd6d3a6e7567cc48106bd8c12bd9371e585` after the successful automatic gate.
+
+### UI-F04 — lifecycle action is visually isolated
+
+Severity: minor. The collapsed `Архивировать должность` disclosure has the same internal summary styling as `Изменить`, but its parent receives a full-width border/background/padding shell and occupies a separate row. The visual hierarchy incorrectly suggests a separate card section instead of an action equal to `Изменить`.
+
+Resolution design: place both disclosure controls adjacent in one shared action row with identical presentation and no collapsed lifecycle shell. The opened edit or lifecycle form occupies a full-width row below the controls; the two disclosures are mutually exclusive per entry.
+
+### Review result
+
+```text
+SECOND_CORRECTIVE_ARCHITECTURE_VERSION=0.4
+SECOND_CORRECTIVE_SPECIFICATION_VERSION=0.4
+SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
+SECOND_CORRECTIVE_BLOCKING_FINDINGS=0
+SECOND_CORRECTIVE_MAJOR_FINDINGS=0
+SECOND_CORRECTIVE_MINOR_FINDINGS=1
+SECOND_CORRECTIVE_OPEN_FINDINGS=1
+SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+The nine-path boundary is a strict subset of the approved 38-path increment allowlist. It preserves native disclosure behavior, archive/restore payloads, CSRF/revision/PRG controls, routes and all database/runtime-domain contracts. Any JavaScript or extra path requires a new review.

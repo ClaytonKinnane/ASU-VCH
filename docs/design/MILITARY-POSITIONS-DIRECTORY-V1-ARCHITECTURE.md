@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Architecture
-VERSION=0.3
+VERSION=0.4
 INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
 IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
@@ -14,7 +14,7 @@ DESIGN_SOURCE_HEAD=bad4057251f9ebf996d83b3e246df24127a5d5cc
 DESIGN_SOURCE_MERGE_BASE=3d8a491ff2433994e8580152f190b298c765c66e
 POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
-CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -284,7 +284,7 @@ RUNTIME_OR_DATABASE_MODEL_CHANGE=NO
 MIGRATION_CHANGE=NO
 ROUTE_OR_PERMISSION_CHANGE=NO
 JAVASCRIPT_CHANGE=NO
-CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 ```
 
 Corrective allowlist:
@@ -315,4 +315,58 @@ Owner Approval на exact documentation head получен 2026-08-07. Реал
 - три managed CSS block остаются симметричными и используют только theme variables;
 - checker контролирует поведение и exact corrective commit allowlist.
 
-Runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts и JavaScript не изменены. Следующий gate — exact-head local validation и повторная desktop acceptance во всех трёх темах.
+Runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts и JavaScript не изменены. Полный автоматический gate на exact head `6b63efd6d3a6e7567cc48106bd8c12bd9371e585` пройден; повторная desktop acceptance выявила UI-F04 и остаётся `FAIL`.
+
+
+## 19. Second corrective desktop action layout (2026-08-07)
+
+### 19.1 Acceptance finding
+
+На exact runtime head `6b63efd6d3a6e7567cc48106bd8c12bd9371e585` автоматический gate прошёл полностью. Owner-provided desktop screenshot темы `asu-blue` подтвердил, что основание архивирования скрыто до выбора действия, но выявил новый presentation finding UI-F04: `Архивировать должность` помещена в отдельный полноширинный контейнер и визуально отделена от равноправного действия `Изменить`.
+
+```text
+DESKTOP_ACCEPTANCE=FAIL
+UI_F04=OPEN
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+```
+
+### 19.2 Common entry action row
+
+Для каждой управляемой draft-записи `Изменить` и `Архивировать должность` / `Восстановить должность` являются равноправными компактными disclosure controls:
+
+- оба control находятся рядом в одной общей строке действий;
+- оба имеют одинаковые размеры, border, background, typography и interaction states;
+- в закрытом состоянии вокруг lifecycle control отсутствует отдельный полноширинный panel;
+- disclosure одной записи взаимоисключающие: одновременно раскрывается не более одной формы;
+- раскрытая форма изменения либо форма основания lifecycle action занимает отдельную полноширинную строку под общей строкой controls;
+- обязательное основание и подтверждающая кнопка остаются внутри раскрытой lifecycle form.
+
+Native disclosure semantics сохраняются; JavaScript не добавляется. POST, CSRF, expected revisions, PRG и маршруты archive/restore не меняются.
+
+### 19.3 Second corrective boundary
+
+```text
+SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
+RUNTIME_OR_DATABASE_MODEL_CHANGE=NO
+MIGRATION_CHANGE=NO
+ROUTE_OR_PERMISSION_CHANGE=NO
+JAVASCRIPT_CHANGE=NO
+SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+```
+
+Exact second corrective allowlist:
+
+```text
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Implementation, commit and push of runtime changes require a new owner Approval tied to the exact documentation head. Pull Request, merge, force-push and branch deletion remain unauthorized.
