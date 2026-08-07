@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Specification
-VERSION=0.5
+VERSION=0.6
 INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
 ARCHITECTURE=docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
@@ -15,7 +15,8 @@ POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 DESKTOP_ACCEPTANCE=FAIL
 ```
 
@@ -587,6 +588,59 @@ THIRD_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
 THIRD_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
 THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
 THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+## 18. Fourth corrective desktop UI requirements (version 0.6)
+
+### UI-C12. Stable adjacent action toolbar
+
+For every manageable canonical-draft entry on normal desktop width:
+
+- `Изменить` and `Архивировать должность` / `Восстановить должность` are ordinary neighboring grid items in one toolbar row;
+- the controls use identical compact styling and exactly one fixed `10px` gap;
+- neither opened form contributes to the width calculation of either control column;
+- `display: contents` is not used on native `<details>`;
+- each native `details[name]` remains an entry-scoped mutually exclusive disclosure switch;
+- each controlled sibling panel has a unique entry-scoped `id`, referenced by its summary through `aria-controls`;
+- opening edit closes lifecycle and opening lifecycle closes edit without JavaScript.
+
+### UI-C13. Clear lifecycle reason hierarchy
+
+When lifecycle disclosure is open on normal desktop width:
+
+- `Основание архивирования` / `Основание восстановления` renders above its input, not beside it;
+- label text and input remain one semantic `<label>` unit;
+- input has an approximately `360px` bounded desktop width and is visibly longer than the failed third-corrective field;
+- confirmation remains content-sized to the right and bottom-aligned with the input;
+- the whole lifecycle panel remains below both action controls and spans the available action area;
+- below the existing `760px` breakpoint, input and confirmation may stack; mobile acceptance remains out of scope;
+- archive/restore action, names, payload, CSRF, revisions, PRG and routes remain unchanged.
+
+### UI-C14. Fourth corrective boundary and acceptance
+
+Exactly nine paths may change: `entry-card.php`, three managed theme CSS files, the static checker and four design/handoff documents. Database, migrations, repositories, services, routes, permissions, JavaScript, workflows and configuration are excluded.
+
+Required on the future exact implementation head:
+
+- exact `9/9` fourth-corrective commit inventory and unchanged 38-path total increment inventory;
+- PHP lint, `git diff --check`, static assertions and byte-identical managed CSS across three themes;
+- checker assertions that panels are siblings of summary-only native disclosures, summaries reference unique panels, and no managed feature CSS uses `display: contents` for entry actions;
+- full local runner with backup, initialization/repeat DB checks and HTTP smoke;
+- desktop verification in `asu-blue`, `asu-light-blue` and `asu-evgeniya-rostova` with lifecycle closed and open;
+- verify two adjacent controls retain the same `10px` gap after either disclosure opens;
+- verify lifecycle label is above the longer input and confirmation is aligned to its right;
+- submit no edit, archive, restore, publish or cancel action;
+- mobile remains `NOT RUN / OUT OF SCOPE`.
+
+```text
+THIRD_CORRECTIVE_STATIC_VALIDATION=PASS
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+FOURTH_CORRECTIVE_DESIGN_REVIEW=PASS
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```

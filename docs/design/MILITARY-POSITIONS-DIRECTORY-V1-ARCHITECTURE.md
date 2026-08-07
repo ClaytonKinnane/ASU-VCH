@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Architecture
-VERSION=0.5
+VERSION=0.6
 INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
 IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
@@ -16,7 +16,8 @@ POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -472,3 +473,70 @@ BRANCH_DELETION=NOT_AUTHORIZED
 ```
 
 PHP markup, runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts and JavaScript remain unchanged. Pull Request, merge, force-push, branch deletion, `main` changes and scope expansion remain unauthorized.
+
+
+## 21. Fourth corrective stable action toolbar and reason layout (2026-08-08)
+
+### 21.1 Acceptance findings
+
+Полный автоматический gate exact runtime head `caee9845ef2faf4245397299d232ad820b77040c` прошёл: third corrective inventory `8/8`, итоговый DB/runtime checker `157 PASS`, initialization и HTTP smoke — PASS. Последующий owner-provided desktop screenshot canonical draft в теме `asu-blue` показал, что оба presentation finding остаются открытыми:
+
+- UI-F04 повторно подтверждён: при открытом lifecycle disclosure `Изменить` и `Архивировать должность` снова разнесены по ширине карточки;
+- UI-F05 повторно подтверждён: горизонтальная связка подписи и короткого поля основания не даёт понятной иерархии; owner требует подпись над полем и немного более длинное поле.
+
+```text
+DESKTOP_ACCEPTANCE=FAIL
+THIRD_CORRECTIVE_STATIC_VALIDATION=PASS
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+UI_F04_RETEST_2=FAIL_OPEN
+UI_F05_RETEST=FAIL_OPEN
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+```
+
+### 21.2 Stable action-toolbar boundary
+
+Причина повторного UI-F04 — применение `display: contents` к native `<details>`: в Edge раскрытое содержимое влияет на grid contribution и расстояние между summary, несмотря на явные номера колонок. Fourth corrective больше не использует flattened `<details>` как источник grid items.
+
+Оба native `details[name]` остаются взаимно исключающими disclosure-переключателями, но каждый содержит только свой `summary` и сам является обычным compact grid item в первой или второй колонке. Edit form и lifecycle form выводятся отдельными sibling-панелями во второй полноширинной строке; видимость каждой панели управляется состоянием соответствующего предшествующего `details`. Summary получает `aria-controls`, а панель — уникальный entry-scoped `id`.
+
+Так раскрытая панель больше не участвует в расчёте ширины колонок controls и физически не может раздвинуть кнопки. Backend form action, поля payload, CSRF, expected revisions, PRG, `details[name]` mutual exclusion и отсутствие JavaScript сохраняются.
+
+### 21.3 Vertical label and longer reason field
+
+Lifecycle panel остаётся полноширинным блоком под toolbar. Внутри него на desktop:
+
+- `Основание архивирования` / `Основание восстановления` находится отдельной строкой непосредственно над полем;
+- label и input остаются одной доступной label/input единицей;
+- input получает понятную ограниченную desktop-ширину около `360px`, существенно больше наблюдаемого короткого поля, но не растягивается на всю карточку;
+- подтверждающая кнопка располагается справа и выравнивается по нижней границе поля;
+- существующий breakpoint `760px` складывает поле и кнопку вертикально; mobile acceptance остаётся вне scope.
+
+### 21.4 Fourth corrective boundary
+
+```text
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+RUNTIME_OR_DATABASE_MODEL_CHANGE=NO
+PHP_TEMPLATE_PRESENTATION_CHANGE=YES
+MIGRATION_CHANGE=NO
+ROUTE_OR_PERMISSION_CHANGE=NO
+JAVASCRIPT_CHANGE=NO
+FOURTH_CORRECTIVE_DESIGN_REVIEW=PASS
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+```
+
+Exact fourth corrective allowlist:
+
+```text
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+До отдельного owner Approval разрешена только публикация этого четырёхдокументного checkpoint. Runtime implementation, Pull Request, merge, force-push, branch deletion, изменение `main` и расширение scope не разрешены.

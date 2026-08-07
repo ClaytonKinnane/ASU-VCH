@@ -4,10 +4,10 @@
 
 ```text
 DOCUMENT=Formal Review
-VERSION=0.5
+VERSION=0.6
 INCREMENT=Military Positions Directory v1
-ARCHITECTURE_VERSION=0.5
-SPECIFICATION_VERSION=0.5
+ARCHITECTURE_VERSION=0.6
+SPECIFICATION_VERSION=0.6
 IMPLEMENTATION_BASE=main@9ae05b9928903cc483ce415d7378b546e419264c
 IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
 MIGRATION=014_military_positions_directory_v1.sql
@@ -17,7 +17,8 @@ ORIGINAL_IMPLEMENTATION=AUTHORIZED
 CORRECTIVE_DESIGN_REVIEW=PASS
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-THIRD_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 ```
 
 ## 2. Review scope
@@ -393,3 +394,39 @@ THIRD_CORRECTIVE_OPEN_FINDINGS=2_PENDING_RETEST
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
+
+## 20. Fourth corrective desktop design review (2026-08-08)
+
+Evidence: successful full automatic gate on exact runtime head `caee9845ef2faf4245397299d232ad820b77040c` and subsequent owner-provided desktop screenshot of the canonical draft in theme `asu-blue`.
+
+### UI-F04 second retest — opened disclosure still separates controls
+
+Severity: minor, open. Explicit grid-column numbers did not eliminate the browser-specific behavior. The screenshot shows adjacent controls while disclosures are closed, but when lifecycle is open the second control moves away from `Изменить`. The common factor is `details { display: contents; }`: opened native disclosure content participates in the parent grid through a flattened special element, so the form still affects track sizing in Edge.
+
+Resolution design: stop flattening `<details>`. Render two summary-only native disclosure switches as ordinary first-row grid items and render their controlled forms as explicit sibling panels in the second full-width row. Preserve entry-scoped `details[name]`, add summary `aria-controls` and unique panel ids, and keep JavaScript absent.
+
+### UI-F05 retest — horizontal label/input relationship rejected
+
+Severity: minor, open. The third corrective made the elements horizontal, but the owner-provided evidence shows that the label is cramped beside a short input and the hierarchy remains unclear.
+
+Resolution design: place the lifecycle label text above its input, give the input a bounded desktop width of approximately `360px`, and place the content-sized confirmation control to the right aligned with the input. Preserve one semantic label/input unit and the existing narrow fallback.
+
+### Fourth corrective review result
+
+```text
+FOURTH_CORRECTIVE_ARCHITECTURE_VERSION=0.6
+FOURTH_CORRECTIVE_SPECIFICATION_VERSION=0.6
+FOURTH_CORRECTIVE_DESIGN_REVIEW=PASS
+FOURTH_CORRECTIVE_BLOCKING_FINDINGS=0
+FOURTH_CORRECTIVE_MAJOR_FINDINGS=0
+FOURTH_CORRECTIVE_MINOR_FINDINGS=2
+FOURTH_CORRECTIVE_OPEN_FINDINGS=2
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+The nine-path boundary is the minimum reliable correction: one presentation-only PHP template, three managed CSS files, the fail-closed checker and four living design/handoff documents. Database/runtime-domain model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts, workflows and JavaScript remain unchanged.
+
+Architecture 0.6 and Specification 0.6 are internally consistent and directly address the observed evidence. Review passes with no blocking or major findings. Implementation remains blocked until separate owner Approval tied to the exact documentation head.

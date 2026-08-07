@@ -5,7 +5,7 @@
 1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
 2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
 3. Сопоставить live state с exact base/branch/allowlist ниже.
-4. Продолжать с third corrective UI Approval gate; second corrective automatic validation прошла, но desktop acceptance выявила UI-F04 retest failure и UI-F05.
+4. Продолжать с fourth corrective UI Approval gate; third corrective automatic validation прошла, но desktop acceptance повторно подтвердила UI-F04 и UI-F05.
 5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
 GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
@@ -317,3 +317,53 @@ docs/CHAT-HANDOFF.md
 ```
 
 Owner Approval was granted against exact documentation head `b1768ad5ffce5e1da1057096bcf6e02063cea3a1`. The current implementation changes exactly the eight paths above: explicit adjacent summary columns, a single-row desktop reason/input/confirmation layout, retained full-width opened form and retained 760px stacking fallback. The checker is fail-closed on UI-C09–UI-C11 and exact third-corrective inventory. Next gate is exact-head local runner and three-theme desktop retest. PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
+
+
+## 15. Fourth corrective stable action-toolbar gate
+
+Exact runtime head `caee9845ef2faf4245397299d232ad820b77040c` passed the full automatic gate: third corrective inventory `8/8`, PHP lint 171 files, DB/runtime checker `157 PASS`, initialization and HTTP smoke — PASS. Owner-provided desktop evidence in `asu-blue` then failed the manual retest:
+
+- when lifecycle disclosure is open, `Изменить` and `Архивировать должность` are still separated across the card;
+- the horizontal reason label is cramped beside a short field and is not understandable;
+- owner requires the reason label above the input and a somewhat longer input.
+
+Architecture/Specification/Review 0.6 require:
+
+- no `display: contents` on native entry-action `<details>`;
+- two summary-only `details[name]` switches as ordinary adjacent toolbar grid items with one `10px` gap;
+- edit and lifecycle forms as uniquely identified sibling panels below the toolbar, controlled without JavaScript;
+- summary `aria-controls` references the corresponding entry-scoped panel;
+- lifecycle label text above an approximately `360px` input;
+- content-sized confirmation to the right, bottom-aligned with the input;
+- existing `760px` stacking fallback; mobile acceptance remains out of scope;
+- backend payload, CSRF, revisions, PRG, routes, permissions and database model unchanged.
+
+```text
+THIRD_CORRECTIVE_STATIC_VALIDATION=PASS
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+UI_F04_RETEST_2=FAIL_OPEN
+UI_F05_RETEST=FAIL_OPEN
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+FOURTH_CORRECTIVE_DESIGN_REVIEW=PASS
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Fourth corrective paths:
+
+```text
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Only this four-document checkpoint may be published before Approval. Runtime implementation, PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
