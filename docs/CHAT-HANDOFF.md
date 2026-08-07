@@ -5,7 +5,7 @@
 1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
 2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
 3. Сопоставить live state с exact base/branch/allowlist ниже.
-4. Продолжать с незавершённого validation/commit/push/PR gate; не повторять уже выданное Implementation Approval.
+4. Продолжать с corrective UI Approval gate; не повторять исходное Implementation Approval и не начинать runtime correction без нового exact-head разрешения.
 5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
 GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
@@ -68,11 +68,14 @@ FEATURE_BRANCH=feature/military-positions-directory-v1
 MIGRATION=database/migrations/014_military_positions_directory_v1.sql
 MAX_CHANGED_PATHS=38
 POST_STAFFING_RECONCILIATION=PASS
-BLOCKING_FINDINGS=0
-MAJOR_FINDINGS=0
-MINOR_FINDINGS=0
-OPEN_FINDINGS=0
-IMPLEMENTATION_APPROVAL=GRANTED
+ORIGINAL_BLOCKING_FINDINGS=0
+ORIGINAL_MAJOR_FINDINGS=0
+ORIGINAL_MINOR_FINDINGS=0
+ORIGINAL_OPEN_FINDINGS=0
+ORIGINAL_IMPLEMENTATION_APPROVAL=GRANTED
+DESKTOP_ACCEPTANCE=FAIL
+OPEN_UI_FINDINGS=3
+CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
 PULL_REQUEST=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
@@ -145,20 +148,23 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Test-MilitaryPos
 
 The runner enforces branch/base/head, maximum 38 paths, exact allowlist, clean worktree, `git diff --check`, PHP lint, static checker, protected migration-010 hashes, mandatory pre-migration backup, initialization, repeat installer, DB checker and optional HTTP smoke.
 
-Required remaining evidence:
+Validation evidence on runtime head `7751430288d2b0669dee4fe14101f809f5828db5`:
 
 ```text
-AVAILABLE_STATIC_VALIDATION=PENDING/RE-RUN ON EXACT HEAD
-CLEAN_DB_001_014=PENDING
-EXISTING_DB_BACKUP_MIGRATION_REPEAT=PENDING
-LIFECYCLE_AND_REVISION_TESTS=PENDING
-STAFFING_PINNING_REGRESSION=PENDING
-HTTP_SMOKE=PENDING
-DESKTOP_THREE_THEMES=PENDING
+PROTECTED_MIGRATION_010_HASHES=PASS
+STATIC_CHECKER=PASS (109 passes)
+PRE_MIGRATION_BACKUP=PASS
+PHP_LINT=PASS (171 files)
+MIGRATION_014=APPLIED
+REPEAT_INITIALIZER=PASS
+DATABASE_RUNTIME_CHECKER=PASS (117 passes)
+HTTP_SMOKE=PASS (200, 200, expected 302; local certificate bypass explicitly enabled)
+DESKTOP_ACCEPTANCE=FAIL
+OPEN_UI_FINDINGS=3
 MOBILE_ACCEPTANCE=NOT RUN / OUT OF SCOPE
 ```
 
-Only actual output may turn a pending item into PASS.
+The automated gate is complete for that exact runtime head, but six owner-provided desktop screenshots on 2026-08-07 identified one major and two minor UI findings. A later documentation-only or corrective implementation head is not runtime-tested until the runner and desktop acceptance are repeated on that exact head.
 
 ## 10. Remote branch warning
 
@@ -176,6 +182,42 @@ The implementation branch was then added. No branch may be deleted without separ
 
 ## 11. Next gate
 
-If implementation is not yet committed/pushed, finish available validation, inspect exact diff and commit/push only to `feature/military-positions-directory-v1`. If already pushed, verify the live feature head and report results.
+Desktop acceptance on runtime head `7751430288d2b0669dee4fe14101f809f5828db5` is `FAIL`. Do not create a Pull Request and do not begin corrective runtime changes before new exact-head owner approval. Merge, branch deletion and production deployment remain forbidden.
 
-Do not create a Pull Request. The next owner-controlled gate after implementation push is separate exact-head PR authorization. Merge, branch deletion and production deployment remain forbidden.
+## 12. Corrective desktop UI gate
+
+Current corrective design is Architecture/Specification/Review version 0.3. Approved behavior:
+
+- list cards retain compact `Открыть` controls;
+- opened version cards show `История этой версии` and functional `Закрыть` in the top action group; `Открыть` is absent;
+- `Закрыть` returns to the anchored version card in the list;
+- archive/restore reason and confirmation are grouped in a dedicated disclosure panel, hidden until selected and full-width below the entry fields/editor;
+- all three theme CSS files remain symmetric.
+
+```text
+CORRECTIVE_ALLOWLIST_PATHS=12
+CORRECTIVE_DESIGN_REVIEW=PASS
+CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Corrective paths:
+
+```text
+public/admin/directories/military-positions.php
+public/admin/directories/military-positions/version.php
+public/admin/directories/military-positions/views/version-card.php
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Next gate: obtain owner approval tied to the live documentation head, then implement only these 12 paths on the existing feature branch. After push, run the full PowerShell validation/deploy command on the new exact head and repeat desktop acceptance in all three themes. Do not create a Pull Request before successful corrective validation and separate PR authorization.

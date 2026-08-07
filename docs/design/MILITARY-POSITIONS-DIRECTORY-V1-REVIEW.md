@@ -4,16 +4,18 @@
 
 ```text
 DOCUMENT=Formal Review
-VERSION=0.2
+VERSION=0.3
 INCREMENT=Military Positions Directory v1
-ARCHITECTURE_VERSION=0.2
-SPECIFICATION_VERSION=0.2
+ARCHITECTURE_VERSION=0.3
+SPECIFICATION_VERSION=0.3
 IMPLEMENTATION_BASE=main@9ae05b9928903cc483ce415d7378b546e419264c
 IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
 MIGRATION=014_military_positions_directory_v1.sql
 POST_STAFFING_RECONCILIATION=PASS
-FORMAL_REVIEW=PASS
-IMPLEMENTATION=AUTHORIZED
+ORIGINAL_FORMAL_REVIEW=PASS
+ORIGINAL_IMPLEMENTATION=AUTHORIZED
+CORRECTIVE_DESIGN_REVIEW=PASS
+CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 ```
 
 ## 2. Review scope
@@ -211,3 +213,43 @@ FORMAL_REVIEW=PASS
 ## 13. Approval boundary
 
 Owner Implementation Approval grants implementation, validation, commits and push only to `feature/military-positions-directory-v1`. It does not grant PR, merge, branch deletion, workflow/settings/configuration changes or production deployment.
+
+## 14. Desktop acceptance findings and corrective design review (2026-08-07)
+
+Evidence: six owner-provided desktop screenshots from `asu-blue` on runtime head `7751430288d2b0669dee4fe14101f809f5828db5`.
+
+### UI-F01 — wrong action in opened version card
+
+Severity: major. `Открыть` on an already opened draft or historical version is a self-navigation action and does not provide the required return behavior.
+
+Resolution design: detail mode replaces it with `Закрыть`, returning to the anchored card in the version list.
+
+### UI-F02 — action sizing and history placement
+
+Severity: minor. The list/detail action stretches across the card header, while `История этой версии` is placed after the entire entry list.
+
+Resolution design: content-sized header controls; version-specific history moves into the opened card action group beside `Закрыть`.
+
+### UI-F03 — archive/restore reason grouping
+
+Severity: minor. The reason field is always exposed in a side column and becomes visually detached from both the entry data and the selected lifecycle action when the editor is opened.
+
+Resolution design: archive/restore becomes its own disclosure; the reason and confirmation are co-located in a full-width panel and remain hidden until that action is selected.
+
+### Corrective review result
+
+```text
+CORRECTIVE_ARCHITECTURE_VERSION=0.3
+CORRECTIVE_SPECIFICATION_VERSION=0.3
+CORRECTIVE_DESIGN_REVIEW=PASS
+BLOCKING_FINDINGS=0
+MAJOR_FINDINGS=1
+MINOR_FINDINGS=2
+OPEN_FINDINGS=3
+IMPLEMENTATION_ACCEPTANCE_REVIEW=CHANGES_REQUIRED
+CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+The 12-path corrective allowlist is a subset of the already approved 38-path increment allowlist. Any database, migration, service, repository, action-route, permission, JavaScript, workflow, configuration or additional path change requires a new review and approval.

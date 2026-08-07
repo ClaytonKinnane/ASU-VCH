@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Specification
-VERSION=0.2
+VERSION=0.3
 INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
 ARCHITECTURE=docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
@@ -12,7 +12,9 @@ IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
 IMPLEMENTATION_BASE_SHA=9ae05b9928903cc483ce415d7378b546e419264c
 MIGRATION=database/migrations/014_military_positions_directory_v1.sql
 POST_STAFFING_RECONCILIATION=PASS
-IMPLEMENTATION=AUTHORIZED
+ORIGINAL_IMPLEMENTATION=AUTHORIZED
+CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+DESKTOP_ACCEPTANCE=FAIL
 ```
 
 ## 2. Functional scope
@@ -385,4 +387,48 @@ OPEN_FINDINGS=0
 OWNER_IMPLEMENTATION_APPROVAL=GRANTED
 PR=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
+```
+
+## 12. Corrective desktop UI requirements (version 0.3)
+
+### UI-C01. Compact list action
+
+On `/admin/directories/military-positions.php`, every closed version card shows one content-sized `Открыть` action aligned with the card header. It must not occupy the remaining header width.
+
+### UI-C02. Open version actions
+
+On `/admin/directories/military-positions/version.php?id=<id>`:
+
+- the opened version card contains no `Открыть` action;
+- `История этой версии` is in the top-right contextual action group when the user has `directories.military_positions.history`;
+- `Закрыть` is in the same group and returns to `/admin/directories/military-positions.php#military-position-version-<id>`;
+- the version-list card exposes the matching anchor.
+
+The rule applies equally to canonical draft, published legacy and any superseded/cancelled version.
+
+### UI-C03. Archive/restore reason placement
+
+For a manageable draft entry, `Изменить` and `Архивировать должность` / `Восстановить должность` are distinct disclosure actions. The required reason field is rendered only inside the opened archive/restore disclosure, immediately with its confirmation button. The state action panel is full-width and remains visually independent from the editor whether the editor is closed or open.
+
+### UI-C04. Presentation and exclusions
+
+- controls use Russian labels and native links/details/forms; no new JavaScript;
+- all three theme CSS files remain byte-symmetric from the managed marker;
+- no hardcoded feature colors;
+- no service, repository, migration, route, permission, CSRF, revision or PRG behavior changes;
+- mobile remains `NOT RUN / OUT OF SCOPE`.
+
+### UI-C05. Corrective acceptance
+
+Required after implementation on the new exact head:
+
+- PHP lint, `git diff --check`, exact 38-path inventory and updated static assertions;
+- full local deploy/initializer runner with backup and HTTP smoke;
+- desktop recheck in `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova` for list cards, canonical draft detail, historical detail, collapsed entry, opened editor, archive/restore disclosure and version history navigation;
+- `Открыть` absent on detail pages; `Закрыть` returns to the anchored version card; `История этой версии` is visible at the top; reason fields are absent until their lifecycle action is opened.
+
+```text
+CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
 ```

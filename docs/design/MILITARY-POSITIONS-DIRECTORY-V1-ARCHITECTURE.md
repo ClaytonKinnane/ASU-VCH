@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Architecture
-VERSION=0.2
+VERSION=0.3
 INCREMENT=Military Positions Directory v1
 CONTOUR=PersonnelServiceAccounting
 IMPLEMENTATION_BRANCH=feature/military-positions-directory-v1
@@ -13,7 +13,8 @@ DESIGN_SOURCE_BRANCH=design/military-positions-directory-v1
 DESIGN_SOURCE_HEAD=bad4057251f9ebf996d83b3e246df24127a5d5cc
 DESIGN_SOURCE_MERGE_BASE=3d8a491ff2433994e8580152f190b298c765c66e
 POST_STAFFING_RECONCILIATION=PASS
-IMPLEMENTATION=AUTHORIZED
+ORIGINAL_IMPLEMENTATION=AUTHORIZED
+CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -236,4 +237,69 @@ EXACT_ALLOWLIST=38
 PR=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 MOBILE=NOT RUN / OUT OF SCOPE
+```
+
+## 17. Corrective desktop interaction architecture (2026-08-07)
+
+### 17.1 Acceptance finding
+
+Desktop acceptance exact runtime head `7751430288d2b0669dee4fe14101f809f5828db5` выявил три открытых UI finding:
+
+- version-card action `Открыть` растягивается и остаётся самоссылкой на detail page;
+- version-specific history расположена после длинного entry list вместо contextual header actions;
+- основание архивирования/восстановления постоянно показано в боковой колонке и визуально отделено от выбранного lifecycle action, особенно при раскрытом editor.
+
+До corrective implementation и повторной desktop-проверки:
+
+```text
+DESKTOP_ACCEPTANCE=FAIL
+OPEN_UI_FINDINGS=3
+PULL_REQUEST=NOT_AUTHORIZED
+```
+
+### 17.2 Version-card modes
+
+`version-card.php` получает явный presentation mode от caller:
+
+- list mode показывает только компактную, нерастягивающуюся кнопку `Открыть`;
+- detail mode не показывает `Открыть`; справа вверху находятся компактные действия `История этой версии` (только при history permission) и `Закрыть`;
+- `Закрыть` возвращает к списку версий и к anchor той же версии; JavaScript/history API не требуется;
+- global header navigation `К версиям` сохраняется как page-level fallback.
+
+### 17.3 Entry lifecycle action layout
+
+Редактирование записи и изменение её состояния остаются независимыми действиями. Основание архивирования или восстановления скрыто до явного раскрытия соответствующего действия. После раскрытия label, input и подтверждающая кнопка находятся в одном полноширинном action panel под entry fields; panel не образует боковую колонку рядом с раскрытым editor.
+
+Archive/restore остаются POST + CSRF + expected-revision + PRG операциями. Service, repository, database schema и payload contract не меняются.
+
+### 17.4 Styling contract
+
+Version actions и entry lifecycle summaries используют content-sized controls (`width: auto`, без растягивания на свободную ширину). Три theme CSS получают симметричный managed block и используют только существующие theme variables.
+
+### 17.5 Corrective boundary
+
+```text
+CORRECTIVE_CHANGED_PATHS=12
+RUNTIME_OR_DATABASE_MODEL_CHANGE=NO
+MIGRATION_CHANGE=NO
+ROUTE_OR_PERMISSION_CHANGE=NO
+JAVASCRIPT_CHANGE=NO
+CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+```
+
+Corrective allowlist:
+
+```text
+public/admin/directories/military-positions.php
+public/admin/directories/military-positions/version.php
+public/admin/directories/military-positions/views/version-card.php
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
 ```
