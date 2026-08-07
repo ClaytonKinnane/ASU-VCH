@@ -88,7 +88,13 @@ $protectedHashes = [
     'database/migrations/010_military_positions_directory.sql.gz.b64.part04' => '79b3c7fd1e91b34d3498fffaa0ff00d230bb516bd049c2c28b0482c6202f18c2',
 ];
 foreach ($protectedHashes as $path => $expectedHash) {
-    $actualHash = hash_file('sha256', $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path));
+    $contents = file_get_contents($root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path));
+    $normalizedContents = is_string($contents)
+        ? str_replace(["\r\n", "\r"], "\n", $contents)
+        : null;
+    $actualHash = is_string($normalizedContents)
+        ? hash('sha256', $normalizedContents)
+        : false;
     mpv1_check(is_string($actualHash) && hash_equals($expectedHash, $actualHash), "migration 010 protected hash: {$path}");
 }
 
