@@ -16,6 +16,7 @@ ORIGINAL_FORMAL_REVIEW=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 CORRECTIVE_DESIGN_REVIEW=PASS
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 ## 2. Review scope
@@ -300,9 +301,34 @@ SECOND_CORRECTIVE_MAJOR_FINDINGS=0
 SECOND_CORRECTIVE_MINOR_FINDINGS=1
 SECOND_CORRECTIVE_OPEN_FINDINGS=1
 SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
 
 The nine-path boundary is a strict subset of the approved 38-path increment allowlist. It preserves native disclosure behavior, archive/restore payloads, CSRF/revision/PRG controls, routes and all database/runtime-domain contracts. Any JavaScript or extra path requires a new review.
+
+
+## 17. Second corrective implementation review
+
+Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`. Patch review confirms direct traceability to UI-C06–UI-C08:
+
+- the two entry actions use the same `summary` component and one shared row;
+- an entry-scoped native `details[name]` group provides mutual exclusion without JavaScript;
+- both opened forms span the row below the shared controls;
+- the lifecycle reason and confirmation remain together and hidden while collapsed;
+- the archive/restore payload, CSRF, revisions, PRG and routes are unchanged;
+- all three managed CSS blocks remain symmetric and variable-only;
+- the current commit is constrained to the exact nine-path second corrective allowlist.
+
+```text
+SECOND_CORRECTIVE_IMPLEMENTATION_REVIEW=PASS
+SECOND_CORRECTIVE_SCOPE_REVIEW=PASS
+SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
+SECOND_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+SECOND_CORRECTIVE_OPEN_FINDINGS=1_PENDING_RETEST
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```

@@ -5,7 +5,7 @@
 1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
 2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
 3. Сопоставить live state с exact base/branch/allowlist ниже.
-4. Продолжать со second corrective UI Approval gate; не начинать runtime correction без нового exact-head разрешения.
+4. Продолжать с second corrective Testing/Validation gate; Approval получен и implementation patch опубликован только в feature-ветку.
 5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
 GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
@@ -79,7 +79,8 @@ FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 FIRST_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
 FIRST_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 OPEN_UI_FINDINGS=4_PENDING_RETEST
-SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
@@ -186,7 +187,7 @@ The implementation branch was then added. No branch may be deleted without separ
 
 ## 11. Next gate
 
-Automatic validation passed on exact corrective head `6b63efd6d3a6e7567cc48106bd8c12bd9371e585`, but desktop acceptance remains `FAIL` because UI-F04 was found. Next gate is owner Approval of Architecture/Specification/Review 0.4 for the nine-path second corrective scope. Do not implement runtime changes or create a Pull Request before that exact-head approval. Merge, branch deletion and production deployment remain forbidden.
+Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`, and the nine-path second corrective implementation is published only in the feature branch. Next gate is full local validation on the live exact implementation head, followed by desktop acceptance in all three themes. Pull Request, merge, branch deletion and production deployment remain forbidden.
 
 ## 12. Corrective desktop UI gate
 
@@ -210,7 +211,8 @@ FIRST_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
 FIRST_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
 SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
-SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
 OPEN_UI_FINDINGS=4_PENDING_RETEST
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
@@ -234,7 +236,7 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Owner Approval was granted against documentation head `c7d2c08c918ae5f0a3ade569c1b504efc1b54ad1`, and the first corrective implementation changed exactly the 12 paths above. Its automatic gate passed on `6b63efd6d3a6e7567cc48106bd8c12bd9371e585`; desktop evidence then opened UI-F04. Obtain a new exact-head owner Approval before the second corrective runtime change.
+Owner Approval was granted against documentation head `c7d2c08c918ae5f0a3ade569c1b504efc1b54ad1`, and the first corrective implementation changed exactly the 12 paths above. Its automatic gate passed on `6b63efd6d3a6e7567cc48106bd8c12bd9371e585`; desktop evidence then opened UI-F04. Second corrective Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`.
 
 
 ## 13. Second corrective action-row gate
@@ -244,7 +246,8 @@ UI-F04 is limited to the entry-card action layout. Approved design review 0.4 re
 ```text
 SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
 SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
-SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=PENDING
+SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
 PULL_REQUEST=NOT AUTHORIZED
 MERGE=NOT AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
@@ -264,4 +267,4 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Implementation, validation commits and fast-forward push are not authorized until the owner approves the live documentation head. PR, merge, force-push, branch deletion and scope expansion remain forbidden.
+Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`. The implementation changes exactly the nine paths above: both entry actions are adjacent peers, native entry-scoped disclosure grouping enforces mutual exclusion, opened forms span below the controls, and lifecycle reason/confirmation remain grouped. Next gate is exact-head local validation and three-theme desktop acceptance. PR, merge, force-push, branch deletion and scope expansion remain forbidden.

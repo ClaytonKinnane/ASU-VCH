@@ -15,6 +15,7 @@ DESIGN_SOURCE_MERGE_BASE=3d8a491ff2433994e8580152f190b298c765c66e
 POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -327,7 +328,7 @@ Runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/
 ```text
 DESKTOP_ACCEPTANCE=FAIL
 UI_F04=OPEN
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 ### 19.2 Common entry action row
@@ -352,7 +353,7 @@ MIGRATION_CHANGE=NO
 ROUTE_OR_PERMISSION_CHANGE=NO
 JAVASCRIPT_CHANGE=NO
 SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 ```
 
 Exact second corrective allowlist:
@@ -369,4 +370,23 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Implementation, commit and push of runtime changes require a new owner Approval tied to the exact documentation head. Pull Request, merge, force-push and branch deletion remain unauthorized.
+Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`. The implementation changes exactly the nine paths above:
+
+- both entry disclosures share one entry-scoped native `details[name]` group;
+- both summaries use one identical compact control style in the shared action row;
+- the collapsed lifecycle action has no panel shell;
+- the opened edit or lifecycle form occupies a full-width row below both controls;
+- the lifecycle form retains its reason and confirmation together;
+- the checker enforces the nine-path commit inventory and UI-C06 structure.
+
+```text
+SECOND_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
+SECOND_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Runtime/DB model, migrations, repositories, services, routes, permissions, CSRF/revision/PRG contracts and JavaScript remain unchanged. Pull Request, merge, force-push and branch deletion remain unauthorized.

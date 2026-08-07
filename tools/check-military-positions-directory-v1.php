@@ -97,6 +97,22 @@ foreach ($correctiveAllowlist as $path) {
     mpv1_check(in_array($path, $allowlist, true), "corrective path is inside approved allowlist: {$path}");
 }
 
+$secondCorrectiveAllowlist = [
+    'public/admin/directories/military-positions/views/entry-card.php',
+    'themes/asu-blue/assets/css/directories.css',
+    'themes/asu-light-blue/assets/css/directories.css',
+    'themes/asu-evgeniya-rostova/assets/css/directories.css',
+    'tools/check-military-positions-directory-v1.php',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md',
+    'docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md',
+    'docs/CHAT-HANDOFF.md',
+];
+mpv1_check(count($secondCorrectiveAllowlist) === 9 && count(array_unique($secondCorrectiveAllowlist)) === 9, 'second corrective allowlist contains exactly 9 unique paths');
+foreach ($secondCorrectiveAllowlist as $path) {
+    mpv1_check(in_array($path, $correctiveAllowlist, true), "second corrective path is inside first corrective allowlist: {$path}");
+}
+
 $protectedHashes = [
     'database/migrations/010_military_positions_directory.sql' => 'b42c68de5961b005634fa136ebae8ef5a0984ea671e5101a71354289274c0a1f',
     'database/MilitaryPositionMigrationCompatibility.php' => '5249006019bff7f2679e1ebc9e41c75cc65ece6656d66dd13b74baf0e5e64707',
@@ -225,9 +241,11 @@ mpv1_check(
 );
 mpv1_check(
     str_contains($entryCardView, 'military-position-entry-action military-position-state-action')
+    && str_contains($entryCardView, "\$entryActionGroupName = 'military-position-entry-actions-'")
+    && substr_count($entryCardView, 'name="<?= e($entryActionGroupName) ?>"') === 2
     && str_contains($entryCardView, '$stateReasonLabel')
     && strpos($entryCardView, 'name="change_reason"') > strpos($entryCardView, 'military-position-state-action'),
-    'entry lifecycle reason is contained by its disclosure panel'
+    'entry actions share one native exclusive disclosure group and contain the lifecycle reason'
 );
 $staffingRepository = mpv1_contents($root, 'app/Staffing/StaffingRepository.php');
 mpv1_check(str_contains($staffingRepository, "v.catalog_kind='legacy' OR t.status='active'"), 'Staffing excludes archived canonical entries from selectors');
@@ -253,6 +271,13 @@ foreach ($themePaths as $path) {
 }
 mpv1_check(count(array_unique($featureCss)) === 1, 'managed directory CSS is symmetric across three themes');
 mpv1_check(!preg_match('/#[0-9a-f]{3,8}|rgba?\(/i', $featureCss[0] ?? ''), 'managed styles use theme variables without hardcoded colors');
+mpv1_check(
+    str_contains($featureCss[0] ?? '', '.military-position-entry-action { display: contents; }')
+    && str_contains($featureCss[0] ?? '', 'grid-template-columns: max-content max-content minmax(0,1fr)')
+    && str_contains($featureCss[0] ?? '', 'grid-column: 1 / -1; grid-row: 2')
+    && !str_contains($featureCss[0] ?? '', '.military-position-state-action { padding:'),
+    'entry actions are adjacent equal controls with full-width opened forms and no collapsed lifecycle shell'
+);
 
 $gitDirectory = $root . DIRECTORY_SEPARATOR . '.git';
 if (is_dir($gitDirectory) && function_exists('exec')) {
@@ -279,11 +304,11 @@ if (is_dir($gitDirectory) && function_exists('exec')) {
     mpv1_check($correctiveCode === 0, 'corrective commit path inventory succeeds');
     if ($correctiveCode === 0) {
         $actualCorrectivePaths = array_values(array_filter($correctiveOutput, static fn(string $path): bool => $path !== ''));
-        $expectedCorrectivePaths = $correctiveAllowlist;
+        $expectedCorrectivePaths = $secondCorrectiveAllowlist;
         sort($actualCorrectivePaths);
         sort($expectedCorrectivePaths);
-        mpv1_check(count($actualCorrectivePaths) === 12, 'corrective commit changes exactly 12 paths');
-        mpv1_check($actualCorrectivePaths === $expectedCorrectivePaths, 'corrective commit matches exact 12-path allowlist');
+        mpv1_check(count($actualCorrectivePaths) === 9, 'second corrective commit changes exactly 9 paths');
+        mpv1_check($actualCorrectivePaths === $expectedCorrectivePaths, 'second corrective commit matches exact 9-path allowlist');
         $unexpectedCorrectivePaths = array_values(array_diff($actualCorrectivePaths, $expectedCorrectivePaths));
         if ($unexpectedCorrectivePaths !== []) {
             echo 'UNEXPECTED_CORRECTIVE_PATHS=' . implode(',', $unexpectedCorrectivePaths) . "\n";

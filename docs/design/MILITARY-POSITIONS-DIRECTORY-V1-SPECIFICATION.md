@@ -14,6 +14,7 @@ MIGRATION=database/migrations/014_military_positions_directory_v1.sql
 POST_STAFFING_RECONCILIATION=PASS
 ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
 DESKTOP_ACCEPTANCE=FAIL
 ```
 
@@ -489,7 +490,29 @@ Required on the new exact head:
 ```text
 SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
 SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
-SECOND_CORRECTIVE_UI_IMPLEMENTATION=PENDING_OWNER_APPROVAL
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+```
+
+## 15. Second corrective implementation record
+
+Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`.
+
+Static implementation mapping:
+
+- UI-C06: entry-scoped native `details[name]` makes edit and lifecycle disclosures mutually exclusive without JavaScript;
+- UI-C06: both summaries are direct visual peers in one content-sized action row;
+- UI-C06: opened edit and lifecycle forms span the full row below the controls;
+- UI-C06: the lifecycle reason and confirmation remain grouped in the opened form;
+- UI-C07: exactly nine approved paths change and all backend contracts remain byte-for-byte outside scope;
+- UI-C08: checker assertions and exact nine-path commit inventory are fail-closed.
+
+```text
+SECOND_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
+SECOND_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
 PULL_REQUEST=NOT_AUTHORIZED
 MERGE=NOT_AUTHORIZED
 ```
