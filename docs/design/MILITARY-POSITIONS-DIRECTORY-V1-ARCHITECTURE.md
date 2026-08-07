@@ -17,7 +17,7 @@ ORIGINAL_IMPLEMENTATION=AUTHORIZED
 FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 ```
 
 Версия 0.2 переносит утверждённую архитектуру 0.1 на exact post-Staffing baseline. `Lowest Unit Staffing Structure v1` слит через PR #35; migration 013 и runtime Staffing присутствуют. Старая design-ветка не является implementation base.
@@ -522,7 +522,7 @@ MIGRATION_CHANGE=NO
 ROUTE_OR_PERMISSION_CHANGE=NO
 JAVASCRIPT_CHANGE=NO
 FOURTH_CORRECTIVE_DESIGN_REVIEW=PASS
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=AUTHORIZED_AND_IMPLEMENTED_PENDING_VALIDATION
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 ```
 
 Exact fourth corrective allowlist:
@@ -556,12 +556,51 @@ Implementation mapping:
 - payload, CSRF, expected revisions, PRG, routes, permissions, database model and JavaScript remain unchanged.
 
 ```text
-FOURTH_CORRECTIVE_IMPLEMENTATION=COMPLETE_PENDING_VALIDATION
-FOURTH_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
-FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
-FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
+FOURTH_CORRECTIVE_IMPLEMENTATION=VALIDATED
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PASS
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=PASS
 FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
-PULL_REQUEST=NOT_AUTHORIZED
-MERGE=NOT_AUTHORIZED
+UI_F04=CLOSED
+UI_F05=CLOSED
+PULL_REQUEST=AUTHORIZED
+MERGE=AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+## 23. Fourth corrective validation record (2026-08-08)
+
+The exact fourth-corrective runtime head `c647a933011873048866c75978d3f506634011fd` passed the complete local automatic gate and the owner desktop gate. The later documentation-only checkpoint records that evidence and does not change runtime behavior.
+
+Automatic evidence:
+
+- total increment inventory `38/38`;
+- corrective inventories `12/12`, `9/9`, `8/8` and `9/9`;
+- PHP lint: 171 files, no errors;
+- database backup created; initialization and migration repeat both passed with migrations 001–014;
+- final DB/runtime checker: `167 PASS`;
+- HTTP smoke: `200`, `200`, expected `302`;
+- no failures, exceptions or warnings.
+
+Owner desktop evidence passed in `asu-blue`, `asu-light-blue` and `asu-evgeniya-rostova`. The controls remain adjacent while either panel is open, the lifecycle label is above the longer input, confirmation is aligned to the right, and both disclosure directions close the previously opened panel.
+
+```text
+FOURTH_CORRECTIVE_IMPLEMENTATION_HEAD=c647a933011873048866c75978d3f506634011fd
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PASS
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=PASS
+FOURTH_CORRECTIVE_MUTUAL_EXCLUSION=PASS
+AUTOMATIC_GATE_PASS_COUNT=167
+HTTP_SMOKE=200,200,302
+UI_F04=CLOSED
+UI_F05=CLOSED
+BLOCKING_FINDINGS=0
+MAJOR_FINDINGS=0
+MINOR_FINDINGS=0
+OPEN_FINDINGS=0
+MOBILE_ACCEPTANCE=NOT_RUN_OUT_OF_SCOPE
+REAL_STAFFING_DATA_MUTATION=NONE
+PULL_REQUEST=AUTHORIZED
+MERGE=AUTHORIZED
 BRANCH_DELETION=NOT_AUTHORIZED
 ```

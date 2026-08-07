@@ -5,7 +5,7 @@
 1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
 2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
 3. Сопоставить live state с exact base/branch/allowlist ниже.
-4. Продолжать с exact-head validation gate fourth corrective UI; owner Approval выдан, implementation опубликована только в feature-ветку, local runtime и desktop retest ещё не выполнены.
+4. Продолжать с documentation checkpoint, exact-head Final PR Review, Pull Request и merge; fourth corrective automatic и three-theme desktop validation завершены успешно.
 5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
 GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
@@ -89,12 +89,14 @@ THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
 THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
 THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
 FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
-FOURTH_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
-FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
-FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
-PULL_REQUEST=NOT AUTHORIZED
-MERGE=NOT AUTHORIZED
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PASS
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=PASS
+FOURTH_CORRECTIVE_MUTUAL_EXCLUSION=PASS
+OPEN_FINDINGS=0
+PULL_REQUEST=AUTHORIZED
+MERGE=AUTHORIZED
 BRANCH_DELETION=NOT AUTHORIZED
 ```
 
@@ -199,7 +201,7 @@ The implementation branch was then added. No branch may be deleted without separ
 
 ## 11. Next gate
 
-Fourth corrective owner Approval was granted against exact documentation head `bc660b4e211269bb0f63379ad300bb5e6e72d427`. The implementation is constrained to the exact nine-path allowlist: stable adjacent summary-only disclosures, sibling edit/state panels, a vertical lifecycle label above an approximately `360px` field and a content-sized confirmation control. The next gate is the full local runner on the exact implementation head followed by three-theme desktop retest. Pull Request, merge, branch deletion and production deployment remain forbidden.
+Fourth corrective automatic validation and three-theme desktop acceptance passed on exact runtime head `c647a933011873048866c75978d3f506634011fd`; UI-F04 and UI-F05 are closed and open findings are zero. The next gate is a four-document validation checkpoint, exact-head Final PR Review, Pull Request creation and merge. Owner authorization for Pull Request and merge is granted; branch deletion and production deployment remain forbidden.
 
 ## 12. Corrective desktop UI gate
 
@@ -382,13 +384,19 @@ The approved implementation uses two summary-only native `details[name]` control
 
 ```text
 FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
-FOURTH_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
 FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
-FOURTH_CORRECTIVE_STATIC_VALIDATION=PENDING_EXACT_COMMIT
-FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=NOT_RUN
-FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=NOT_RUN
-PULL_REQUEST=NOT_AUTHORIZED
-MERGE=NOT_AUTHORIZED
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PASS
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=PASS
+FOURTH_CORRECTIVE_MUTUAL_EXCLUSION=PASS
+AUTOMATIC_GATE_PASS_COUNT=167
+HTTP_SMOKE=200,200,302
+UI_F04=CLOSED
+UI_F05=CLOSED
+OPEN_FINDINGS=0
+PULL_REQUEST=AUTHORIZED
+MERGE=AUTHORIZED
 BRANCH_DELETION=NOT_AUTHORIZED
 ```
 
@@ -406,4 +414,33 @@ docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
 docs/CHAT-HANDOFF.md
 ```
 
-Next gate: run `tools/Test-MilitaryPositionsDirectoryV1.ps1` on the exact fourth-corrective head with initialization and HTTP smoke, then repeat desktop acceptance in all three themes. Mobile remains `NOT RUN / OUT OF SCOPE`.
+Validation complete on exact runtime head `c647a933011873048866c75978d3f506634011fd`: full runner `167 PASS`, HTTP smoke `200/200/302`, three managed desktop themes PASS and mutual exclusion PASS. Mobile remains `NOT RUN / OUT OF SCOPE`.
+
+## 17. Final validation and merge authorization (2026-08-08)
+
+The full local automatic gate and owner desktop acceptance are complete on exact runtime head `c647a933011873048866c75978d3f506634011fd`.
+
+```text
+TOTAL_INCREMENT_ALLOWLIST=38/38
+CORRECTIVE_ALLOWLISTS=12/12,9/9,8/8,9/9
+PHP_LINT_FILES=171
+MIGRATIONS=001-014
+INITIALIZATION_RUNS=2
+FINAL_DB_RUNTIME_CHECKER=167_PASS
+HTTP_SMOKE=200,200,302
+ASU_BLUE_DESKTOP=PASS
+ASU_LIGHT_BLUE_DESKTOP=PASS
+ASU_EVGENIYA_ROSTOVA_DESKTOP=PASS
+MUTUAL_EXCLUSION_BOTH_DIRECTIONS=PASS
+UI_F04=CLOSED
+UI_F05=CLOSED
+OPEN_FINDINGS=0
+MOBILE_ACCEPTANCE=NOT_RUN_OUT_OF_SCOPE
+REAL_STAFFING_DATA_MUTATION=NONE
+PULL_REQUEST=AUTHORIZED
+MERGE=AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+FINAL_PR_REVIEW=PENDING_EXACT_HEAD
+```
+
+Owner granted authorization on 2026-08-08 to perform all remaining actions through merge, except branch deletion. The next operator must verify live refs, publish only the four-document validation checkpoint as a non-force fast-forward of `feature/military-positions-directory-v1`, conduct Final PR Review on the resulting exact head, create the PR into unchanged `main`, and merge only if the PR head, base, inventory and findings remain exact. Do not delete any branch.
