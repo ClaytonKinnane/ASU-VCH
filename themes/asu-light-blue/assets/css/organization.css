@@ -160,3 +160,20 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
     .organization-actions, .organization-actions form, .organization-version-controls form { width: 100%; }
     .organization-actions label, .organization-version-controls label, .organization-actions .organization-date-field, .organization-version-controls .organization-date-field { min-width: 0; width: 100%; }
 }
+
+.staffing-document-card { padding: 14px 16px; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 16px; align-items: start; }
+.staffing-document-card__content { min-width: 0; display: grid; gap: 6px; }
+.staffing-document-card__content .status-badge { justify-self: start; }
+.staffing-document-card__content h3 { margin: 0; font-size: 17px; line-height: 1.3; overflow-wrap: anywhere; }
+.staffing-document-card__content p { margin: 0; color: var(--text-secondary); }
+.staffing-document-card__actions { min-width: 0; justify-self: end; }
+.staffing-document-card__actions > .organization-disclosure { width: auto; }
+.staffing-document-card__actions[open] { grid-column: 1 / -1; justify-self: stretch; width: 100%; }
+.staffing-document-card__actions[open] > .organization-disclosure { margin-left: auto; }
+.staffing-document-card__editor { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--input-border); display: grid; gap: 12px; }
+@media (max-width: 680px) {
+    .staffing-document-card { grid-template-columns: 1fr; }
+    .staffing-document-card__actions { justify-self: stretch; width: 100%; }
+    .staffing-document-card__actions > .organization-disclosure { width: 100%; justify-content: flex-start; }
+    .staffing-document-card__actions[open] > .organization-disclosure { margin-left: 0; }
+}

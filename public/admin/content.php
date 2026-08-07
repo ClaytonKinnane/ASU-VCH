@@ -5,8 +5,9 @@ require dirname(__DIR__, 2) . '/app/bootstrap.php';
 $user = require_authenticated_user();
 $isOwner = in_array('system_owner', current_user_role_codes(), true);
 $canViewStructure = has_permission('organization.structures.view');
-if (!$isOwner && !$canViewStructure) {
-    require_permission('organization.structures.view');
+$canViewStaffing = has_permission('staffing.registers.view');
+if (!$isOwner && !$canViewStructure && !$canViewStaffing) {
+    require_permission('staffing.registers.view');
 }
 
 $futureModules = [
@@ -34,6 +35,7 @@ $futureModules = [
 <section class="module-grid" aria-label="Модули контента">
 <?php if ($isOwner): ?><a class="dashboard-tile module-tile glass-tile" href="/admin/directories.php"><h2>Справочники</h2><p>Системные и предметные классификаторы.</p><span class="tile-action">Открыть →</span></a><?php endif; ?>
 <?php if ($canViewStructure): ?><a class="dashboard-tile module-tile glass-tile" href="/admin/organization/structures.php"><h2>Организационная структура</h2><p>Воинские части, подразделения, версии и основная постоянная подчинённость.</p><span class="tile-action">Открыть →</span></a><?php endif; ?>
+<?php if ($canViewStaffing): ?><a class="dashboard-tile module-tile glass-tile" href="/admin/staffing/registers.php"><h2>Штатная структура</h2><p>Версионные штатные реестры, документы-основания и индивидуальные нормативные позиции.</p><span class="tile-action">Открыть →</span></a><?php endif; ?>
 <?php if ($isOwner): ?><?php foreach ($futureModules as [$title, $description]): ?><article class="module-tile glass-tile is-disabled"><span class="status-badge">В разработке</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p></article><?php endforeach; ?><?php endif; ?>
 </section>
 </div></main>
