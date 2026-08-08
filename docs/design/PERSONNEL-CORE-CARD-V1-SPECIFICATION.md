@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Specification
-VERSION=0.1
+VERSION=0.2
 INCREMENT=Personnel Core Card v1
 BASE_SHA=dadc2dd2c1151a797cfc2f6690bcf19b1f73e4b8
 DESIGN_BRANCH=design/personnel-core-card-v1
@@ -108,7 +108,7 @@ Validation:
 - `nationality`: 0–100;
 - `religion`: 0–150;
 - control characters rejected;
-- no duplicate-person heuristic blocks creation: совпадение ФИО/даты рождения только предупреждение/видимый possible-match list, если реализовано безопасно; ФИО не unique.
+- no duplicate-person heuristic blocks creation: совпадение ФИО/даты рождения не является unique key.
 
 Effect in one transaction:
 
@@ -181,6 +181,15 @@ table_number
 call_sign
 ```
 
+Policy:
+
+```text
+personal_number → global historical uniqueness / never reused
+service_dog_tag → global historical uniqueness / never reused
+table_number    → reuse allowed by type policy
+call_sign       → reuse allowed by type policy
+```
+
 UI displays Russian names and description where applicable.
 
 No generic identifier-type editor in v1.
@@ -205,10 +214,10 @@ Rules:
 - system type exists;
 - value trim 1–255;
 - one active value per person/type;
-- global active uniqueness for type with `enforce_global_unique=1`;
-- `valid_from` valid and not after explicitly supplied `valid_to` (no valid_to on create v1);
-- transaction lock root → active identifier candidates;
-- create row;
+- for type with `enforce_global_unique=1`, the value must not exist in any current or historical row of that type;
+- `valid_from` valid DATE when supplied;
+- transaction lock root → relevant identifier candidates;
+- create row with `valid_to=NULL`;
 - root revision +1;
 - append `identifier.added`.
 
@@ -222,11 +231,18 @@ POST:
 personnel_id
 identifier_type_id
 new_value
-new_valid_from nullable
-old_valid_to nullable
+effective_date
 reason nullable
 expected_revision
 csrf_token
+```
+
+Temporal rule:
+
+```text
+old interval ends at effective_date
+new interval begins at effective_date
+interval semantics = [valid_from, valid_to)
 ```
 
 Effect in one transaction:
@@ -234,25 +250,42 @@ Effect in one transaction:
 1. lock root;
 2. validate expected revision;
 3. find exactly one active identifier of type;
-4. end old row with `valid_to`/`ended_at`;
-5. validate new value and global uniqueness;
-6. create new active row;
-7. increment root revision once;
-8. append `identifier.replaced` referencing old/new ids.
+4. validate `effective_date` as DATE and `effective_date >= old.valid_from` when old start is known;
+5. end old row with `valid_to=effective_date`, `ended_at=now`, `ended_by=actor`;
+6. validate new value;
+7. if type has `enforce_global_unique=1`, reject any new value already present in current or historical rows of that type, including a value previously ended on another/personnel record;
+8. create new active row with `valid_from=effective_date`, `valid_to=NULL`;
+9. increment root revision once;
+10. append `identifier.replaced` referencing old/new ids.
 
 Old row is never overwritten with new value.
 
 ### FR-10. End identifier without replacement
 
-POST ends an active identifier and appends `identifier.ended`.
+POST:
 
-Requires reason nullable, expected revision and CSRF.
+```text
+personnel_id
+identifier_type_id
+effective_date
+reason nullable
+expected_revision
+csrf_token
+```
 
-Historical identifier cannot be ended twice.
+Rules:
+
+- exactly one active identifier of type;
+- `effective_date` valid DATE;
+- if active row has `valid_from`, require `effective_date >= valid_from`;
+- set `valid_to=effective_date`, `ended_at=now`, `ended_by=actor`;
+- root revision +1;
+- append `identifier.ended`;
+- historical identifier cannot be ended twice.
 
 ### FR-11. Identifier history
 
-Card shows current identifiers first and expandable/readable history per type:
+Card shows current identifiers first and readable history per type:
 
 ```text
 value
@@ -261,6 +294,8 @@ valid_to
 created_at
 ended_at
 ```
+
+Interval semantics are `[valid_from, valid_to)`.
 
 No physical delete control.
 
@@ -316,7 +351,7 @@ History screen/card shows append-only events ordered newest first:
 ```text
 occurred_at
 actor display name
- event type
+event type
 safe summary
 revision context where available
 ```
@@ -392,10 +427,10 @@ Exact composite/generated indexes may differ if needed to enforce invariants und
 
 - no invalid record status;
 - revision >= 1;
-- no future `birth_date` enforced in service (DB CURRENT_DATE check portability must be reviewed before use);
-- valid identifier period;
+- no future `birth_date` enforced in service;
+- identifier interval validity;
 - at most one active identifier per person/type;
-- global active uniqueness for configured types;
+- never-reuse global uniqueness for configured types across current + historical rows;
 - FK protection;
 - append-only change events;
 - no automatic person seeds;
@@ -582,10 +617,11 @@ No theme asset, workflow, repository-setting, deployment config, existing migrat
 Reject:
 
 - invalid status;
-- duplicate active personal number across persons;
-- duplicate active dog tag across persons;
+- duplicate personal number in any current or historical row of another/same person;
+- duplicate dog tag in any current or historical row of another/same person;
 - second active identifier same type/person;
-- invalid valid_from/valid_to;
+- invalid `[valid_from,valid_to)` interval;
+- replace/end without valid `effective_date`;
 - event update/delete;
 - orphan child rows.
 
@@ -593,7 +629,7 @@ Accept:
 
 - same call sign for different persons if allowed by type policy;
 - same table number for different persons if allowed by type policy;
-- historical reused globally unique value only if architecture/service explicitly permits after old value is ended; checker must document exact rule.
+- historical call-sign/table-number reuse after prior row is ended.
 
 ### Service tests
 
@@ -602,8 +638,9 @@ Accept:
 - archive;
 - restore;
 - add identifier;
-- replace identifier;
-- end identifier;
+- replace identifier using exact effective date;
+- end identifier using exact effective date;
+- never-reuse enforcement for personal number/dog tag;
 - stale revision for every mutation;
 - rollback after child validation failure;
 - history event exactness.
@@ -664,7 +701,7 @@ No real:
 
 may be committed as fixtures/evidence.
 
-Runtime manual testing on the local instance may create and remove/retain synthetic records according to the test plan. Production data acceptance is not part of v1 claims.
+Runtime manual testing on the local instance may create synthetic records according to the test plan. Production data acceptance is not part of v1 claims.
 
 ## 12. Acceptance criteria
 
@@ -676,18 +713,20 @@ Runtime manual testing on the local instance may create and remove/retain synthe
 6. no seeded persons;
 7. root revision protects every mutation;
 8. identifier history is non-destructive;
-9. archive/restore non-destructive;
-10. owner-only access enforced;
-11. non-owner Personnel disclosure absent;
-12. no Assignment/occupancy truth introduced;
-13. no file/media behavior introduced;
-14. list/card/search/history behavior passes;
-15. desktop visual acceptance passes in all three themes;
-16. mobile remains honestly untested;
-17. regressions pass;
-18. docs match runtime exact head;
-19. production deployment not claimed;
-20. Final PR Review later has no blocking/major findings.
+9. personal number/dog tag never-reuse invariant passes;
+10. identifier replace/end effective-date semantics pass;
+11. archive/restore non-destructive;
+12. owner-only access enforced;
+13. non-owner Personnel disclosure absent;
+14. no Assignment/occupancy truth introduced;
+15. no file/media behavior introduced;
+16. list/card/search/history behavior passes;
+17. desktop visual acceptance passes in all three themes;
+18. mobile remains honestly untested;
+19. regressions pass;
+20. docs match runtime exact head;
+21. production deployment not claimed;
+22. Final PR Review later has no blocking/major findings.
 
 ## 13. Explicit non-requirements
 
