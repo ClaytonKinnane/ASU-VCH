@@ -24,7 +24,7 @@
                 'personnel.restored' => 'Восстановление',
                 'identifier.added' => 'Добавление идентификатора',
                 'identifier.replaced' => 'Замена идентификатора',
-                'identifier.ended' => 'Завершение идентификатора',
+                'identifier.ended' => 'Прекращение действия идентификатора',
                 default => 'Изменение карточки',
             };
             $targetLabel = match ((string) $event['target_type']) {
