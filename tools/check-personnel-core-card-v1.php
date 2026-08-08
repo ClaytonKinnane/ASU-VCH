@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+ob_start();
+
 $root = dirname(__DIR__);
 $failures = [];
 $passes = 0;
@@ -164,8 +166,13 @@ if ($runRuntime) {
         $pdo->beginTransaction();
         try {
             $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
-            $insertPerson = $pdo->prepare("INSERT INTO personnel_records(last_name,first_name,birth_date,record_status,revision,created_by,created_at,updated_by,updated_at) VALUES('Тестов','Прототип','1990-01-01','active',1,:actor,:now,:actor,:now)");
-            $insertPerson->execute(['actor'=>$actorId,'now'=>$now]);
+            $insertPerson = $pdo->prepare("INSERT INTO personnel_records(last_name,first_name,birth_date,record_status,revision,created_by,created_at,updated_by,updated_at) VALUES('Тестов','Прототип','1990-01-01','active',1,:created_by,:created_at,:updated_by,:updated_at)");
+            $insertPerson->execute([
+                'created_by' => $actorId,
+                'created_at' => $now,
+                'updated_by' => $actorId,
+                'updated_at' => $now,
+            ]);
             $personId = (int) $pdo->lastInsertId();
             $types = [];
             foreach ($pdo->query('SELECT id,code,enforce_global_unique FROM personnel_identifier_types')->fetchAll() as $type) {
@@ -194,8 +201,8 @@ if ($runRuntime) {
                 $reuseAllowed = false;
             }
             personnel_check($reuseAllowed, 'runtime allows historical call-sign reuse');
-            $event = $pdo->prepare("INSERT INTO personnel_change_events(personnel_id,actor_user_id,event_type,target_type,target_id,occurred_at) VALUES(:personnel_id,:actor,'test.event','personnel_record',:personnel_id,:now)");
-            $event->execute(['personnel_id'=>$personId,'actor'=>$actorId,'now'=>$now]);
+            $event = $pdo->prepare("INSERT INTO personnel_change_events(personnel_id,actor_user_id,event_type,target_type,target_id,occurred_at) VALUES(:personnel_id,:actor,'test.event','personnel_record',:target_id,:now)");
+            $event->execute(['personnel_id'=>$personId,'actor'=>$actorId,'target_id'=>$personId,'now'=>$now]);
             $eventId = (int) $pdo->lastInsertId();
             $eventUpdateRejected = false;
             try {
