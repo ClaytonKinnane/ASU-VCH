@@ -4,7 +4,7 @@
 
 ```text
 DOCUMENT=Architecture
-VERSION=0.1
+VERSION=0.2
 INCREMENT=Personnel Core Card v1
 CONTOUR=PersonnelServiceAccounting
 DOMAIN=Personnel
@@ -171,13 +171,15 @@ personnel_identifier_types
 └── updated_at DATETIME(6)
 ```
 
+`enforce_global_unique=1` означает уникальность значения данного type по всей сохраненной истории, а не только среди active rows. Завершенное значение такого identifier не может быть позднее выдано другой карточке.
+
 Initial system rows:
 
 ```text
-personal_number  — Личный номер       — global active uniqueness
-service_dog_tag  — Жетон               — global active uniqueness
-table_number     — Табельный номер     — no global uniqueness in v1
-call_sign        — Позывной             — no global uniqueness in v1
+personal_number  — Личный номер       — global historical uniqueness, never reused
+service_dog_tag  — Жетон               — global historical uniqueness, never reused
+table_number     — Табельный номер     — reuse allowed by type policy
+call_sign        — Позывной             — reuse allowed by type policy
 ```
 
 Эти значения являются prototype semantics и не реконструируют закрытые классификаторы.
@@ -201,19 +203,29 @@ personnel_identifiers
 └── ended_at DATETIME(6) NULL
 ```
 
+Temporal semantics:
+
+```text
+validity interval = [valid_from, valid_to)
+active identifier = valid_to IS NULL
+```
+
+`valid_from=NULL` означает, что начало действия неизвестно/не зафиксировано, но запись может быть текущей.
+
 ### Invariants
 
-- active identifier = `valid_to IS NULL`;
 - один active identifier одного type на одного person в v1;
-- для `enforce_global_unique=1` active value уникально между persons;
-- история не переписывается заменой строки: replace завершает старую запись и создает новую;
-- ended historical identifier не активируется обратно; создается новая active record;
+- для `enforce_global_unique=1` значение уникально среди всех historical/current rows данного type и никогда не переиспользуется;
+- история не переписывается заменой строки: replace по явной `effective_date` завершает старую запись (`valid_to=effective_date`) и создает новую (`valid_from=effective_date`);
+- end без replacement требует явную `effective_date` и устанавливает `valid_to=effective_date`;
+- ended historical identifier не активируется обратно; при допустимом reuse создается новая строка;
 - `valid_to >= valid_from`, если обе даты заданы;
+- `effective_date >= valid_from`, если `valid_from` известна;
 - value trim, length 1–255;
 - identifier не существует без PersonnelRecord;
 - physical delete historical identifier запрещен service/UI.
 
-DB layer должен обеспечивать per-person active guard и fail-closed global uniqueness для system types, помеченных `enforce_global_unique`.
+DB layer должен обеспечивать per-person active guard и fail-closed never-reuse uniqueness для system types, помеченных `enforce_global_unique`.
 
 ## 10. Change events
 
@@ -396,9 +408,9 @@ Seed content ограничивается четырьмя identifier type defin
 - no cascade delete of Personnel history;
 - status CHECK;
 - revision CHECK;
-- valid date CHECK;
+- identifier interval CHECK;
 - active identifier per person/type guard;
-- trigger/service global uniqueness for configured types;
+- never-reuse uniqueness for configured identifier types;
 - append-only event triggers;
 - archive mutation guards where practical;
 - indexes for ФИО, birth date, status and identifier search.
@@ -459,7 +471,8 @@ Responsive markup обязателен, но actual mobile testing остает�
 - DB constraints and append-only history;
 - stale revision rollback;
 - create/update/archive/restore;
-- identifier add/replace/end;
+- identifier add/replace/end with explicit effective dates;
+- never-reuse personal number/dog tag tests;
 - owner access and non-owner denial;
 - list/search/card/history;
 - synthetic Cyrillic names and identifiers only;
@@ -484,6 +497,8 @@ ADR-P09=Fine-grained Personnel security deferred; v1 system_owner only
 ADR-P10=No new permissions or non-owner grants in migration 015
 ADR-P11=Existing themes/components reused; no planned theme asset expansion
 ADR-P12=No real personnel fixture or seed data
+ADR-P13=Personal number and dog tag values are globally unique across retained history and never reused
+ADR-P14=Identifier replace/end uses explicit effective_date and [valid_from,valid_to) intervals
 ```
 
 ## 22. Acceptance gate
