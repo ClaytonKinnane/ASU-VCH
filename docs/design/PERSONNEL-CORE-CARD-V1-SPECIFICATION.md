@@ -514,7 +514,31 @@ Existing theme components are reused. No hardcoded theme colors and no new theme
 - кнопка имеет `type="button"`, доступные `title`/`aria-label` и явную привязку к целевому date input;
 - по нажатию вызывается native picker через `showPicker()` когда он доступен, с безопасным fallback `focus()` + `click()`;
 - это правило применяется ко всем новым и изменяемым экранам АСУ-ВЧ, где требуется ввод даты; обнаруженное существующее исключение считается UI finding и подлежит исправлению в соответствующем утверждённом scope;
-- эталон поведения: date controls в Staffing register version form и Personnel list/create/update forms.
+- эталон поведения: date controls в Staffing register version form и Personnel list/create/update/identifier forms.
+
+### User-facing language convention — project UI rule
+
+Все пользовательские названия, подписи, действия, подсказки, empty-state тексты и пояснения АСУ-ВЧ должны отображаться на русском языке.
+
+- английские domain/code names допустимы в исходном коде, БД, event codes и технической документации, когда они являются техническими идентификаторами;
+- внутренние имена `Personnel`, `Assignment`, `event_type`, `target_type` и аналогичные значения не должны без необходимости выводиться пользователю как UI-подписи;
+- если техническое значение необходимо представить пользователю, UI обязан отобразить русское человекочитаемое наименование или безопасное русское обобщение;
+- raw event/target codes на экране истории запрещены; отображаются русские labels и summaries;
+- обнаруженная необоснованная англоязычная пользовательская подпись считается UI finding.
+
+### Personnel card desktop layout — corrective acceptance
+
+Для основной карточки военнослужащего:
+
+- status, ФИО и краткие сведения образуют левую смысловую часть summary-плитки;
+- действия `Изменить` и `История` образуют компактную группу справа в верхней части той же плитки, одинаковой высоты и с шириной по содержимому;
+- для архивной карточки `Изменить` отсутствует, `История` остаётся;
+- рабочие секции `Персональные данные`, `Идентификаторы`, `История изменений`, `Состояние карточки` используют компактный последовательный vertical rhythm без избыточного пространства над заголовком;
+- ориентир для section padding: 16–20 px; heading top margin = 0; heading-to-content gap ≈ 12–16 px;
+- `Добавить идентификатор` находится в heading-row блока идентификаторов, имеет обычную action-width и не растягивается на всю плитку;
+- пользовательское пояснение идентификаторов: `Удаление идентификаторов недоступно. Все изменения сохраняются в истории.`;
+- `Вся история` находится в heading-row блока истории изменений;
+- corrective layout не меняет состав данных, lifecycle, revision, history или identifier semantics.
 
 Desktop acceptance: all three managed themes.
 
@@ -680,6 +704,9 @@ For each current theme:
 - history;
 - archive/restore;
 - every visible date-input control uses the functional themed calendar button, hides the native browser indicator and opens the picker when activated;
+- visible Personnel UI uses Russian labels and does not expose raw internal event/target codes or unnecessary English domain names;
+- summary actions are grouped clearly and working card sections have compact consistent top spacing;
+- identifier add action has normal action width next to its section heading and the identifier retention explanation is user-facing Russian text;
 - narrow desktop/window responsive behavior as observation only;
 - no Mobile PASS claim.
 
@@ -739,7 +766,9 @@ Runtime manual testing on the local instance may create synthetic records accord
 19. regressions pass;
 20. docs match runtime exact head;
 21. production deployment not claimed;
-22. Final PR Review later has no blocking/major findings.
+22. Final PR Review later has no blocking/major findings;
+23. visible Personnel UI uses Russian user-facing labels and does not expose raw internal event/target codes;
+24. Personnel card corrective layout passes: compact section spacing, clear action grouping and normal-width identifier action.
 
 ## 13. Explicit non-requirements
 
