@@ -1,18 +1,20 @@
 # Текущее состояние базы данных
 
-Дата актуализации functional schema baseline: `2026-08-03`.
+Дата актуализации repository schema inventory: `2026-08-07`.
 
 Документ описывает фактически реализованный physical schema baseline. Target ERD/domain specifications могут быть шире runtime.
 
 ## Repository anchors
 
 ```text
-latest functional PR: #24
-PR #24 merge: feac7230616d3a8df98acb48f43a0b60f89f2255
-PR #24 runtime/manual acceptance: b44aed14ee1a54be213cbc939322ba21b02e7a58
-applied migrations in post-merge verification: 12
+current main functional PR: #35
+current main SHA: 9ae05b9928903cc483ce415d7378b546e419264c
+main migration inventory: 001–013
+implementation branch target migration: 014_military_positions_directory_v1.sql
+local application of migration 014: NOT RUN in this worktree
 system roles: 4
-system permissions: 25
+main system permissions: 31
+target after migration 014: 35
 ```
 
 Current repository HEAD определяется динамически. Technical PR #25 не менял schema и не создаёт новый database-tested baseline.
@@ -39,7 +41,7 @@ Credentials находятся только в local deploy configuration и н�
 5. профильные integration checker'ы;
 6. post-migration MySQL verification.
 
-## Применённые migrations
+## Repository migration inventory
 
 | № | Файл | Реализованная область |
 |---:|---|---|
@@ -55,10 +57,12 @@ Credentials находятся только в local deploy configuration и н�
 | 010 | `010_military_positions_directory.sql` | public military position types |
 | 011 | `011_public_military_occupational_specialties_directory.sql` | public VUS disclosures |
 | 012 | `012_military_ranks_directory_v2.sql` | Military Ranks lifecycle/semantics/source evolution v2 |
+| 013 | `013_lowest_unit_staffing_v1.sql` | Lowest Unit Staffing Structure v1 |
+| 014 | `014_military_positions_directory_v1.sql` | managed canonical Military Positions Directory v1; implementation branch, local DB validation pending |
 
 ## Security и users
 
-Реализованы users, roles, permissions, role assignments, settings и lifecycle audit metadata. Baseline: 4 system roles / 25 permissions.
+Реализованы users, roles, permissions, role assignments, settings и lifecycle audit metadata. `main` baseline: 4 system roles / 31 permissions. Migration 014 adds four module permissions without role assignments.
 
 ## Theme Management
 
@@ -136,6 +140,25 @@ normative variants: 35
 rank relation tables: 0
 ```
 
+## Managed Military Positions Directory — migration 014
+
+Migration 014 is standalone SQL and does not modify migration-010 marker, loader or five gzip/base64 payload parts.
+
+Target changes:
+
+```text
+existing catalog tables evolved: 2
+parallel position catalogs created: 0
+new history tables: 1 (military_position_change_events)
+initial canonical version: draft
+initial canonical entries: 24 synthetic names
+explicit combined entries: 9
+new permissions: 4
+automatic non-owner grants: 0
+```
+
+Legacy classifier stays current published until an explicit atomic publication of the canonical draft. Existing Staffing pins and legacy metadata remain unchanged/readable. Lifecycle becomes `draft/published/superseded/cancelled`; stable identity, optimistic revisions, terminal immutability and append-only history are DB/service guarded.
+
 ## Public VUS — migration 011
 
 ```text
@@ -165,3 +188,5 @@ mobile: OUT OF SCOPE / NOT RUN
 ```
 
 GitHub static CI PR #25 не выполняет MySQL и не заменяет этот functional evidence.
+
+Migration 014 clean/existing DB, repeat installer, deploy, HTTP and desktop evidence remains `NOT RUN` until the PowerShell 5.1 runner is executed on the exact implementation head. Mobile remains `OUT OF SCOPE / NOT RUN`.

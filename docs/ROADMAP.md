@@ -4,15 +4,17 @@
 
 ```text
 repository pointer: origin/main
-latest functional runtime baseline: PR #24 / migration 012
+latest merged functional baseline: PR #35 / migration 013
+current main: 9ae05b9928903cc483ce415d7378b546e419264c
 static CI baseline: PR #25
 documentation governance baseline: PR #28
 local automation foundation: PR #29
 local automation corrected baseline: PR #30
 durable technical capability coverage: through PR #30
-migrations: 001–012
+migrations on main: 001–013
+active implementation target: migration 014
 system roles: 4
-system permissions: 25
+system permissions on main: 31
 built-in themes: 3
 required CSS assets: 10
 ```
@@ -33,6 +35,8 @@ required CSS assets: 10
 - [x] manual desktop acceptance PR #24;
 - [x] Final PR Review and separate merge approval PR #24;
 - [x] PR #24 merge, post-merge verification and separately approved branch cleanup.
+- [x] Lowest Unit Staffing Structure v1 — migration 013;
+- [x] Staffing PR #35 merge and successful post-merge Actions;
 
 ## Завершённый Static CI Stage A — PR #25
 
@@ -96,12 +100,32 @@ Current-State Reconciliation v2 и его closure завершены как hist
 ## Current planning state
 
 ```text
-active functional increment: none
+active functional increment: Military Positions Directory v1
 active material technical increment: none
-next functional increment: not selected / not approved
+implementation approval: granted on main@9ae05b9928903cc483ce415d7378b546e419264c
+implementation branch: feature/military-positions-directory-v1
+implementation target: migration 014 / maximum 38 paths
+local validation: pending exact-head execution
+Pull Request: not authorized
 required status check: not enabled
 branch protection Stage B: not implemented
 ```
+
+## Active Military Positions Directory v1
+
+- [x] Research and existing-state analysis;
+- [x] Architecture 0.2;
+- [x] Specification 0.2;
+- [x] Formal Review PASS / zero open findings;
+- [x] post-Staffing reconciliation;
+- [x] exact owner Implementation Approval;
+- [x] branch created from exact main and implementation prepared;
+- [ ] exact-head static/automated validation;
+- [ ] local MySQL backup/migration/repeat/deploy/HTTP checks;
+- [ ] desktop visual acceptance in three themes;
+- [ ] separate PR approval;
+- [ ] PR exact-head Actions and Final PR Review;
+- [ ] separate merge approval and post-merge verification.
 
 Possible future directions не являются active tasks до отдельного Research → Approval cycle.
 
@@ -110,7 +134,7 @@ Possible future directions не являются active tasks до отдель�
 Each requires a separate Research → Approval cycle:
 
 - personnel card;
-- staffing structure and personnel assignments;
+- personnel core and assignments (staffing structure itself is implemented);
 - common Documents domain;
 - common Audit domain;
 - production deployment infrastructure;

@@ -17,7 +17,7 @@ Migration не вводит hidden architecture decisions.
 
 ## Current numbering
 
-В current functional baseline зарегистрированы migrations `001–012`:
+В repository inventory implementation-ветки зарегистрированы migrations `001–014`; `main@9ae05b9928903cc483ce415d7378b546e419264c` содержит `001–013`, а применение 014 локально ещё не подтверждено:
 
 | № | Файл | Назначение |
 |---:|---|---|
@@ -33,6 +33,8 @@ Migration не вводит hidden architecture decisions.
 | 010 | `010_military_positions_directory.sql` | public military position types |
 | 011 | `011_public_military_occupational_specialties_directory.sql` | public VUS information |
 | 012 | `012_military_ranks_directory_v2.sql` | rank catalog lifecycle, semantics, sources and v2 publication |
+| 013 | `013_lowest_unit_staffing_v1.sql` | versioned lowest-unit staffing registers, slots and history |
+| 014 | `014_military_positions_directory_v1.sql` | managed canonical military-position directory lifecycle |
 
 Source of truth: executable files, compatibility loaders, installer registry and profile checkers.
 
@@ -109,12 +111,29 @@ Recovery supports fresh v1, DDL-only partial, exact valid building cleanup/recre
 
 ## Permission baseline
 
-Migrations 010–012 add no permissions. Current baseline:
+Migrations 010–012 add no permissions. Migration 013 adds six Staffing permissions; migration 014 adds four military-position directory permissions without role assignments:
 
 ```text
 system roles: 4
-system permissions: 25
+main system permissions after 013: 31
+target system permissions after 014: 35
+automatic non-owner grants from 014: 0
 ```
+
+## Migration 014 — Managed Military Positions Directory v1
+
+```text
+mechanism: standalone SQL
+protected migration-010 marker/loader/payload touch: forbidden
+legacy current published version: preserved
+initial canonical version: draft
+approved synthetic entries: 24
+explicit is_combined=true: 9
+new table: military_position_change_events
+new permissions: 4
+```
+
+Migration evolves `military_position_catalog_versions` and `military_position_types` in place, adds `draft/published/superseded/cancelled`, stable keys, normalized-name uniqueness, revisions, audit metadata and append-only history. It performs no Staffing remap and no destructive legacy DROP.
 
 ## Specification requirements
 
@@ -148,8 +167,9 @@ PR #24 had a documented pre-migration-backup deviation; post-migration backup wa
 Current post-merge expectation:
 
 ```text
-Применено миграций: 12
-Новых миграций нет.
+main post-Staffing expectation: Применено миграций: 13
+implementation target after local migration: Применено миграций: 14
+actual migration-014 local result: NOT RUN
 ```
 
 Target files `SECURITY-MIGRATIONS.md`, `REFERENCE-MIGRATIONS.md` and `DOCUMENTS-MIGRATIONS.md` may be broader than current physical schema.

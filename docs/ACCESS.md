@@ -4,7 +4,8 @@
 
 ```text
 system roles: 4
-system permissions: 25
+main permissions after migration 013: 31
+feature target after migration 014: 35
 owner wildcard: system.*.*
 ```
 
@@ -35,12 +36,11 @@ Implemented: pending creation with reason, approval/activation, rejection audit,
 
 Migration 009 added six `organization.structures.*` permissions. They are not auto-assigned to ordinary roles; owner access is via wildcard.
 
-## Owner-only Reference directories
+## Reference directories
 
 ```text
 /admin/directories/military-ranks.php
 /admin/directories/organizational-elements.php
-/admin/directories/military-positions.php
 /admin/directories/military-occupational-specialties.php
 ```
 
@@ -59,7 +59,20 @@ Migration 012 adds no permissions. Route supports current v2, historical/superse
 
 Reference-owned compatibility service is read-only and evaluates same-version composition/rank compatibility. It does not grant Staffing or Organization write access.
 
-Migrations 010, 011 and 012 add no permissions; total remains 25.
+Migrations 010, 011 and 012 add no permissions. Migration 013 adds six `staffing.registers.*` permissions, producing the current `main` baseline of 31.
+
+### Managed Military Positions Directory v1
+
+Migration 014 adds:
+
+```text
+directories.military_positions.view
+directories.military_positions.manage
+directories.military_positions.publish
+directories.military_positions.history
+```
+
+No permission is automatically assigned to a non-owner role. Owner continues to use `system.*.*`. `/admin/content.php` and `/admin/directories.php` expose the module only to owner or a holder of the view permission. Read pages require view/history as applicable; every mutation is POST-only, permission-first, CSRF-protected, revision-guarded, transactional and PRG-redirected.
 
 ## Scope boundaries
 
@@ -75,13 +88,17 @@ Other domain mutations are POST-only, permission + CSRF protected, validate owne
 
 ```text
 system roles: 4
-system permissions: 25
+main system permissions after migration 013: 31
+feature target after migration 014: 35
 organization permissions: 6
+staffing permissions: 6
+military-position directory permissions: 4
 ordinary automatic organization assignments: 0
 owner access to current directories: PASS
 ordinary-role HTTP 403: PASS
 Military Ranks current/historical read-only boundary: PASS
-new permissions from migration 012: 0
+automatic non-owner grants from migration 014: 0
+Military Positions runtime/DB/HTTP verification: NOT RUN on this implementation worktree
 security regressions: PASS
 mobile: OUT OF SCOPE / NOT RUN
 ```

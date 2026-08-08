@@ -1,24 +1,23 @@
-# АСУ-ВЧ — постоянный handoff для нового чата
+# АСУ-ВЧ — handoff активного инкремента
 
-## 1. Обязательный порядок начала
+## 1. Обязательный старт следующего чата
 
-Перед material-действиями:
+1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот handoff.
+2. Проверить live GitHub: `main`, feature head, branches, PR, Issues и Actions.
+3. Сопоставить live state с exact base/branch/allowlist ниже.
+4. Продолжать с documentation checkpoint, exact-head Final PR Review, Pull Request и merge; fourth corrective automatic и three-theme desktop validation завершены успешно.
+5. Fail closed при moved base, unexpected material increment, extra path, другой migration mechanism или merge/rebase/force-push.
 
-1. прочитать `docs/PROJECT-WORKING-RULES.md` и этот документ;
-2. самостоятельно проверить live GitHub state: `main`, branches, PR, Issues, Actions и reviews;
-3. сопоставить live state с exact anchors ниже;
-4. продолжить с текущего незавершенного gate;
-5. не повторять уже полученные разрешения;
-6. fail closed при изменении base/head/scope/path allowlist.
+GitHub/Git — canonical source mutable lifecycle. Feature head всегда получать live: текущий документ входит в implementation diff и не содержит самоссылочный commit SHA.
 
-GitHub/Git — canonical source mutable lifecycle. SHA всегда перепроверяются.
-
-## 2. Репозиторий и среда
+## 2. Репозиторий и локальная среда
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
-main at snapshot: d60db94e405979c8f29bdc3dcaae7950362fb13a
+exact implementation base: 9ae05b9928903cc483ce415d7378b546e419264c
+base merge: PR #35 / Lowest Unit Staffing Structure v1
+implementation branch: feature/military-positions-directory-v1
 local repository: C:\Project\ASU-VCH
 deploy: C:\OSPanel\home\asu-vch.local
 domain: https://asu-vch.local
@@ -29,205 +28,419 @@ MySQL: 8.4
 PowerShell: 5.1
 ```
 
-GitHub operations выполняются ассистентом. Локальная машина используется для sync/deploy/MySQL/migrations/runtime/HTTP/browser/visual desktop acceptance. Длинные PowerShell-сценарии хранятся файлами в репозитории и совместимы с Windows PowerShell 5.1.
-
-## 3. Постоянный lifecycle
+## 3. Permanent lifecycle and exclusions
 
 ```text
 Research → Analysis → Architecture → Specification → Review → Approval
 → Implementation → Testing/Validation → Commit → Push → Pull Request
 → exact-head Actions → Final PR Review → separate Merge approval
 → Merge → Post-merge verification → separate Branch deletion approval
-→ Branch deletion
 ```
 
-Static CI не заменяет MySQL, migrations, deploy, HTTP/browser и visual acceptance. Mobile не считается проверенным без отдельного инкремента.
-
-## 4. Standing authorization governance
-
-Без повторных permission prompts можно поддерживать только:
-
-```text
-docs/PROJECT-WORKING-RULES.md
-docs/CHAT-HANDOFF.md
-```
-
-Разрешены отдельная docs branch, commit, PR, exact-head Actions, Final PR Review, merge после PASS и post-merge verification. Standing authorization не распространяется на третий путь, runtime, DB, migrations, workflows, themes, deploy, tools или settings.
-
-Branch deletion остается отдельно контролируемым. Новый recursive PR только ради записи merge SHA/cleanup самого handoff запрещен; merged governance PR + successful post-merge check является terminal evidence.
-
-## 5. Stable baseline
-
-```text
-runtime baseline: PR #24 / migrations through 012
-static CI baseline: PR #25
-GitHub/Git governance: PR #28
-local automation: PR #29 and #30
-permanent rules/handoff: PR #32
-latest handoff merge before this update: PR #33 / d60db94e405979c8f29bdc3dcaae7950362fb13a
-```
-
-Реализованы authentication, CSRF, user lifecycle, 4 system roles, 25 permissions, 3 themes, public ranks/positions/VUS, organizational element types, Organizational Structure v1 и migrations 001–012.
-
-## 6. Неизменное решение по продукту
+Static checks do not replace MySQL, backup, migrations, deploy, HTTP/browser or visual desktop acceptance. Mobile is `NOT RUN / OUT OF SCOPE`. Production deployment, workflow/settings changes and real staffing/personnel data are prohibited.
 
 ```text
 TARGET_CONTOUR=PersonnelServiceAccounting
 CitizenMilitaryAccounting=EXCLUDED
-```
-
-Не разрабатываются учет призывников/запаса, общий и специальный учет граждан, бронирование, учет работников организаций, муниципальный первичный учет, повестки, Реестр воинского учета и Реестр повесток.
-
-Приказ Минобороны России № 700 используется только как дополнительный источник применимых требований к документальному основанию, штатной должности, ВУС, приказам и действиям штаба воинской части. Полное кадрово-служебное регулирование требует иных официальных актов.
-
-## 7. Research branch
-
-```text
-SCOPE=Military Accounting Order 700 Research reframed for PersonnelServiceAccounting only
-BRANCH=research/military-accounting-order-700
-ORIGINAL_BASE_SHA=7ae5bcf77826870d6beee7293f101f679a521c56
-CURRENT_HEAD=69bf9c9e1609a40c7f4c27ff41b0ddeebabe2ffe
-AHEAD_FROM_ORIGINAL_BASE=8
-BEHIND_FROM_ORIGINAL_BASE=0
-CHANGED_PATHS=6
-RUNTIME_CONFIG_DB_DIFF=0
-REBASE=NO
-PULL_REQUEST=NOT CREATED
-BRANCH_DELETION=NOT AUTHORIZED
-```
-
-Allowlist:
-
-```text
-docs/research/military-accounting-order-700/README.md
-docs/research/military-accounting-order-700/OFFICIAL-SOURCE-REGISTER.md
-docs/research/military-accounting-order-700/LEGAL-AND-PROCESS-ANALYSIS.md
-docs/research/military-accounting-order-700/TARGET-ACCOUNTING-MODEL.md
-docs/research/military-accounting-order-700/ASU-VCH-MODERNIZATION-ROADMAP.md
-docs/research/military-accounting-order-700/SCOPE-DECISION-PERSONNEL-SERVICE-ONLY.md
-```
-
-Research conclusions and roadmap now consistently exclude `CitizenMilitaryAccounting`.
-
-## 8. Active functional increment
-
-```text
-NAME=Lowest Unit Staffing Structure v1
-CLASSIFICATION=functional
-CONTOUR=PersonnelServiceAccounting
-BASE_BRANCH=main
-BASE_SHA=d60db94e405979c8f29bdc3dcaae7950362fb13a
-FEATURE_BRANCH=feature/lowest-unit-staffing-v1
-CURRENT_FEATURE_HEAD=3af453f1e093e3a5b1c1d69365211a2abe7c8215
-MERGE_BASE=d60db94e405979c8f29bdc3dcaae7950362fb13a
-AHEAD=7
-BEHIND=0
-CURRENT_CHANGED_PATHS=4
-CURRENT_DIFF=documentation-only
-```
-
-Current paths:
-
-```text
-docs/domains/STAFFING.md
-docs/design/LOWEST-UNIT-STAFFING-V1-ARCHITECTURE.md
-docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md
-docs/design/LOWEST-UNIT-STAFFING-V1-REVIEW.md
-```
-
-## 9. Completed stages for active increment
-
-```text
-Research=COMPLETE
-Analysis=COMPLETE
-Architecture=COMPLETE / version 0.2
-Specification=COMPLETE / version 0.2
-Formal Review=PASS
-BLOCKING_FINDINGS=0
-MAJOR_FINDINGS=0
-MINOR_FINDINGS=0
-Approval=PENDING
-Implementation=NOT STARTED
-Testing=NOT STARTED
-Pull Request=NOT AUTHORIZED YET
-Merge=NOT AUTHORIZED
-Branch deletion=NOT AUTHORIZED
-```
-
-Resolved review findings:
-
-1. root organizational element is allowed; rollout from lower level is not a DB prohibition;
-2. draft copied from active keeps the same catalog versions; catalog migration is deferred;
-3. exact proposed implementation maximum is 44 paths, not 42.
-
-## 10. Approved design summary
-
-- separate `Staffing` domain; no parallel organizational tree;
-- link to stable `organizational_structure_elements.id` and pinned Organization version;
-- one row per individual staffing slot;
-- stable slot identity across versions;
-- version lifecycle `draft → approved → active → superseded`, cancellation before activation;
-- pinned position/rank/public-VUS catalogs;
-- no person, assignment, occupancy or actual vacancy in v1;
-- documents are metadata-only;
-- six new module permissions, no automatic non-owner grants;
-- module-level RBAC only; subtree ACL deferred;
-- migration planned as `013_lowest_unit_staffing_v1.sql`;
-- protected management UI plus read-only representations;
-- synthetic-only tests and documentation.
-
-Operational condition:
-
-```text
 NO_REAL_STAFFING_DATA_BEFORE_SECURITY_FOUNDATION
 ```
 
-Development/testing may use synthetic data. Real штатные сведения are not operationally accepted until a separate Data Classification and Security Foundation defines information category, deployment boundary, need-to-know, threat model and protection requirements.
-
-## 11. Proposed implementation scope
-
-The Specification enumerates exactly 44 maximum paths:
-
-- 4 current process documents;
-- migration 013;
-- `app/Staffing/*` exact files;
-- `public/admin/staffing/*` exact files;
-- `app/bootstrap.php` and `public/admin/content.php`;
-- two validation tools;
-- six living project documentation files.
-
-The authoritative exact list is section 9 of `docs/design/LOWEST-UNIT-STAFFING-V1-SPECIFICATION.md`. Any path outside it requires re-approval.
-
-## 12. Next gate
-
-Owner must approve exact feature head `3af453f1e093e3a5b1c1d69365211a2abe7c8215`, Architecture/Specification/Review, functional scope and 44-path implementation allowlist.
-
-After approval, permitted sequence:
+## 4. Completed dependency
 
 ```text
-Implementation → exact validation → local MySQL/deploy/HTTP/browser instructions
-→ commit/push validation → separate PR gate
+INCREMENT=Lowest Unit Staffing Structure v1
+PR=35
+MERGED_MAIN=9ae05b9928903cc483ce415d7378b546e419264c
+MIGRATION=013_lowest_unit_staffing_v1.sql
+POST_MERGE_ACTIONS=SUCCESS
 ```
 
-No PR, merge or deletion should be inferred from implementation approval unless explicitly included in the owner’s next exact authorization.
+Open PR and Issues were both zero at implementation preflight.
 
-## 13. Branch inventory warning
-
-At this snapshot, known non-main branches include:
+## 5. Active increment
 
 ```text
-research/military-accounting-order-700
-feature/lowest-unit-staffing-v1
-docs/handoff-military-accounting-research
+NAME=Military Positions Directory v1
+CLASSIFICATION=functional
+BASE_BRANCH=main
+EXPECTED_BASE_SHA=9ae05b9928903cc483ce415d7378b546e419264c
+FEATURE_BRANCH=feature/military-positions-directory-v1
+MIGRATION=database/migrations/014_military_positions_directory_v1.sql
+MAX_CHANGED_PATHS=38
+POST_STAFFING_RECONCILIATION=PASS
+ORIGINAL_BLOCKING_FINDINGS=0
+ORIGINAL_MAJOR_FINDINGS=0
+ORIGINAL_MINOR_FINDINGS=0
+ORIGINAL_OPEN_FINDINGS=0
+ORIGINAL_IMPLEMENTATION_APPROVAL=GRANTED
+PRE_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+FIRST_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
+FIRST_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FIRST_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+OPEN_UI_FINDINGS=5_PENDING_RETEST
+SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PASS
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=PASS
+FOURTH_CORRECTIVE_MUTUAL_EXCLUSION=PASS
+OPEN_FINDINGS=0
+PULL_REQUEST=AUTHORIZED
+MERGE=AUTHORIZED
+BRANCH_DELETION=NOT AUTHORIZED
+```
+
+The branch was created exactly from the expected base after live preflight confirmed main, missing implementation branch, migrations 001–013, absent migration 014 and no unexpected material increment.
+
+## 6. Design source and post-Staffing documents
+
+```text
+DESIGN_SOURCE_BRANCH=design/military-positions-directory-v1
+DESIGN_SOURCE_HEAD=bad4057251f9ebf996d83b3e246df24127a5d5cc
+DESIGN_SOURCE_MERGE_BASE=3d8a491ff2433994e8580152f190b298c765c66e
+DESIGN_BRANCH_AHEAD=3
+DESIGN_BRANCH_BEHIND=37
+```
+
+Never use the old design branch as implementation base. Its Architecture, Specification and Formal Review were transferred and reconciled as version 0.2 on the exact feature branch before runtime edits.
+
+## 7. Frozen product contract
+
+- evolve existing `military_position_catalog_versions` + `military_position_types`; no parallel catalog;
+- standalone migration 014; migration-010 marker, loader and five payload parts remain untouched;
+- lifecycle `draft → published → superseded` and `draft → cancelled`;
+- stable identity, normalized uniqueness, optimistic revisions and append-only history;
+- legacy classifier remains current published; migration creates one canonical draft;
+- exact 24 approved synthetic names and exact nine explicit combined flags;
+- explicit publication atomically supersedes legacy without deletion;
+- four permissions, no automatic non-owner grants;
+- Russian managed UI and readable history, no raw JSON;
+- existing Staffing versions remain pinned; no hidden catalog remap;
+- archived canonical entries are excluded from new Staffing selectors;
+- desktop layouts for `asu-blue`, `asu-light-blue`, `asu-evgeniya-rostova` use theme variables;
+- no VUS/rank/unit/person/equipment/occupancy fields in canonical position entity.
+
+## 8. Implementation inventory
+
+Implementation is contained by the exact approved 38-path allowlist. Major components:
+
+```text
+database/migrations/014_military_positions_directory_v1.sql
+app/Directory/MilitaryPositionCatalogRepository.php
+app/Directory/MilitaryPositionCatalogService.php
+app/Directory/MilitaryPositionCatalogFunctions.php
+app/Staffing/StaffingRepository.php
+public/admin/directories/military-positions.php
+public/admin/directories/military-positions/version.php
+public/admin/directories/military-positions/history.php
+public/admin/directories/military-positions/{versions,entries,views}/* approved files
+themes/{asu-blue,asu-light-blue,asu-evgeniya-rostova}/assets/css/directories.css
+tools/Test-MilitaryPositionsDirectoryV1.ps1
+tools/check-military-positions-directory-v1.php
+three design 0.2 docs and nine living docs
+```
+
+Use the exact list in the PowerShell runner or static checker; do not infer additional paths.
+
+## 9. Validation contract
+
+Prepared command for the target local machine:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Test-MilitaryPositionsDirectoryV1.ps1 `
+  -RepositoryPath C:\Project\ASU-VCH `
+  -ExpectedHead <EXACT_FEATURE_HEAD> `
+  -RunInitialization `
+  -RunHttpSmoke `
+  -AllowInvalidCertificate
+```
+
+The runner enforces branch/base/head, maximum 38 paths, exact allowlist, clean worktree, `git diff --check`, PHP lint, static checker, protected migration-010 hashes, mandatory pre-migration backup, initialization, repeat installer, DB checker and optional HTTP smoke.
+
+Validation evidence on runtime head `7751430288d2b0669dee4fe14101f809f5828db5`:
+
+```text
+PROTECTED_MIGRATION_010_HASHES=PASS
+STATIC_CHECKER=PASS (109 passes)
+PRE_MIGRATION_BACKUP=PASS
+PHP_LINT=PASS (171 files)
+MIGRATION_014=APPLIED
+REPEAT_INITIALIZER=PASS
+DATABASE_RUNTIME_CHECKER=PASS (117 passes)
+HTTP_SMOKE=PASS (200, 200, expected 302; local certificate bypass explicitly enabled)
+DESKTOP_ACCEPTANCE=FAIL
+OPEN_UI_FINDINGS=3
+MOBILE_ACCEPTANCE=NOT RUN / OUT OF SCOPE
+```
+
+The automated gate is complete for that exact runtime head, but six owner-provided desktop screenshots on 2026-08-07 identified one major and two minor UI findings. A later documentation-only or corrective implementation head is not runtime-tested until the runner and desktop acceptance are repeated on that exact head.
+
+## 10. Remote branch warning
+
+At preflight the repository contained:
+
+```text
+main
+design/military-positions-directory-v1
 docs/handoff-lowest-unit-staffing-design
+docs/handoff-military-accounting-research
+research/military-accounting-order-700
 ```
 
-Do not delete any branch without explicit authorization.
+The implementation branch was then added. No branch may be deleted without separate authorization.
 
-## 14. Current action on chat restart
+## 11. Next gate
 
-1. Verify live `main` and feature head.
-2. Read the four active design documents.
-3. Confirm Review remains PASS and compare remains 4-path documentation-only.
-4. Wait for or process the exact owner Approval gate.
-5. Do not begin runtime implementation from a moved head or expanded path list.
+Fourth corrective automatic validation and three-theme desktop acceptance passed on exact runtime head `c647a933011873048866c75978d3f506634011fd`; UI-F04 and UI-F05 are closed and open findings are zero. The next gate is a four-document validation checkpoint, exact-head Final PR Review, Pull Request creation and merge. Owner authorization for Pull Request and merge is granted; branch deletion and production deployment remain forbidden.
+
+## 12. Corrective desktop UI gate
+
+First corrective design 0.3 implemented the approved version-card and hidden-reason behavior. Architecture/Specification/Review 0.4 defined the approved second correction; its automatic validation passed, while desktop retest remains failed:
+
+- list cards retain compact `Открыть` controls;
+- opened version cards show `История этой версии` and functional `Закрыть` in the top action group; `Открыть` is absent;
+- `Закрыть` returns to the anchored version card in the list;
+- archive/restore reason and confirmation remain hidden until selected and full-width below the entry fields/editor;
+- `Изменить` and `Архивировать должность` / `Восстановить должность` become identical compact controls placed next to each other in one shared action row;
+- the collapsed lifecycle control has no separate full-width shell;
+- edit and lifecycle disclosures are mutually exclusive per entry;
+- all three theme CSS files remain symmetric.
+
+```text
+FIRST_CORRECTIVE_ALLOWLIST_PATHS=12
+FIRST_CORRECTIVE_DESIGN_REVIEW=PASS
+FIRST_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+FIRST_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
+FIRST_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FIRST_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
+SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
+SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+OPEN_UI_FINDINGS=5_PENDING_RETEST
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Corrective paths:
+
+```text
+public/admin/directories/military-positions.php
+public/admin/directories/military-positions/version.php
+public/admin/directories/military-positions/views/version-card.php
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Owner Approval was granted against documentation head `c7d2c08c918ae5f0a3ade569c1b504efc1b54ad1`, and the first corrective implementation changed exactly the 12 paths above. Its automatic gate passed on `6b63efd6d3a6e7567cc48106bd8c12bd9371e585`; desktop evidence then opened UI-F04. Second corrective Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`.
+
+
+## 13. Second corrective action-row gate
+
+UI-F04 is limited to the entry-card action layout. Approved design review 0.4 requires identical adjacent controls and a full-width opened form below them, without changing the archive/restore operation.
+
+```text
+SECOND_CORRECTIVE_ALLOWLIST_PATHS=9
+SECOND_CORRECTIVE_DESIGN_REVIEW=PASS
+SECOND_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+SECOND_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+PULL_REQUEST=NOT AUTHORIZED
+MERGE=NOT AUTHORIZED
+BRANCH_DELETION=NOT AUTHORIZED
+```
+
+Second corrective paths:
+
+```text
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Owner Approval was granted against exact documentation head `294cd91e26513217187cbf07447b2e769aa2ff72`. The implementation changed exactly the nine paths above. Its exact-head automatic validation passed; the later desktop screenshot showed that UI-F04 is still visible and opened UI-F05. The next gate is the third corrective Approval described in section 14. PR, merge, force-push, branch deletion and scope expansion remain forbidden.
+
+
+## 14. Third corrective compact action-form gate
+
+Exact runtime head `297c9e6566c0010556324506bb0c9947b4ed6f43` passed the full automatic gate. Owner-provided desktop evidence then showed that automatic grid placement still separates `Изменить` from `Архивировать должность` and that the opened lifecycle reason form is vertically fragmented.
+
+Architecture/Specification/Review 0.5 require:
+
+- explicit adjacent grid columns for the two equal action summaries;
+- one fixed small gap between the controls;
+- on desktop, `Основание архивирования` / `Основание восстановления`, its input and the confirmation button in one horizontal row;
+- the form remains full-width below the action controls;
+- native mutual exclusion and all backend contracts remain unchanged;
+- the existing narrow-screen stacking fallback is retained; mobile acceptance remains out of scope.
+
+```text
+SECOND_CORRECTIVE_STATIC_VALIDATION=PASS
+SECOND_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+SECOND_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+UI_F04_RETEST=FAIL_OPEN
+UI_F05=OPEN
+THIRD_CORRECTIVE_ALLOWLIST_PATHS=8
+THIRD_CORRECTIVE_DESIGN_REVIEW=PASS
+THIRD_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+THIRD_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED_AUTOMATIC_DESKTOP_FAIL
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Third corrective paths:
+
+```text
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Owner Approval was granted against exact documentation head `b1768ad5ffce5e1da1057096bcf6e02063cea3a1`. The current implementation changes exactly the eight paths above: explicit adjacent summary columns, a single-row desktop reason/input/confirmation layout, retained full-width opened form and retained 760px stacking fallback. The checker is fail-closed on UI-C09–UI-C11 and exact third-corrective inventory. Next gate is exact-head local runner and three-theme desktop retest. PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
+
+
+## 15. Fourth corrective stable action-toolbar gate
+
+Exact runtime head `caee9845ef2faf4245397299d232ad820b77040c` passed the full automatic gate: third corrective inventory `8/8`, PHP lint 171 files, DB/runtime checker `157 PASS`, initialization and HTTP smoke — PASS. Owner-provided desktop evidence in `asu-blue` then failed the manual retest:
+
+- when lifecycle disclosure is open, `Изменить` and `Архивировать должность` are still separated across the card;
+- the horizontal reason label is cramped beside a short field and is not understandable;
+- owner requires the reason label above the input and a somewhat longer input.
+
+Architecture/Specification/Review 0.6 require:
+
+- no `display: contents` on native entry-action `<details>`;
+- two summary-only `details[name]` switches as ordinary adjacent toolbar grid items with one `10px` gap;
+- edit and lifecycle forms as uniquely identified sibling panels below the toolbar, controlled without JavaScript;
+- summary `aria-controls` references the corresponding entry-scoped panel;
+- lifecycle label text above an approximately `360px` input;
+- content-sized confirmation to the right, bottom-aligned with the input;
+- existing `760px` stacking fallback; mobile acceptance remains out of scope;
+- backend payload, CSRF, revisions, PRG, routes, permissions and database model unchanged.
+
+```text
+THIRD_CORRECTIVE_STATIC_VALIDATION=PASS
+THIRD_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+THIRD_CORRECTIVE_DESKTOP_ACCEPTANCE=FAIL
+UI_F04_RETEST_2=FAIL_OPEN
+UI_F05_RETEST=FAIL_OPEN
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+FOURTH_CORRECTIVE_DESIGN_REVIEW=PASS
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=IMPLEMENTED_PENDING_VALIDATION
+PULL_REQUEST=NOT_AUTHORIZED
+MERGE=NOT_AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Fourth corrective paths:
+
+```text
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Owner Approval was granted against exact documentation head `bc660b4e211269bb0f63379ad300bb5e6e72d427`. The runtime implementation is limited to the exact nine paths above. PR, merge, force-push, branch deletion, `main` changes and scope expansion remain forbidden.
+
+## 16. Fourth corrective implementation gate
+
+The approved implementation uses two summary-only native `details[name]` controls as adjacent toolbar items. Their forms are uniquely identified sibling panels selected by the corresponding open disclosure without JavaScript. The lifecycle label is above its input; the desktop input track is bounded at approximately `360px`; confirmation remains content-sized on the right; the `760px` stacking fallback is retained.
+
+```text
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION_APPROVAL=GRANTED
+FOURTH_CORRECTIVE_UI_IMPLEMENTATION=VALIDATED
+FOURTH_CORRECTIVE_ALLOWLIST_PATHS=9
+FOURTH_CORRECTIVE_STATIC_VALIDATION=PASS
+FOURTH_CORRECTIVE_LOCAL_RUNTIME_VALIDATION=PASS
+FOURTH_CORRECTIVE_DESKTOP_ACCEPTANCE=PASS
+FOURTH_CORRECTIVE_MUTUAL_EXCLUSION=PASS
+AUTOMATIC_GATE_PASS_COUNT=167
+HTTP_SMOKE=200,200,302
+UI_F04=CLOSED
+UI_F05=CLOSED
+OPEN_FINDINGS=0
+PULL_REQUEST=AUTHORIZED
+MERGE=AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+```
+
+Fourth corrective paths:
+
+```text
+public/admin/directories/military-positions/views/entry-card.php
+themes/asu-blue/assets/css/directories.css
+themes/asu-light-blue/assets/css/directories.css
+themes/asu-evgeniya-rostova/assets/css/directories.css
+tools/check-military-positions-directory-v1.php
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-ARCHITECTURE.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-SPECIFICATION.md
+docs/design/MILITARY-POSITIONS-DIRECTORY-V1-REVIEW.md
+docs/CHAT-HANDOFF.md
+```
+
+Validation complete on exact runtime head `c647a933011873048866c75978d3f506634011fd`: full runner `167 PASS`, HTTP smoke `200/200/302`, three managed desktop themes PASS and mutual exclusion PASS. Mobile remains `NOT RUN / OUT OF SCOPE`.
+
+## 17. Final validation and merge authorization (2026-08-08)
+
+The full local automatic gate and owner desktop acceptance are complete on exact runtime head `c647a933011873048866c75978d3f506634011fd`.
+
+```text
+TOTAL_INCREMENT_ALLOWLIST=38/38
+CORRECTIVE_ALLOWLISTS=12/12,9/9,8/8,9/9
+PHP_LINT_FILES=171
+MIGRATIONS=001-014
+INITIALIZATION_RUNS=2
+FINAL_DB_RUNTIME_CHECKER=167_PASS
+HTTP_SMOKE=200,200,302
+ASU_BLUE_DESKTOP=PASS
+ASU_LIGHT_BLUE_DESKTOP=PASS
+ASU_EVGENIYA_ROSTOVA_DESKTOP=PASS
+MUTUAL_EXCLUSION_BOTH_DIRECTIONS=PASS
+UI_F04=CLOSED
+UI_F05=CLOSED
+OPEN_FINDINGS=0
+MOBILE_ACCEPTANCE=NOT_RUN_OUT_OF_SCOPE
+REAL_STAFFING_DATA_MUTATION=NONE
+PULL_REQUEST=AUTHORIZED
+MERGE=AUTHORIZED
+BRANCH_DELETION=NOT_AUTHORIZED
+FINAL_PR_REVIEW=PENDING_EXACT_HEAD
+```
+
+Owner granted authorization on 2026-08-08 to perform all remaining actions through merge, except branch deletion. The next operator must verify live refs, publish only the four-document validation checkpoint as a non-force fast-forward of `feature/military-positions-directory-v1`, conduct Final PR Review on the resulting exact head, create the PR into unchanged `main`, and merge only if the PR head, base, inventory and findings remain exact. Do not delete any branch.

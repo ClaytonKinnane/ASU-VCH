@@ -73,3 +73,78 @@
 @media (max-width:1180px) { .organizational-element-filters { grid-template-columns: 1fr 1fr; } }
 @media (max-width:980px) { .directory-meta { grid-template-columns: 1fr; } .directory-filters { grid-template-columns: 1fr 1fr; } .directory-filter-submit { width: 100%; } }
 @media (max-width:760px) { .directory-hero { padding:22px; } .directory-hero::after { display:none; } .directory-hero-heading, .directory-panel-heading { flex-direction: column; } .legal-sources-grid, .directory-filters { grid-template-columns: 1fr; } .directory-table-wrap { overflow-x: auto; } .directory-table { min-width: 820px; } .organizational-element-table { min-width: 1220px; } }
+
+
+/* Military Positions Directory v1 */
+.military-position-layout { display: grid; gap: 20px; padding-bottom: 34px; }
+.military-position-hero { margin-bottom: 0; }
+.military-position-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.military-position-panel { padding: 22px; }
+.military-position-panel > h2 { margin: 0 0 8px; font-size: 21px; }
+.military-position-panel > p { margin: 0 0 16px; color: var(--text-secondary); line-height: 1.5; }
+.military-position-panel > summary { color: var(--text-primary); cursor: pointer; font-size: 18px; font-weight: 800; }
+.military-position-panel[open] > summary { margin-bottom: 18px; }
+.military-position-version-list, .military-position-entry-list, .military-position-history-list { display: grid; gap: 16px; }
+.military-position-version-card, .military-position-entry-card, .military-position-history-card { padding: 20px; }
+.military-position-version-card > header, .military-position-entry-card > header, .military-position-history-card > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.military-position-version-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.military-position-version-actions > a { flex: 0 0 auto; width: auto; }
+.military-position-version-card h2, .military-position-entry-card h2, .military-position-history-card h2 { margin: 9px 0 0; font-size: 20px; line-height: 1.35; }
+.military-position-version-card header p, .military-position-entry-card header p { margin: 7px 0 0; color: var(--text-secondary); line-height: 1.45; }
+.military-position-kind-badge { display: inline-flex; margin-left: 7px; padding: 4px 8px; border: 1px solid var(--button-border); border-radius: 999px; color: var(--text-primary); background: var(--tab-active-background); font-size: 12px; font-weight: 800; }
+.military-position-version-metrics, .military-position-entry-fields { margin: 18px 0 0; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+.military-position-version-metrics > div, .military-position-entry-fields > div { min-width: 0; padding: 12px; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--input-background); }
+.military-position-version-metrics dt, .military-position-entry-fields dt, .military-position-history-fields dt { color: var(--text-secondary); font-size: 12px; font-weight: 750; }
+.military-position-version-metrics dd, .military-position-entry-fields dd { margin: 6px 0 0; color: var(--text-primary); overflow-wrap: anywhere; line-height: 1.4; }
+.military-position-version-reason { margin: 14px 0 0; color: var(--text-secondary); }
+.military-position-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-top: 18px; }
+.military-position-form-grid label, .military-position-state-form label, .military-position-lifecycle-grid label, .military-position-filters label { display: grid; gap: 7px; color: var(--text-secondary); font-size: 13px; }
+.military-position-form-grid input, .military-position-form-grid select, .military-position-form-grid textarea, .military-position-state-form input, .military-position-lifecycle-grid textarea, .military-position-filters input, .military-position-filters select { width: 100%; min-height: 43px; padding: 10px 12px; border: 1px solid var(--input-border); border-radius: var(--control-radius); color: var(--text-primary); background: var(--input-background); }
+.military-position-form-grid textarea, .military-position-lifecycle-grid textarea { min-height: 88px; resize: vertical; }
+.military-position-form-grid .span-2, .military-position-entry-fields .span-2 { grid-column: 1 / -1; }
+.military-position-checkbox { display: flex !important; grid-template-columns: auto 1fr; align-items: center; }
+.military-position-checkbox input { width: 18px; min-height: 18px; accent-color: var(--button-background); }
+.military-position-lifecycle-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.military-position-lifecycle-grid form { display: grid; gap: 12px; }
+.military-position-filters { display: grid; grid-template-columns: minmax(220px,1fr) repeat(3,minmax(150px,.55fr)) auto auto; align-items: end; gap: 11px; }
+.military-position-source-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.military-position-source-list article { padding: 14px; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--input-background); }
+.military-position-source-list p { color: var(--text-secondary); }
+.military-position-source-list a { color: var(--focus-color); font-weight: 750; text-decoration: none; }
+.military-position-entry-card.is-archived { opacity: .78; }
+.military-position-order { flex: 0 0 auto; color: var(--focus-color); font-weight: 850; }
+.military-position-entry-actions { display: grid; grid-template-columns: max-content max-content minmax(0,1fr); column-gap: 10px; row-gap: 14px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--input-border); }
+.military-position-entry-action { grid-row: 1; width: fit-content; min-width: 0; }
+.military-position-entry-action:first-of-type { grid-column: 1; }
+.military-position-state-action { grid-column: 2; }
+.military-position-entry-action > summary { display: inline-flex; width: fit-content; min-height: 43px; align-items: center; padding: 10px 14px; border: 1px solid var(--button-border); border-radius: var(--control-radius); color: var(--text-primary); background: var(--tab-active-background); cursor: pointer; font-weight: 800; }
+.military-position-entry-action-panel { display: none; grid-column: 1 / -1; grid-row: 2; min-width: 0; }
+.military-position-entry-edit-action[open] ~ .military-position-entry-edit-panel { display: block; }
+.military-position-state-action[open] ~ .military-position-entry-state-panel { display: block; }
+.military-position-entry-edit-panel > .military-position-form-grid { margin-top: 0; }
+.military-position-state-form { box-sizing: border-box; display: grid; grid-template-columns: minmax(280px,360px) max-content; align-items: end; justify-content: start; gap: 10px; width: 100%; padding: 14px; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--input-background); }
+.military-position-state-form label { display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 7px; width: 100%; }
+.military-position-state-form .secondary-button { width: auto; align-self: end; justify-self: start; }
+.military-position-empty { padding: 28px; text-align: center; }
+.military-position-empty h2 { margin: 0; }
+.military-position-empty p { margin-bottom: 0; color: var(--text-secondary); }
+.military-position-history-card time { flex: 0 0 auto; color: var(--text-secondary); }
+.military-position-history-card > p { color: var(--text-secondary); }
+.military-position-history-fields { display: grid; gap: 9px; margin: 16px 0 0; }
+.military-position-history-fields > div { padding: 11px 12px; border: 1px solid var(--input-border); border-radius: var(--control-radius); background: var(--input-background); }
+.military-position-history-fields dd { margin: 7px 0 0; display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 10px; color: var(--text-primary); }
+.military-position-history-fields dd span { overflow-wrap: anywhere; }
+.military-position-history-link { margin: 0; }
+
+@media (max-width: 1050px) {
+    .military-position-version-metrics, .military-position-entry-fields { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .military-position-filters { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 760px) {
+    .military-position-version-card > header, .military-position-entry-card > header, .military-position-history-card > header { flex-direction: column; }
+    .military-position-version-metrics, .military-position-entry-fields, .military-position-form-grid, .military-position-lifecycle-grid, .military-position-filters, .military-position-source-list { grid-template-columns: 1fr; }
+    .military-position-state-form { grid-template-columns: 1fr; }
+    .military-position-form-grid .span-2, .military-position-entry-fields .span-2 { grid-column: auto; }
+    .military-position-version-actions { justify-content: flex-start; }
+    .military-position-history-fields dd { grid-template-columns: 1fr; }
+}
