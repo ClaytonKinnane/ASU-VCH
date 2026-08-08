@@ -544,11 +544,13 @@ Existing theme components are reused. No hardcoded theme colors and no new theme
 
 Для форм и вложенных плиток идентификаторов:
 
-- submit-действия форм добавления, замены и завершения идентификатора размещаются в отдельной action-row, выравниваются по левому краю и имеют ширину по содержимому, а не на всю форму;
-- запись идентификатора в карточке военнослужащего отображается как нейтральная вложенная карточка, визуально подчинённая родительской секции `Идентификаторы`;
+- submit-действия форм добавления, замены и прекращения действия идентификатора размещаются в отдельной action-row, выравниваются по левому краю и имеют ширину по содержимому, а не на всю форму;
+- каждая запись идентификатора в карточке военнослужащего отображается как самостоятельная нейтральная вложенная карточка с theme-aware рамкой, скруглением и достаточным вертикальным интервалом до соседней записи;
 - состояние записи передаётся через status badge `Действует` или `История`, а не через специальный акцентный фон всей вложенной карточки;
-- название идентификатора и группа действий находятся в одной heading-row; значение, период и примечание выводятся ниже единым информационным блоком;
-- для действующего идентификатора действия называются `Заменить значение` и `Завершить действие`, имеют одинаковую высоту, ширину по содержимому и компактный одинаковый gap;
+- название, значение, период и примечание образуют единый информационный блок записи; lifecycle actions располагаются ниже этого блока в отдельной нижней action-row, а не справа от названия;
+- нижняя action-row визуально отделяется theme-aware верхней границей и сохраняет компактный одинаковый gap между кнопками;
+- для действующего идентификатора действия называются `Заменить значение` и `Прекратить действие идентификатора`, имеют одинаковую высоту и ширину по содержимому;
+- форма прекращения действия явно сообщает: `Идентификатор не удаляется. После указанной даты он будет сохранён в истории как недействующий.`;
 - для исторического идентификатора lifecycle actions не отображаются;
 - корректировка не добавляет hardcoded theme colors и не меняет identifier semantics, историю значений, правила never-reuse или запрет физического удаления.
 
@@ -720,7 +722,9 @@ For each current theme:
 - summary actions are grouped clearly and working card sections have compact consistent top spacing;
 - identifier add action has normal action width next to its section heading and the identifier retention explanation is user-facing Russian text;
 - identifier form submit controls are compact content-width actions rather than full-width bars;
-- nested identifier cards are visually subordinate to the parent section, use the status badge for lifecycle state and expose the explicit actions `Заменить значение` / `Завершить действие` when active;
+- multiple identifier entries remain visually separable as independent theme-aware nested cards;
+- active identifier entries expose the bottom action-row with explicit actions `Заменить значение` / `Прекратить действие идентификатора`, while historical entries expose no lifecycle actions;
+- the identifier deactivation form explicitly explains that the identifier is retained in history rather than deleted;
 - narrow desktop/window responsive behavior as observation only;
 - no Mobile PASS claim.
 
@@ -783,7 +787,7 @@ Runtime manual testing on the local instance may create synthetic records accord
 22. Final PR Review later has no blocking/major findings;
 23. visible Personnel UI uses Russian user-facing labels and does not expose raw internal event/target codes;
 24. Personnel card corrective layout passes: compact section spacing, clear action grouping and normal-width identifier action;
-25. identifier corrective UI passes: compact form submit, neutral nested entry, status conveyed by badge and explicit lifecycle action labels.
+25. identifier corrective UI passes: compact form submit, visually separated neutral nested entries, status conveyed by badge, lifecycle actions placed below entry details and explicit Russian lifecycle action labels.
 
 ## 13. Explicit non-requirements
 
