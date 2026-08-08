@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 $current = $selectedTypeId > 0 ? ($activeIdentifiers[$selectedTypeId] ?? null) : null;
-$title = match ($mode) { 'replace' => 'Заменить идентификатор', 'end' => 'Завершить действие идентификатора', default => 'Добавить идентификатор' };
+$title = match ($mode) { 'replace' => 'Заменить идентификатор', 'end' => 'Прекратить действие идентификатора', default => 'Добавить идентификатор' };
 $action = match ($mode) { 'replace' => '/admin/personnel/identifiers/replace.php', 'end' => '/admin/personnel/identifiers/end.php', default => '/admin/personnel/identifiers/create.php' };
 ?>
 <!DOCTYPE html>
@@ -17,6 +17,7 @@ $action = match ($mode) { 'replace' => '/admin/personnel/identifiers/replace.php
         .personnel-date-control input[type="date"]::-webkit-calendar-picker-indicator { width: 0; height: 0; margin: 0; padding: 0; opacity: 0; pointer-events: none; }
         .personnel-date-picker { width: 44px; min-width: 44px; height: 42px; min-height: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
         .personnel-date-picker svg { pointer-events: none; }
+        .personnel-form-note { margin: 0; color: var(--text-secondary); }
         .personnel-form-actions { display: flex; justify-content: flex-start; align-items: center; }
         .personnel-form-actions .primary-button { width: auto; }
     </style>
@@ -55,6 +56,7 @@ $action = match ($mode) { 'replace' => '/admin/personnel/identifiers/replace.php
                 <input type="hidden" name="identifier_type_id" value="<?= (int) $selectedTypeId ?>">
                 <div class="span-2"><strong><?= e((string) ($current['type_name'] ?? 'Идентификатор')) ?>:</strong> <?= e((string) ($current['value'] ?? '')) ?></div>
                 <?php if ($mode === 'replace'): ?><label class="span-2">Новое значение<input name="new_value" maxlength="255" required></label><?php endif; ?>
+                <?php if ($mode === 'end'): ?><p class="span-2 personnel-form-note">Идентификатор не удаляется. После указанной даты он будет сохранён в истории как недействующий.</p><?php endif; ?>
                 <label>Дата <?= $mode === 'replace' ? 'замены' : 'окончания действия' ?>
                     <span class="personnel-date-control">
                         <input id="personnel-identifier-effective-date" type="date" name="effective_date" required>
