@@ -1,23 +1,10 @@
 # Спецификации и выполнение migrations АСУ-ВЧ
 
-## Назначение и классификация
-
-Каталог содержит target physical specifications; executable migrations находятся в `database/migrations`. Этот `README.md` — living migration index.
-
-```text
-Architecture / Domain Specification
-→ ERD or Increment Specification
-→ Migration Specification
-→ Review → Approval
-→ executable migration
-→ Integration Tests
-```
-
-Migration не вводит hidden architecture decisions.
+Этот file is the living migration index. Executable source of truth is `database/migrations` plus installer/compatibility loaders and checkers.
 
 ## Current numbering
 
-В repository inventory implementation-ветки зарегистрированы migrations `001–014`; `main@9ae05b9928903cc483ce415d7378b546e419264c` содержит `001–013`, а применение 014 локально ещё не подтверждено:
+Current merged `main` contains migrations `001–014`:
 
 | № | Файл | Назначение |
 |---:|---|---|
@@ -27,149 +14,72 @@ Migration не вводит hidden architecture decisions.
 | 004 | `004_security_user_rejection_audit.sql` | rejection audit |
 | 005 | `005_security_user_archive_restore.sql` | archive/restore |
 | 006 | `006_theme_management.sql` | active theme |
-| 007 | `007_military_ranks_directory.sql` | Military Ranks v1 baseline |
-| 008 | `008_organizational_element_types_directory.sql` | element types |
-| 009 | `009_organizational_structure_v1.sql` | Organization Structure v1 |
-| 010 | `010_military_positions_directory.sql` | public military position types |
-| 011 | `011_public_military_occupational_specialties_directory.sql` | public VUS information |
-| 012 | `012_military_ranks_directory_v2.sql` | rank catalog lifecycle, semantics, sources and v2 publication |
-| 013 | `013_lowest_unit_staffing_v1.sql` | versioned lowest-unit staffing registers, slots and history |
-| 014 | `014_military_positions_directory_v1.sql` | managed canonical military-position directory lifecycle |
-
-Source of truth: executable files, compatibility loaders, installer registry and profile checkers.
-
-## Migration 009 — Organizational Structure v1
-
-```text
-tables: 7
-triggers: 16
-permissions added: 6
-system permissions after 009: 25
-```
-
-## Migration 010 — Military Positions
-
-```text
-compatibility loader: database/MilitaryPositionMigrationCompatibility.php
-transport: 5 ordered gzip/base64 parts
-tables: 14
-triggers: 41
-canonical types: 34
-variants: 35
-new permissions: 0
-```
-
-## Migration 011 — Public VUS
-
-```text
-compatibility loader: database/MilitaryOccupationalSpecialtyMigrationCompatibility.php
-transport: 2 ordered gzip/base64 parts
-tables: 9
-triggers: 26
-searchable records: 17
-new permissions: 0
-```
-
-## Migration 012 — Military Ranks Directory v2
-
-Approved records:
-
-```text
-docs/design/MILITARY-RANKS-DIRECTORY-V2-DESIGN.md
-docs/review/MILITARY-RANKS-DIRECTORY-V2-FORMAL-REVIEW.md
-docs/decisions/MILITARY-RANKS-DIRECTORY-V2-APPROVAL.md
-docs/implementation/MILITARY-RANKS-DIRECTORY-V2-IMPLEMENTATION.md
-docs/testing/MILITARY-RANKS-DIRECTORY-V2-TEST-REPORT.md
-```
-
-Mechanism:
-
-```text
-marker: database/migrations/012_military_ranks_directory_v2.sql
-loader: database/MilitaryRankDirectoryV2MigrationCompatibility.php
-canonical modules: database/MilitaryRankDirectoryV2/*
-transport packaging: not gzip/base64
-marker bypass: fail closed
-```
-
-Migration 012 adds lifecycle columns/guards, two tables for version-scoped semantics and composition sources, exact publication/recovery contracts and 18 lifecycle/integrity/immutability triggers.
-
-Published outcome:
-
-```text
-v1: superseded / valid_to 2026-08-02
-v2: published/current / valid_from 2026-08-03
-compositions/categories: 8
-semantic records: 8
-rank records: 20 unchanged codes/names/order
-version sources: 2
-composition sources: 8
-new permissions: 0
-```
-
-Recovery supports fresh v1, DDL-only partial, exact valid building cleanup/recreate, contradictory building fail-closed and exact published-without-registry recovery.
+| 007 | `007_military_ranks_directory.sql` | Military Ranks v1 |
+| 008 | `008_organizational_element_types_directory.sql` | organizational element types |
+| 009 | `009_organizational_structure_v1.sql` | Organizational Structure v1 |
+| 010 | `010_military_positions_directory.sql` | legacy/public military-position classifier |
+| 011 | `011_public_military_occupational_specialties_directory.sql` | public VUS |
+| 012 | `012_military_ranks_directory_v2.sql` | Military Ranks v2 lifecycle/semantics/sources |
+| 013 | `013_lowest_unit_staffing_v1.sql` | Lowest Unit Staffing Structure v1 |
+| 014 | `014_military_positions_directory_v1.sql` | Managed Military Positions Directory v1 |
 
 ## Permission baseline
 
-Migrations 010–012 add no permissions. Migration 013 adds six Staffing permissions; migration 014 adds four military-position directory permissions without role assignments:
-
 ```text
 system roles: 4
-main system permissions after 013: 31
-target system permissions after 014: 35
+system permissions after migration 014: 35
+organization permissions added by 009: 6
+staffing permissions added by 013: 6
+military-position permissions added by 014: 4
 automatic non-owner grants from 014: 0
 ```
 
-## Migration 014 — Managed Military Positions Directory v1
+## Compatibility mechanisms
+
+- 010–011: fail-closed marker + gzip/base64 parts with hash/ordering checks;
+- 012: dedicated compatibility loader/marker and versioned DDL/publication/recovery modules;
+- 013: standalone Staffing migration;
+- 014: standalone managed Military Positions migration; migration-010 marker/loader/payload protected from modification.
+
+## Migration 014 current outcome
 
 ```text
-mechanism: standalone SQL
-protected migration-010 marker/loader/payload touch: forbidden
-legacy current published version: preserved
-initial canonical version: draft
-approved synthetic entries: 24
-explicit is_combined=true: 9
+existing catalog tables evolved: military_position_catalog_versions + military_position_types
 new table: military_position_change_events
+initial canonical version: draft
+initial canonical entries: 24 synthetic
+explicit combined entries: 9
+lifecycle: draft/published/superseded/cancelled
 new permissions: 4
+auto publication: NO
+Staffing remap: NO
 ```
 
-Migration evolves `military_position_catalog_versions` and `military_position_types` in place, adds `draft/published/superseded/cancelled`, stable keys, normalized-name uniqueness, revisions, audit metadata and append-only history. It performs no Staffing remap and no destructive legacy DROP.
+Legacy current published classifier is preserved until explicit canonical publication. No destructive legacy DROP is performed.
 
-## Specification requirements
+## Execution evidence
 
-Before implementation fix:
+Latest exact runtime validation head for migration 014: `c647a933011873048866c75978d3f506634011fd`.
 
-- object order and types/collation;
-- PK/FK/UNIQUE/CHECK/indexes;
-- generated columns and triggers;
-- seed and stable codes;
-- idempotency/recovery;
-- rollback and backup policy;
-- packaging/loader contract;
-- exact verification and rejection scenarios.
+```text
+pre-migration backup: PASS
+PHP lint: 171 PASS
+initialization: PASS
+applied migrations: 14
+repeat initialization: PASS / no new migration
+DB/runtime checker: 167 PASS
+HTTP smoke: 200,200,302
+three-theme desktop acceptance: PASS
+real Staffing data mutation: NONE
+mobile: NOT RUN / OUT OF SCOPE
+```
 
 ## Common rules
 
 - MySQL 8.4 / InnoDB / utf8mb4;
-- no MySQL ENUM;
-- restrictive FK by default;
-- no fixed numeric IDs for critical references;
-- repeat installer creates no duplicates;
-- no production/instance credentials in migrations;
-- first owner is not created by static production migration.
-
-## Execution baseline
-
-Before material migration: clean exact SHA, SQL backup, deploy-file backup, review, deploy preserving `config/local.php`, installer, repeat installer, profile checkers, regressions, parity, HTTP/browser acceptance.
-
-PR #24 had a documented pre-migration-backup deviation; post-migration backup was created and checked. This deviation is not hidden or generalized as normal policy.
-
-Current post-merge expectation:
-
-```text
-main post-Staffing expectation: Применено миграций: 13
-implementation target after local migration: Применено миграций: 14
-actual migration-014 local result: NOT RUN
-```
-
-Target files `SECURITY-MIGRATIONS.md`, `REFERENCE-MIGRATIONS.md` and `DOCUMENTS-MIGRATIONS.md` may be broader than current physical schema.
+- no secret/instance credentials in migrations;
+- no hidden architecture decisions in migration code;
+- backup before material schema/data migration unless an explicit deviation is recorded;
+- repeat installer must not create duplicates;
+- physical schema claims are validated against executable migrations and DB evidence;
+- target migration specifications may be broader than current implementation and must be labelled accordingly.

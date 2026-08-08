@@ -1,68 +1,36 @@
 # Среда разработки и запуска
 
-## Поддерживаемая application-среда
+## Application environment
 
 ```text
-ОС: Windows 10/11
+Windows 10/11
 Open Server Panel: 6.5.1
-Web server: Apache
+Apache
 PHP: 8.5.4
 MySQL: 8.4.x
-Shell: Windows PowerShell 5.1
-```
-
-Последний полный functional post-merge прогон PR #24 выполнен в локальной Windows/Open Server/MySQL среде. GitHub-hosted static runs используют Ubuntu 24.04 и PHP 8.5.x; это CI evidence, а не изменение local runtime requirement.
-
-## Local repository tooling
-
-Local automation package through PR #30 поддерживает:
-
-```text
-Git for Windows
-WinGet
-GitHub CLI
-Node.js LTS
-npm
-Codex CLI
-Windows PowerShell 5.1
-```
-
-Canonical guide:
-
-- [GitHub Local Automation](../tools/github-automation/README.md)
-
-Tooling является repository-only и не публикуется как application deploy. Installer может проверять или устанавливать approved components, выполнять staged interactive login flows, проверять manifest и атомарно устанавливать helpers.
-
-Границы evidence:
-
-```text
-native PowerShell 5.1 regression PR #30: 58 PASS / 0 FAIL
-real GitHub authentication acceptance: NOT CLAIMED
-real Codex authentication acceptance: NOT CLAIMED
-account verification: NOT CLAIMED
-paid OpenAI API request: NOT RUN
-complete target-machine installation acceptance: NOT CLAIMED
-```
-
-Browser ChatGPT не получает прямого доступа к локальному компьютеру.
-
-## Разделение каталогов
-
-```text
-Git clone:   C:\Project\ASU-VCH
+Windows PowerShell: 5.1
+repository: C:\Project\ASU-VCH
 deploy root: C:\OSPanel\home\asu-vch.local
-web root:    C:\OSPanel\home\asu-vch.local\public
-local URL:   https://asu-vch.local
-local helpers: C:\Tools\ASU-VCH
+web root: C:\OSPanel\home\asu-vch.local\public
+URL: https://asu-vch.local
 ```
 
-Git clone не является web root. Существующий `C:\OSPanel\home\asu.local` не относится к АСУ-ВЧ.
+Git clone не является web root. `config/local.php` и instance secrets сохраняются локально и не коммитятся.
 
-## Deploy contract
+## Current repository/runtime expectation
 
-`deploy\Deploy-Local.ps1` публикует app, config, database, public, themes и OSP project config. Existing `config/local.php` сохраняется и восстанавливается. Documentation, `.git` и repository-only tools не публикуются как application files.
+```text
+migrations in main: 001–014
+expected initialized local DB after current installer: 14 applied / no new migrations
+system roles: 4
+system permissions: 35
+built-in themes: 3
+required CSS assets per theme: 10
+```
 
-## Stable synchronization
+A local machine that has not been synchronized/applied to current `main` may legitimately show an older migration count; verify exact repository HEAD before interpreting output.
+
+## Synchronization
 
 ```powershell
 Set-Location -LiteralPath 'C:\Project\ASU-VCH'
@@ -75,112 +43,67 @@ git rev-parse origin/main
 git status --short
 ```
 
-Local `main` должна совпадать с `origin/main`, worktree — clean.
+Expected: clean worktree and local `main == origin/main` before validation/deploy.
 
 ## Initialization
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1'
-```
-
-Repeat installer:
-
-```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1' -SkipDeploy
 ```
 
-Current expected result:
+For current merged schema the repeat result is expected to report 14 applied migrations and no new migrations.
 
-```text
-Применено миграций: 12
-Новых миграций нет.
-```
+SQL backup is required before material schema/data migration unless a deviation is explicitly approved and recorded.
 
-Migrations 009–012 используют compatibility mechanisms. Migrations 010–011 имеют gzip/base64 packaging; migration 012 использует dedicated loader and fail-closed marker.
+## Deploy contract
 
-Перед schema/data migration требуется SQL backup. Для PR #24 отсутствие pre-migration backup зафиксировано как process deviation; post-migration backup создан и проверен.
+`deploy\Deploy-Local.ps1` publishes application/config/database/public/themes and preserves existing `config/local.php`. Documentation, `.git` and repository-only tooling are not application deploy artifacts.
 
-## Required theme assets
+## Current functional runner
 
-Каждая тема публикует 10 required CSS-assets:
-
-```text
-css/theme.css
-css/auth.css
-css/account.css
-css/users.css
-css/theme-management.css
-css/directories.css
-css/military-ranks-v2.css
-css/military-occupational-specialties.css
-css/organization.css
-css/operation-result-modal.css
-```
-
-Для `asu-evgeniya-rostova` дополнительно обязательны 4 local SVG-assets.
-
-## Functional runners
-
-Military Positions:
+Managed Military Positions Directory v1:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File '.\tools\Test-MilitaryPositionsDirectory.ps1' `
-  -DeployRoot 'C:\OSPanel\home\asu-vch.local' `
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Test-MilitaryPositionsDirectoryV1.ps1' `
+  -RepositoryPath 'C:\Project\ASU-VCH' `
+  -ExpectedHead <EXACT_HEAD> `
+  -RunInitialization `
+  -RunHttpSmoke `
   -AllowInvalidCertificate
 ```
 
-Public VUS:
+Historical runners for Military Ranks, public VUS, Organization and Staffing remain repository evidence/tools for their scopes.
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File '.\tools\Test-MilitaryOccupationalSpecialtiesDirectory.ps1' `
-  -DeployRoot 'C:\OSPanel\home\asu-vch.local' `
-  -AllowInvalidCertificate
-```
+## Latest functional evidence
 
-Military Ranks v2 evidence is recorded in:
-
-- `testing/MILITARY-RANKS-DIRECTORY-V2-TEST-REPORT.md`;
-- `testing/MILITARY-RANKS-DIRECTORY-V2-MANUAL-DESKTOP-ACCEPTANCE-2026-08-03.md`;
-- `review/MILITARY-RANKS-DIRECTORY-V2-PR-FINAL-REVIEW.md`.
-
-Functional post-merge result:
+Exact Military Positions runtime head `c647a933011873048866c75978d3f506634011fd`:
 
 ```text
-applied migrations: 12
-repeat installer: no new migrations
-Military Ranks v2 checks: PASS
-DB regression: PASS
-deploy/source parity: PASS
-HTTP smoke: PASS
-manual desktop: PASS
+PHP lint: 171 PASS
+migrations 001–014: PASS
+repeat initialization: PASS
+DB/runtime checker: 167 PASS
+HTTP: 200,200,302
+three managed desktop themes: PASS
+mobile: NOT RUN / OUT OF SCOPE
 ```
 
-## GitHub Actions Static Verification
+## GitHub-hosted static CI
 
-Workflow `ASU-VCH Static Verification` runs on PR/push/manual events with Ubuntu 24.04 and PHP 8.5. It checks whitespace, tracked PHP syntax, 9 CI-safe checker'ов and final repository integrity.
+`ASU-VCH Static Verification` runs on PR to main, push to main and `workflow_dispatch` with Ubuntu 24.04/PHP 8.5.x. It is static evidence only and does not replace MySQL/deploy/HTTP/visual testing. Required status check and branch protection Stage B are not enabled.
 
-```text
-PR #25 post-merge push run: 30837637886 / SUCCESS
-PR #25 post-merge manual run: 30839122892 / SUCCESS
-PR #30 exact-head PR run: 31024419654 / SUCCESS
-PR #30 post-merge push run: 31025264683 / SUCCESS
-required status check: NOT ENABLED
-branch protection changed: NO
-```
+## Local Git/GitHub/Codex tooling
 
-CI does not execute MySQL, deploy, HTTP/browser or visual acceptance.
+Repository automation through PR #30 supports Git, GitHub CLI, Node.js LTS, Codex CLI, authentication-mode separation, integrity checks, atomic helper install/rollback and cleanup verification.
 
-## Configuration protection
+Native PR #30 regression `58 PASS / 0 FAIL` does not prove real account authentication, paid API requests or complete target-machine acceptance.
 
-Нельзя публиковать production/instance credentials, DB password, session data, `config/local.php`, real temporary user passwords, tokens, API keys или private keys. Authentication secrets не передаются через command arguments, environment variables или logs.
-
-## Testing boundaries
+## Security/testing boundaries
 
 ```text
-functional mobile testing: OUT OF SCOPE / NOT RUN
-local automation real authentication acceptance: NOT CLAIMED
-paid API request: NOT RUN
+production deployment: NOT PERFORMED
+mobile: NOT RUN / OUT OF SCOPE
 mobile PASS: NOT CLAIMED
+real paid API request: NOT CLAIMED
 ```

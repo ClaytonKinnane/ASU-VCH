@@ -1,150 +1,75 @@
 # О проекте
 
-## Наименование и назначение
+## Назначение
 
-**АСУ-ВЧ** — автоматизированная система учёта военнослужащих «Войсковая часть».
+**АСУ-ВЧ** — автоматизированная система учёта военнослужащих «Войсковая часть». Проект развивается инкрементально, documentation-first, с точными GitHub gates и ограничением чувствительных/реальных данных до отдельной security/data-model approval.
 
-Проект автоматизирует управление доступом, нормативные справочники, организационные структуры и связанные процессы. Он развивается инкрементально; material scope проходит documentation-first workflow. Закрытые, ограниченные и фактические сведения не включаются без отдельного утверждения data/security model.
-
-## Основные требования
-
-- GitHub repository `ClaytonKinnane/ASU-VCH` — источник истины.
-- Current HEAD определяется через `origin/main`.
-- Изменения выполняются в отдельных ветках.
-- Merge и branch deletion имеют отдельные owner gates.
-- Runtime data хранится в MySQL; secrets и local config не хранятся в Git.
-- Mobile PASS не заявляется без фактической mobile acceptance.
-
-## Реализованное functional состояние
-
-### Platform и Security
-
-- migrations 001–012;
-- bootstrap первого owner и отключение public registration после его создания;
-- authentication, sessions, CSRF;
-- RBAC: 4 system roles / 25 permissions;
-- full user lifecycle и required password change;
-- audit критических user operations;
-- themed HTTP 403 и operation-result modal.
-
-### Themes
-
-- static trusted registry;
-- global active theme;
-- default/fallback `asu-blue`;
-- 3 built-in themes;
-- 10 required CSS-assets per theme, включая `military-ranks-v2.css`;
-- 4 additional SVG-assets для `asu-evgeniya-rostova`;
-- desktop acceptance затронутых interfaces.
-
-### Reference directories
-
-Owner-only read-only routes:
-
-- military ranks: current v2 + historical v1;
-- organizational element types;
-- military positions;
-- public military occupational specialties.
-
-Military Ranks v2 сохраняет 20 ranks, добавляет 8 version-scoped compositions/categories, 8 semantics, 2 version sources, 8 composition sources и read-only compatibility service. Staffing schema, Organization bindings, assignments и real personnel data отсутствуют.
-
-### Organizational Structure v1
-
-Реализованы structure/version lifecycle, draft tree, stable elements, document metadata, history, compare, transactions, revisions, CSRF и RBAC.
-
-## Реализованное technical состояние
-
-### GitHub-hosted Static CI
-
-GitHub Actions workflow `ASU-VCH Static Verification` выполняет:
-
-- PR/push/manual triggers;
-- Ubuntu 24.04 / PHP 8.5;
-- read-only permissions;
-- event-aware `git diff --check`;
-- lint tracked PHP;
-- 9 CI-safe checker'ов;
-- final clean-worktree check.
-
-Post-merge push и manual runs PR #25 завершены SUCCESS. Required status check и branch protection Stage B не включены. CI не заменяет DB/deploy/browser/manual testing.
-
-### Local Windows Automation
-
-PR #29 и corrective PR #30 реализовали repository-only package для Windows PowerShell 5.1:
-
-- one-command bootstrap;
-- Git и GitHub CLI через approved WinGet packages;
-- Node.js LTS и Codex CLI через официальный npm package;
-- Codex authentication modes `Auto`, `ChatGPT`, `ApiKey`, `Skip`;
-- secure API-key stdin handling;
-- manifest integrity checks;
-- atomic helper install/rollback;
-- native regression harness;
-- fail-closed remote branch cleanup helper.
-
-Local automation не публикуется в application deploy и не меняет PHP, MySQL, migrations, themes, routes или database state. Browser ChatGPT не получает прямого доступа к локальному компьютеру.
-
-Authentication boundaries:
+## Current functional state
 
 ```text
-ChatGPT authentication != API-key authentication
-ChatGPT subscription != API billing
-real authentication/account verification: not inferred from mock validation
-paid API request: not claimed without separate authorized execution
-```
-
-Native PowerShell 5.1 validation PR #30: `58 PASS / 0 FAIL`. Это historical tooling evidence, а не новый functional runtime test.
-
-### Documentation governance
-
-PR #28 закрепил terminal documentation model: mutable PR/SHA/run/branch lifecycle хранится в GitHub/Git, historical gate records сохраняются как snapshots, а recursive closure solely for copying documentation-PR lifecycle запрещён.
-
-## Контрольные точки
-
-```text
-latest functional runtime baseline: PR #24 / migration 012
-static CI baseline: PR #25
-documentation governance baseline: PR #28
-local automation foundation: PR #29
-local automation corrected baseline: PR #30
-durable technical capability coverage: through PR #30
-PR #24 merge: feac7230616d3a8df98acb48f43a0b60f89f2255
-PR #24 runtime/manual acceptance: b44aed14ee1a54be213cbc939322ba21b02e7a58
-PR #25 merge: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
-PR #29 merge: 375f941be3f50f9f1f264da244f0dc31496e2a6f
-PR #30 merge: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
-migrations: 12
-roles: 4
-permissions: 25
+migrations: 001–014
+system roles: 4
+system permissions: 35
 themes: 3
-required CSS assets: 10
-active functional increment: none
-active material technical increment: none
+latest functional PR: #36
+active product implementation: none
 ```
 
-## Не реализовано
+### Platform / Security
 
-- personnel cards и full personal military accounting;
-- staffing tables/schedules и personnel assignments;
-- общий Documents domain и universal orders workflow;
-- общий immutable cross-domain audit log;
-- medical, equipment, transport и training operational domains;
-- production deployment;
-- required GitHub status check / branch protection Stage B;
-- arbitrary theme installation и browser CSS/JS editor.
+- bootstrap первого `system_owner`;
+- authentication, sessions, CSRF;
+- public registration closes after owner creation;
+- 4 roles / 35 permissions;
+- user approval, rejection, block/unblock, archive/restore;
+- required password change and audit safeguards.
 
-## Testing boundaries
+### Reference / Directories
 
-PR #24: automated/runtime, DB, deploy/parity, HTTP smoke, manual desktop и post-merge verification — PASS.
+- Military Ranks v2: current v2 and historical v1;
+- organizational element types;
+- public VUS information;
+- legacy military-position classifier;
+- Managed Military Positions Directory v1.
 
-PR #25: exact-head PR workflow, post-merge push run и manual workflow_dispatch — SUCCESS.
+Managed positions are versioned, permission-aware and editable only in draft state. Migration 014 seeds one 24-entry synthetic canonical draft; explicit publication is required. Stable identity/history and terminal immutability are guarded. No position entity fields for VUS/rank/unit/person/equipment/occupancy are introduced.
 
-PR #30: native Windows PowerShell 5.1 regression, exact-head workflow и post-merge push verification — PASS/SUCCESS within tooling scope.
+### Organization
+
+Organizational Structure v1: structures, versions, stable elements, draft tree, documents metadata, history and compare.
+
+### Staffing
+
+Lowest Unit Staffing Structure v1 / migration 013: registers, versions, stable individual slots, documents metadata, Organization/catalog pins, rank/VUS requirements, lifecycle/history/compare.
+
+Personnel records, person→slot assignments and occupied/vacant facts are not implemented.
+
+## Technical state
+
+- MySQL 8.4 / PHP 8.5.4 local application baseline;
+- GitHub Actions `ASU-VCH Static Verification` on PR/push/manual events;
+- Windows PowerShell 5.1 local Git/GitHub/Codex automation package through PR #30;
+- required status check / branch protection Stage B not enabled;
+- production deployment infrastructure not implemented as a completed production capability.
+
+## Validation boundaries
+
+Latest functional validation is Military Positions Directory v1 runtime head `c647a933011873048866c75978d3f506634011fd`: 171-file PHP lint PASS, migrations 001–014, `167 PASS`, HTTP `200/200/302`, all three managed desktop themes PASS, 0 open findings.
 
 ```text
-new real GitHub authentication acceptance: NOT CLAIMED
-new real Codex authentication acceptance: NOT CLAIMED
-paid API request: NOT RUN
-mobile testing: OUT OF SCOPE / NOT RUN
+mobile: NOT RUN / OUT OF SCOPE
 mobile PASS: NOT CLAIMED
+production deployment: NOT PERFORMED
 ```
+
+Documentation-only commits do not create new runtime evidence.
+
+## Current research/planning
+
+No implementation increment is active. `research/military-accounting-order-700` remains a separate unmerged branch with unique personnel-service research. It does not authorize implementation by itself.
+
+Future work requires a new Research → Analysis → Architecture → Specification → Review → Approval cycle.
+
+## Project governance
+
+GitHub is source of truth. Permanent rules: `PROJECT-WORKING-RULES.md`. New-chat continuity: `CHAT-HANDOFF.md`. Branch deletion is always separately authorized.

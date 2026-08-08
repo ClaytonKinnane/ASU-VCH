@@ -100,13 +100,26 @@ PR #24 adds a reusable evolution pattern:
 - published/superseded child data immutable;
 - recovery accepts only exact known building state and fails closed on contradiction.
 
+### Managed canonical catalog evolution
+
+PR #36 adds a complementary pattern for evolving an existing classifier without destructive replacement:
+
+- create the next canonical version as `draft`; do not auto-publish it;
+- preserve stable identity across copied canonical versions;
+- allow content changes only in draft;
+- publish atomically and supersede the prior current version;
+- use logical archive for entries and append-only readable history;
+- keep terminal published/superseded/cancelled content immutable;
+- preserve downstream historical version pins instead of remapping them;
+- filtering an archived entry from new selectors must not break old historical reads.
+
 ## Evidence-bounded identifiers and relations
 
-Identifiers are decomposed only when authoritative evidence supports it. Raw values preserved; unknown semantics stay explicit. Similar identifiers do not imply cross-domain relation.
+Identifiers are decomposed only when authoritative evidence supports it. Raw values preserved; unknown semantics stay explicit. Similar identifiers do not imply cross-domain relation. Military-position names do not imply VUS/rank/unit/person/equipment/occupancy relations.
 
 ## Reference data
 
-Reusable classifications belong to Reference domain. Use stable lowercase codes, no MySQL ENUM, version-aware relations and critical DB guards. Owner-only read-only catalogs may reuse `system.*.*` without adding permissions.
+Reusable classifications belong to Reference domain. Use stable lowercase codes, no MySQL ENUM, version-aware relations and critical DB guards. Owner-only read-only catalogs may reuse `system.*.*` without adding permissions. A separately approved managed catalog may introduce explicit module permissions, as Military Positions Directory v1 does.
 
 ## Foreign keys and lifecycle
 
@@ -133,7 +146,7 @@ When transport constraints prevent direct canonical SQL:
 - fail closed on mismatch;
 - repeat installer and parity verification.
 
-Migrations 010–011 use gzip/base64 packaging. Migration 012 uses a separate compatibility loader with a fail-closed marker and versioned DDL/publication/recovery modules.
+Migrations 010–011 use gzip/base64 packaging. Migration 012 uses a separate compatibility loader with a fail-closed marker and versioned DDL/publication/recovery modules. Migration 013 and migration 014 are standalone increment migrations; migration 014 deliberately leaves migration-010 packaging untouched.
 
 ## Security boundaries
 
@@ -263,14 +276,15 @@ anchor or evidence mismatch fails closed
 ```text
 ARCHITECTURAL PATTERNS: APPROVED
 APPLICABILITY: PROJECT-WIDE
-FUNCTIONAL BASELINE COVERAGE: THROUGH PR #24 / MIGRATION 012
+FUNCTIONAL BASELINE COVERAGE: THROUGH PR #36 / MIGRATION 014
 STATIC CI COVERAGE: THROUGH PR #25
-DOCUMENTATION GOVERNANCE COVERAGE: THROUGH PR #28
+DOCUMENTATION GOVERNANCE COVERAGE: THROUGH PR #28 + PERMANENT RULES/HANDOFF
 LOCAL AUTOMATION COVERAGE: THROUGH PR #30
-DURABLE TECHNICAL CAPABILITY COVERAGE: THROUGH PR #30
+DURABLE TECHNICAL CAPABILITY COVERAGE: THROUGH PR #36
 SYSTEM ROLES: 4
-SYSTEM PERMISSIONS: 25
+SYSTEM PERMISSIONS: 35
 BUILT-IN THEMES: 3
 REQUIRED CSS ASSETS PER THEME: 10
 REQUIRED STATUS CHECK: NOT ENABLED
+MOBILE: NOT RUN / OUT OF SCOPE
 ```

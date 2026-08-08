@@ -12,7 +12,7 @@ main: b3dda6cae88072c1e74c25de28f7023a8d73620d
 main tree: 4a0a6da68448be7a53e9532dd8b520607d9c3000
 open pull requests: 0
 open issues: 0
-remote branches: 2
+remote branches before reconciliation branch: 2
   main @ b3dda6cae88072c1e74c25de28f7023a8d73620d
   research/military-accounting-order-700 @ 69bf9c9e1609a40c7f4c27ff41b0ddeebabe2ffe
 latest main static run: 31234849967 / SUCCESS
@@ -84,18 +84,9 @@ Typical defects: migrations `001–012`/`001–013` presented as current, permis
 
 `docs/DEVELOPMENT.md` must point to the permanent rules document for the standing governance exception while retaining the ordinary separate-gate rule for material increments.
 
-### Current capability clarification
+### Additive current evidence
 
-The following documents need additive current-state clarification, not architectural redesign:
-
-```text
-docs/THEMES.md
-docs/CHANGELOG.md
-docs/domains/REFERENCE.md
-docs/domains/STAFFING.md
-```
-
-They must record PR #35/#36 completion and current validation without rewriting historical contracts.
+`docs/THEMES.md` and `docs/CHANGELOG.md` require additive PR #35/#36 evidence so their current summaries do not stop at earlier functional milestones. Approved domain specifications `docs/domains/REFERENCE.md` and `docs/domains/STAFFING.md` were reviewed and already contain the relevant migration-014/Staffing compatibility contracts; they are preserved without broad rewriting.
 
 ## 6. Historical and target documents
 
@@ -113,7 +104,7 @@ The reconciliation must:
 
 - update all identified living defects;
 - establish `docs/PROJECT-WORKING-RULES.md` and `docs/CHAT-HANDOFF.md` as permanent operational entry points;
-- preserve immutable historical records;
+- preserve immutable historical/target records unless a living/current subsection is demonstrably defective;
 - record the unique unmerged research branch without importing or deleting it;
 - preserve mobile and production-testing boundaries;
 - create PR, perform exact-head Actions/Final PR Review and merge under the owner’s current authorization;
