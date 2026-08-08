@@ -77,7 +77,7 @@ if ($RunRuntimeChecker) {
 if ($RunHttpSmoke) {
     $smoke = Join-Path $RepositoryPath 'tools\Test-LocalSmoke.ps1'
     if (-not (Test-Path -LiteralPath $smoke -PathType Leaf)) { throw "HTTP smoke script not found: $smoke" }
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $smoke
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $smoke -AllowInvalidCertificate
     if ($LASTEXITCODE -ne 0) { throw 'HTTP smoke failed.' }
 }
 if ($RunInitialization -and -not (Test-Path -LiteralPath $DeployPath -PathType Container)) { throw "Deploy path not found after initialization: $DeployPath" }
