@@ -504,6 +504,18 @@ Screens:
 
 Existing theme components are reused. No hardcoded theme colors and no new theme asset path is planned.
 
+### Date-input convention — project UI rule
+
+Для каждого пользовательского поля АСУ-ВЧ, предназначенного для ввода календарной даты, обязателен единый функциональный date-picker control:
+
+- семантическое поле остаётся `input[type="date"]`;
+- рядом с полем отображается отдельная theme-compatible кнопка с понятным значком календаря;
+- штатный browser calendar indicator в интерфейсах, где применяется этот control, скрывается и не должен оставаться отдельным чёрным/неуправляемым значком;
+- кнопка имеет `type="button"`, доступные `title`/`aria-label` и явную привязку к целевому date input;
+- по нажатию вызывается native picker через `showPicker()` когда он доступен, с безопасным fallback `focus()` + `click()`;
+- это правило применяется ко всем новым и изменяемым экранам АСУ-ВЧ, где требуется ввод даты; обнаруженное существующее исключение считается UI finding и подлежит исправлению в соответствующем утверждённом scope;
+- эталон поведения: date controls в Staffing register version form и Personnel list/create/update forms.
+
 Desktop acceptance: all three managed themes.
 
 Responsive markup required; mobile actual test remains `NOT RUN / OUT OF SCOPE`.
@@ -667,6 +679,7 @@ For each current theme:
 - add/replace/end identifiers;
 - history;
 - archive/restore;
+- every visible date-input control uses the functional themed calendar button, hides the native browser indicator and opens the picker when activated;
 - narrow desktop/window responsive behavior as observation only;
 - no Mobile PASS claim.
 
