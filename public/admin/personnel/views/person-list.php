@@ -12,7 +12,10 @@
 <header class="site-header"><div class="container"><div class="header-content glass-tile">
     <div class="site-logo">АСУ</div>
     <div class="site-heading"><h1 class="site-title">Военнослужащие</h1><p class="site-description">Канонические карточки личного состава — прототип Personnel Core Card v1</p></div>
-    <a class="secondary-button" href="/admin/content.php">К контенту</a>
+    <div class="organization-actions">
+        <a class="primary-button" href="/admin/personnel/persons/create.php">Создать карточку</a>
+        <a class="secondary-button" href="/admin/content.php">К контенту</a>
+    </div>
 </div></div></header>
 <main class="admin-main"><div class="container organization-layout">
     <?php if ($domainError !== null): ?><div class="form-message is-error is-visible"><?= e($domainError) ?></div><?php endif; ?>
@@ -27,10 +30,11 @@
                 <option value="all" <?= $status === 'all' ? 'selected' : '' ?>>Все</option>
             </select></label>
             <label>Дата рождения<input type="date" name="birth_date" value="<?= e((string) ($birthDate ?? '')) ?>"></label>
-            <button class="primary-button" type="submit">Применить</button>
-            <a class="secondary-button" href="/admin/personnel/persons.php">Сбросить</a>
+            <div class="organization-actions" style="display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:10px;">
+                <button class="primary-button" type="submit" style="width:100%;">Применить</button>
+                <a class="secondary-button" href="/admin/personnel/persons.php" style="width:100%;">Сбросить</a>
+            </div>
         </form>
-        <div><a class="primary-button" href="/admin/personnel/persons/create.php">Создать карточку</a></div>
     </section>
 
     <section class="organization-list" aria-label="Список военнослужащих">
