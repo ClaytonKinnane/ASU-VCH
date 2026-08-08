@@ -108,7 +108,7 @@ CitizenMilitaryAccounting = EXCLUDED
 
 The Personnel design may reuse/reconcile relevant ideas but must not claim the research branch itself was merged or approved as runtime.
 
-## 7. New owner decision — Personnel target
+## 7. Owner decision — Personnel target
 
 On 2026-08-08 the owner selected the next product direction: block «Военнослужащие».
 
@@ -144,8 +144,11 @@ docs/design/PERSONNEL-ACCESS-FUTURE-DESIGN-NOTES.md
 ACTIVE_DESIGN_INCREMENT=Personnel Core Card v1
 DESIGN_BRANCH=design/personnel-core-card-v1
 BASE_SHA=dadc2dd2c1151a797cfc2f6690bcf19b1f73e4b8
+REVIEWED_DOCUMENT_HEAD=272eb66184b45e380e92654be90fb8fccd1959a1
+FORMAL_REVIEW=PASS
+OPEN_REVIEW_FINDINGS=0
 ACTIVE_RUNTIME_IMPLEMENTATION=NONE
-NEXT_IMPLEMENTATION_APPROVAL=NONE
+NEXT_IMPLEMENTATION_APPROVAL=WAITING FOR OWNER
 ```
 
 Design documents:
@@ -155,11 +158,30 @@ docs/domains/PERSONNEL.md
 docs/design/PERSONNEL-ACCESS-FUTURE-DESIGN-NOTES.md
 docs/design/PERSONNEL-CORE-CARD-V1-ARCHITECTURE.md
 docs/design/PERSONNEL-CORE-CARD-V1-SPECIFICATION.md
+docs/design/PERSONNEL-CORE-CARD-V1-REVIEW.md
 ```
 
-Formal Review must be performed against an exact documentation head before owner Approval.
+Architecture/Specification v0.2 were formally reviewed at exact head `272eb661...`.
 
-## 9. Personnel Core Card v1 proposed runtime scope
+## 9. Formal Review corrections
+
+Two pre-Approval findings were found and resolved before PASS:
+
+```text
+F-P01: personal number / dog tag historical reuse ambiguity → RESOLVED
+F-P02: identifier replace/end effective-date ambiguity → RESOLVED
+```
+
+Final rules:
+
+- personal number and dog tag are globally unique across retained history and never reused;
+- table number and call sign may be reused according to type policy;
+- identifier intervals use `[valid_from, valid_to)`;
+- replace/end require explicit `effective_date`.
+
+No open review finding remains.
+
+## 10. Personnel Core Card v1 proposed runtime scope
 
 V1 proposes:
 
@@ -194,7 +216,7 @@ V1 explicitly does not implement yet:
 
 These remain target Personnel requirements, not rejected functionality.
 
-## 10. Core architecture boundary with Staffing
+## 11. Core architecture boundary with Staffing
 
 Target relation:
 
@@ -207,7 +229,7 @@ PersonnelRecord
 
 Therefore Personnel Core v1 must not introduce duplicate current `position_id`/`department_id` fields. Actual occupied/vacant state appears only when Assignments exists.
 
-## 11. Prototype access boundary
+## 12. Prototype access boundary
 
 Until the separately approved Personnel Security increment:
 
@@ -220,7 +242,21 @@ fine-grained organizational scope = NOT IMPLEMENTED
 
 This is a development/prototype boundary, not the final access architecture.
 
-## 12. Permanent operating rules
+## 13. Proposed implementation allowlist
+
+Formal Review accepted:
+
+```text
+MAX_EXPECTED_CHANGED_PATHS=40
+```
+
+Scope includes migration 015, new `app/Personnel`, protected Personnel admin UI, validation tools and required living/design docs.
+
+No theme asset, workflow, repository settings, deployment config, migrations 001–014, Organization runtime, Staffing runtime, Reference runtime or fine-grained Security runtime is allowlisted.
+
+Any path expansion requires fail-closed re-approval.
+
+## 14. Permanent operating rules
 
 Ordinary material work uses:
 
@@ -235,10 +271,10 @@ No runtime implementation before Personnel owner Approval.
 
 Routine updates of only `PROJECT-WORKING-RULES.md` and `CHAT-HANDOFF.md` retain standing authorization, but branch deletion always requires separate explicit owner approval.
 
-## 13. Safety / evidence boundaries
+## 15. Safety / evidence boundaries
 
 - no real personnel/staffing/unit data in migrations/docs/test fixtures;
-- runtime prototype may be tested with synthetic records;
+- runtime prototype tests use synthetic records unless separately authorized otherwise;
 - no secret/local config in Git;
 - no production deployment claim without execution;
 - no mobile PASS without actual mobile testing;
@@ -246,11 +282,13 @@ Routine updates of only `PROJECT-WORKING-RULES.md` and `CHAT-HANDOFF.md` retain 
 - no force-push/history rewrite without explicit authorization;
 - no silent scope expansion beyond the approved Personnel implementation allowlist.
 
-## 14. Current next gate
+## 16. Current next gate
 
 ```text
-CURRENT_GATE=Architecture + Specification prepared; Formal Review pending/exact-head dependent
-IMPLEMENTATION=PROHIBITED
+CURRENT_GATE=Formal Review PASS → waiting for explicit Owner Approval
+IMPLEMENTATION=PROHIBITED UNTIL APPROVAL
+REVIEWED_DOCUMENT_HEAD=272eb66184b45e380e92654be90fb8fccd1959a1
+MAX_EXPECTED_CHANGED_PATHS=40
 ```
 
-After Formal Review PASS, present exact reviewed head, implementation scope and changed-path allowlist to the owner for explicit Approval. Do not interpret the general instruction to develop Personnel as permission to bypass the Approval gate.
+The next action is to present the reviewed scope and exact anchors to the owner. Only after explicit Approval may an implementation branch be created/used for runtime work.
