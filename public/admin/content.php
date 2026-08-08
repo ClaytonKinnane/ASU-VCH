@@ -12,7 +12,6 @@ if (!$isOwner && !$canViewStructure && !$canViewStaffing && !$canViewMilitaryPos
 }
 
 $futureModules = [
-    ['Военнослужащие', 'Карточки и учет личного состава.'],
     ['Документы', 'Регистрация, хранение и движение документов.'],
     ['Приказы', 'Подготовка и учет приказов.'],
     ['Медицинский учет', 'Медицинские сведения в пределах утвержденной архитектуры.'],
@@ -37,6 +36,7 @@ $futureModules = [
 <?php if ($isOwner || $canViewMilitaryPositions): ?><a class="dashboard-tile module-tile glass-tile" href="/admin/directories.php"><h2>Справочники</h2><p>Системные и предметные классификаторы.</p><span class="tile-action">Открыть →</span></a><?php endif; ?>
 <?php if ($canViewStructure): ?><a class="dashboard-tile module-tile glass-tile" href="/admin/organization/structures.php"><h2>Организационная структура</h2><p>Воинские части, подразделения, версии и основная постоянная подчинённость.</p><span class="tile-action">Открыть →</span></a><?php endif; ?>
 <?php if ($canViewStaffing): ?><a class="dashboard-tile module-tile glass-tile" href="/admin/staffing/registers.php"><h2>Штатная структура</h2><p>Версионные штатные реестры, документы-основания и индивидуальные нормативные позиции.</p><span class="tile-action">Открыть →</span></a><?php endif; ?>
+<?php if ($isOwner): ?><a class="dashboard-tile module-tile glass-tile" href="/admin/personnel/persons.php"><h2>Военнослужащие</h2><p>Карточки и учет личного состава — Personnel Core Card v1.</p><span class="tile-action">Открыть →</span></a><?php endif; ?>
 <?php if ($isOwner): ?><?php foreach ($futureModules as [$title, $description]): ?><article class="module-tile glass-tile is-disabled"><span class="status-badge">В разработке</span><h2><?= e($title) ?></h2><p><?= e($description) ?></p></article><?php endforeach; ?><?php endif; ?>
 </section>
 </div></main>
