@@ -32,6 +32,10 @@
 
 Historical record со значением `PENDING`, `NOT_AUTHORIZED` или аналогичным значением не означает, что соответствующая задача всё ещё открыта. Текущее состояние определяется GitHub/Git и актуальной living documentation.
 
+```text
+HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
+```
+
 ## 3. Репозиторий и локальная среда
 
 ```text
@@ -83,6 +87,8 @@ Research
 - скрытые remediation, scope expansion и дополнительные commits запрещены;
 - Pull Request, Final PR Review, merge и branch deletion обычно требуют отдельных явных разрешений владельца;
 - исключение для обслуживания двух постоянных документов определено в разделе 11;
+- task-level owner authorization может заранее разрешить конкретные последующие gates, но не расширяется за явно разрешённый scope;
+- merge approval никогда автоматически не означает branch deletion approval;
 - repository settings, branch protection и required checks изменяются только отдельным утверждённым инкрементом;
 - mobile testing не входит в обычную область работ;
 - mobile PASS нельзя заявлять без отдельного фактического mobile acceptance.
@@ -132,14 +138,14 @@ EXPLICITLY_NOT_AUTHORIZED_ACTIONS
 - проверки GitHub Actions;
 - merge;
 - post-merge verification;
-- branch deletion;
+- branch deletion, если доступный GitHub-инструмент действительно поддерживает удаление ref и имеется отдельное разрешение;
 - иных доступных repository operations.
 
-Пользователю не выдаются локальные Git/GitHub-команды, если операция доступна ассистенту через GitHub.
+Пользователю не выдаются локальные Git/GitHub-команды, если операция доступна ассистенту через GitHub. Если нужная операция не поддерживается connector, допускается строго scoped локальная Git/GitHub-команда только в рамках явного разрешения и exact fail-closed gate.
 
 ### На локальной машине выполняются
 
-Локальная машина используется только для операций, которым необходим доступ к локальной среде:
+Локальная машина используется для операций, которым необходим доступ к локальной среде:
 
 - синхронизация `C:\Project\ASU-VCH`;
 - deploy в `C:\OSPanel\home\asu-vch.local`;
@@ -147,7 +153,8 @@ EXPLICITLY_NOT_AUTHORIZED_ACTIONS
 - local runtime checks;
 - HTTP/browser testing;
 - visual desktop acceptance;
-- операции, зависящие от Open Server Panel или локальной файловой системы.
+- операции, зависящие от Open Server Panel или локальной файловой системы;
+- отдельно разрешённые Git operations, которых нет в доступном GitHub connector.
 
 Если нужен длинный PowerShell-сценарий:
 
@@ -191,7 +198,7 @@ static CI != mobile acceptance
 - рекурсивный documentation-only PR только для копирования lifecycle предыдущего documentation PR запрещён;
 - handoff-документ должен оставаться полезным и актуальным, но не должен создавать бесконечную цепочку самообновлений только ради записи собственного merge SHA.
 
-`docs/CHAT-HANDOFF.md` содержит текущую рабочую картину, ключевые anchors, активный stage, принятые решения и журнал значимых действий. Exact mutable evidence всё равно повторно проверяется в GitHub.
+`docs/PROJECT-WORKING-RULES.md` является постоянным регламентом. `docs/CHAT-HANDOFF.md` содержит текущую рабочую картину, ключевые anchors, активный stage, принятые решения и журнал значимых действий. Exact mutable evidence всё равно повторно проверяется в GitHub.
 
 ## 9. Формат разрешений владельца
 
@@ -208,7 +215,7 @@ authorized action
 explicitly forbidden actions
 ```
 
-Разрешение должно быть однозначным и ограниченным конкретным gate. Нельзя считать разрешение на PR разрешением на merge, а разрешение на merge — разрешением на branch deletion.
+Разрешение должно быть однозначным и ограниченным конкретным gate. Нельзя считать разрешение на PR разрешением на merge, а разрешение на merge — разрешением на branch deletion, если владелец явно не предоставил task-level разрешение на соответствующий gate. Branch deletion в любом случае требует отдельного явного разрешения.
 
 ## 10. Обязательное обслуживание handoff-состояния
 
@@ -268,9 +275,10 @@ Standing authorization распространяется только на docume
 - создание Pull Request;
 - ожидание и проверка exact-head GitHub Actions;
 - Final PR Review;
-- merge методом `merge` после PASS;
-- post-merge verification;
-- удаление использованной documentation branch после PASS.
+- normal merge методом `merge` после PASS;
+- post-merge verification.
+
+**Branch deletion не входит в standing authorization.** Ветка, созданная даже только для этих двух файлов, остаётся до отдельного явного owner authorization на exact deletion gate.
 
 Строгий allowlist:
 
@@ -284,6 +292,7 @@ CLASSIFICATION=documentation-only
 Standing authorization не разрешает:
 
 ```text
+branch deletion
 runtime changes
 configuration changes
 database or migration changes
@@ -299,7 +308,7 @@ required status check changes
 скрытую remediation вне allowlist
 ```
 
-Если для актуальности требуется изменить любой третий путь, обычный gate-процесс применяется полностью и операция останавливается до отдельного разрешения.
+Если для актуальности требуется изменить любой третий путь, обычный gate-процесс применяется полностью и операция останавливается до отдельного task-level разрешения. Такое разрешение может заранее включать commit/push/PR/review/merge, но branch deletion остаётся отдельным явным gate.
 
 Несмотря на standing authorization, обязательны:
 
@@ -334,5 +343,5 @@ required status check changes
 - новая формулировка должна быть конкретной и проверяемой;
 - конфликт с более высоким canonical source должен быть устранён;
 - ослабление fail-closed, testing или approval boundaries не допускается без явного решения владельца;
-- изменение фиксируется в журнале `docs/CHAT-HANDOFF.md`;
+- изменение отражается в `docs/CHAT-HANDOFF.md`, если влияет на дальнейшую работу;
 - точный GitHub lifecycle изменения остаётся canonical в GitHub/Git.

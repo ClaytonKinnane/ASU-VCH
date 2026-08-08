@@ -41,10 +41,10 @@ themes/{slug}/assets/css/operation-result-modal.css
 
 Назначение profile assets:
 
-- `directories.css` — landing и shared directory components;
+- `directories.css` — landing, shared directory components and Managed Military Positions Directory v1 UI;
 - `military-ranks-v2.css` — current/historical version switch, lifecycle metadata, composition hierarchy, derived/staffing badges and layout;
 - `military-occupational-specialties.css` — VUS filters/cards/table/boundary note;
-- `organization.css` — Organizational Structure v1;
+- `organization.css` — Organizational Structure v1 and Staffing shared structural presentation where defined;
 - `operation-result-modal.css` — themed operation result modal.
 
 Отсутствие required asset делает theme unavailable for activation.
@@ -90,7 +90,7 @@ C:\OSPanel\home\asu-vch.local\public\themes\{slug}
 
 Military Ranks v2 source/UI-layout and all-theme asset checker'ы подтверждают `military-ranks-v2.css` во всех themes.
 
-Последние результаты PR #24:
+Historical PR #24 results:
 
 ```text
 asu-blue desktop acceptance: PASS
@@ -100,6 +100,19 @@ Military Ranks v2 layout: PASS
 required theme assets: PASS
 console errors: 0
 asset/HTTP 404: 0
+mobile: OUT OF SCOPE / NOT RUN
+```
+
+Latest user-visible directory evidence, Military Positions Directory v1 on exact runtime head `c647a933011873048866c75978d3f506634011fd`:
+
+```text
+asu-blue desktop acceptance: PASS
+asu-light-blue desktop acceptance: PASS
+asu-evgeniya-rostova desktop acceptance: PASS
+mutual exclusion both directions: PASS
+UI-F04: CLOSED
+UI-F05: CLOSED
+open findings: 0
 mobile: OUT OF SCOPE / NOT RUN
 mobile PASS: NOT CLAIMED
 ```

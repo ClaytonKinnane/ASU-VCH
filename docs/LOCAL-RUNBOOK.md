@@ -14,15 +14,16 @@ URL: https://asu-vch.local
 ## 2. Current anchors
 
 ```text
-latest functional runtime baseline: PR #24 / migration 012
+latest functional runtime baseline: PR #36 / migration 014
+previous functional baseline: PR #35 / migration 013
 static CI baseline: PR #25
-documentation governance baseline: PR #28
+documentation governance baseline: PR #28 + permanent rules/handoff
 local automation foundation: PR #29
 local automation corrected baseline: PR #30
-durable technical capability coverage: through PR #30
-migrations: 001–012
+durable functional capability coverage: through PR #36
+migrations: 001–014
 system roles: 4
-system permissions: 25
+system permissions: 35
 built-in themes: 3
 required CSS assets: 10
 ```
@@ -57,16 +58,48 @@ Repeat installer:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1' -SkipDeploy
 ```
 
-Ожидается:
+Для synchronized current `main` ожидается:
 
 ```text
-Применено миграций: 12
+Применено миграций: 14
 Новых миграций нет.
 ```
 
-## 5. PR #24 functional verification baseline
+## 5. Latest PR #36 functional verification baseline
 
-Post-merge verification подтвердил:
+Exact accepted runtime head: `c647a933011873048866c75978d3f506634011fd`.
+
+```text
+migration 014: applied
+repeat initialization: PASS / no new migration
+PHP lint: 171 PASS
+Military Positions DB/runtime checker: 167 PASS
+HTTP smoke: 200,200,302
+asu-blue desktop: PASS
+asu-light-blue desktop: PASS
+asu-evgeniya-rostova desktop: PASS
+mutual exclusion: PASS
+UI-F04/UI-F05: CLOSED
+open findings: 0
+real Staffing data mutation: NONE
+mobile: OUT OF SCOPE / NOT RUN
+```
+
+Runner:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File '.\tools\Test-MilitaryPositionsDirectoryV1.ps1' `
+  -RepositoryPath 'C:\Project\ASU-VCH' `
+  -ExpectedHead <EXACT_HEAD> `
+  -RunInitialization `
+  -RunHttpSmoke `
+  -AllowInvalidCertificate
+```
+
+Later documentation-only/merge commits are not re-labelled as runtime-tested.
+
+### Historical PR #24 baseline
 
 ```text
 migration 012: applied
@@ -110,6 +143,7 @@ PR #25 push run: 30837637886 / SUCCESS
 PR #25 workflow_dispatch run: 30839122892 / SUCCESS
 PR #30 exact-head PR run: 31024419654 / SUCCESS
 PR #30 post-merge push run: 31025264683 / SUCCESS
+PR #36 post-merge main run: SUCCESS
 required status check: NOT ENABLED
 branch protection/settings changed: NO
 ```
@@ -188,7 +222,8 @@ git status --short
 - baseline facts and historical anchors;
 - relative links;
 - stale current assertions;
-- migration 001–012 consistency;
+- migration 001–014 consistency;
+- system permissions 35 consistency;
 - required CSS asset count 10;
 - separated functional/CI/governance/local-automation baseline;
 - terminal anti-recursion invariant;
@@ -210,6 +245,8 @@ git branch --merged origin/main
 `SAFE TO DELETE` не является permission. Remote deletion выполняется первой, затем `git fetch --prune` и отдельно approved local deletion через `git branch -d`.
 
 Current branch inventory не хранится как permanent living field.
+
+Standing maintenance authorization for `PROJECT-WORKING-RULES.md`/`CHAT-HANDOFF.md` does **not** include deletion of its documentation branch.
 
 ## 10. Historical governance snapshots
 
@@ -252,9 +289,9 @@ must_change_password: true
 ## 12. Permanent gates
 
 ```text
-Pull Request: separate owner permission
-merge: separate owner permission
-branch deletion: separate post-merge owner permission
+ordinary Pull Request: separate owner permission unless precisely pre-authorized for the task
+ordinary merge: separate owner permission unless precisely pre-authorized for the task
+branch deletion: always separate explicit owner permission
 required status check: not enabled
 mobile PASS: not claimed
 recursive lifecycle-only Markdown closure: prohibited

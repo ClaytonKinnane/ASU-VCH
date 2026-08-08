@@ -10,14 +10,14 @@
 Project architecture        — APPROVED
 Domain modeling             — CONTINUES PER INCREMENT
 Implementation              — STARTED
-Functional increments       — PR #1–#9, #12, #15, #19, #20, #24 MERGED
-Latest functional runtime   — PR #24 / migration 012
+Functional runtime          — THROUGH PR #36 / MIGRATION 014
+Latest functional validation — PR #36 / exact runtime head c647a933011873048866c75978d3f506634011fd
 Static CI baseline          — PR #25
-Documentation governance    — PR #28
+Documentation governance    — PR #28 + permanent rules/handoff
 Local automation foundation — PR #29
 Local automation corrected  — PR #30
-Active functional increment — NONE
-Active material technical   — NONE
+Active functional implementation — NONE
+Active material technical implementation — NONE
 ```
 
 ## Current domain map
@@ -25,11 +25,12 @@ Active material technical   — NONE
 | Domain | Current state |
 |---|---|
 | Security | users, authentication, RBAC, approval, password change, rejection, archive/restore |
-| Reference | four owner-only read-only routes; Military Ranks has current v2/historical v1 and compatibility service |
+| Reference | Military Ranks v2/historical v1, organizational element types, public VUS, legacy position classifier and Managed Military Positions Directory v1 |
 | Organization | Organizational Structure v1: structures, versions, draft tree, document metadata, history, compare |
-| Audit | critical operation audit inside Security/Organization; common domain log not implemented |
+| Staffing | Lowest Unit Staffing Structure v1: registers, versions, stable individual slots, document metadata, catalog/Organization pins, history/compare; no persons/assignments |
+| Audit | critical operation audit/events inside implemented domains; common domain log not implemented |
 | Infrastructure | installer, migrations, deploy, theme registry, health, CLI checkers, static CI Stage A and local Git/GitHub/Codex automation through PR #30 |
-| Documents | common Documents runtime not implemented; Organization owns only its document metadata |
+| Documents | common Documents runtime not implemented; Organization/Staffing own only their scoped metadata |
 
 ## Infrastructure tooling capability
 
@@ -48,7 +49,7 @@ Infrastructure tooling:
 - is not a business domain;
 - is not application runtime;
 - is not deployed to the web root;
-- does not change Security, Reference or Organization ownership;
+- does not change Security, Reference, Organization or Staffing ownership;
 - does not imply real authentication or paid API request acceptance without separate evidence.
 
 ## Specialized Reference catalogs
@@ -57,7 +58,7 @@ Infrastructure tooling:
 |---:|---|---:|
 | #8 / #24 | Military personnel compositions and ranks: v1 → current v2 + historical v1 | 007 + 012 |
 | #9 | Organizational element types | 008 |
-| #19 | Public military position types | 010 |
+| #19 / #36 | Military Positions legacy classifier → managed canonical directory | 010 + 014 |
 | #20 | Public military occupational specialty information | 011 |
 
 ### Military Ranks v2 Reference contract
@@ -70,15 +71,24 @@ Infrastructure tooling:
 - 2 version sources and 8 composition sources;
 - derived categories explicitly distinguished from normative compositions;
 - Reference-owned read-only compatibility service uses same-version ancestry;
-- no Organization dependency, Staffing schema or personnel assignments.
+- no Organization or Staffing write ownership and no personnel assignments.
 
-The four user-facing directories remain owner-only/read-only. Universal editable Reference runtime is not claimed.
+### Managed Military Positions Directory v1 Reference contract
+
+- the migration-010 catalog is evolved in place; no parallel position entity;
+- new canonical version begins as draft and is not auto-published;
+- stable identity, draft mutations, logical archive/restore and append-only history;
+- explicit view/manage/publish/history permissions, with owner wildcard and no automatic non-owner grants;
+- existing Staffing pins/history are preserved;
+- no VUS/rank/unit/person/equipment/occupancy properties are inferred from a position name.
+
+The Military Ranks, organizational-elements and public VUS user-facing routes retain their owner-only/read-only boundaries. Managed Military Positions is separately permission-aware and mutable only under its approved draft lifecycle. Universal editable Reference runtime is not claimed.
 
 ## Future directions
 
 ```text
-Personnel
-Staff positions and personnel assignments
+Personnel Core and person cards
+Staffing personnel assignments / derived vacancy-occupancy
 Orders
 Medical
 Equipment
@@ -88,25 +98,27 @@ Archive domain
 Notifications
 ```
 
-Future Staffing model does not duplicate public military position types or Military Ranks application semantics. It requires a separate approved increment.
+Staffing v1 already exists; Personnel/Assignments and any catalog remapping are separate future approved increments.
 
 ## Domain ownership
 
 Each business concept has one owning domain. The owner defines invariants, write operations, lifecycle and contracts. Reading another domain's data does not grant write ownership.
 
-## Organization boundary
+## Organization and Staffing boundary
 
 Organizational Structure v1 implements structure/version lifecycle, stable elements, version-scoped tree, draft mutation, catalog-version bindings, document metadata, immutable change events, history and compare.
+
+Lowest Unit Staffing Structure v1 implements normative registers/versions/stable individual slots, rank/VUS requirements, document metadata, catalog/Organization pins, history and compare.
 
 Not implemented:
 
 - personnel cards;
-- organization-specific staffing slots;
-- personnel assignments;
-- actual strength, equipment or restricted operational data;
+- person→slot assignments;
+- occupied/vacant factual state;
+- real personnel/unit operational data;
 - common Documents and Audit domains.
 
-Public catalogs and Military Ranks v2 semantics do not remove these boundaries.
+Public catalogs and Military Ranks/Military Positions semantics do not remove these boundaries.
 
 ## Allowed dependencies
 
@@ -115,11 +127,16 @@ Security       → Audit
 Security       → Reference
 Organization   → Reference
 Organization   → Audit
+Staffing       → Organization / Reference / Audit
 Documents      → Security / Reference / Organization / Audit
 Infrastructure → external technical systems
 ```
 
-Reference does not depend on Organization. Static CI and local automation belong to Infrastructure and do not change business-domain ownership.
+Reference does not depend on Organization or Staffing. Static CI and local automation belong to Infrastructure and do not change business-domain ownership.
+
+## Current research boundary
+
+`research/military-accounting-order-700` contains unique unmerged research for `PersonnelServiceAccounting`. It is not current runtime and is not automatically an implementation approval. `CitizenMilitaryAccounting` remains excluded from the current target contour unless separately reconsidered.
 
 ## New domain increment workflow
 

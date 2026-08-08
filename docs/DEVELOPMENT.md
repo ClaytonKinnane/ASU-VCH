@@ -1,5 +1,7 @@
 # Правила разработки
 
+Canonical permanent operational governance: [PROJECT-WORKING-RULES.md](PROJECT-WORKING-RULES.md). Этот файл описывает development conventions и не отменяет более строгие правила постоянного регламента.
+
 ## Source of truth
 
 Repository `ClaytonKinnane/ASU-VCH` on GitHub is the source of truth. Changes are made in separate branches. Local clone is used for synchronization, deploy and testing, not unapproved source editing.
@@ -15,7 +17,7 @@ Research → Analysis → Architecture → Specification → Review → Approval
 
 Implementation is prohibited before approved Architecture, Specification, Review and explicit owner Approval.
 
-Pull Request creation, merge and branch deletion are separate gates. Merge approval does not include deletion approval.
+Pull Request creation, merge and branch deletion are separate gates. Merge approval does not include deletion approval. A precise task-level owner authorization may pre-authorize named PR/review/merge gates, but branch deletion remains separately explicit.
 
 ## Change classes
 
@@ -37,6 +39,17 @@ Required:
 - Final PR Review before merge.
 
 Documentation-only commit is not a runtime-tested head.
+
+### Standing operational-doc exception
+
+Routine documentation-only maintenance limited to:
+
+```text
+docs/PROJECT-WORKING-RULES.md
+docs/CHAT-HANDOFF.md
+```
+
+may proceed without a repeated permission prompt as defined in `PROJECT-WORKING-RULES.md`, including its own documentation branch, commits/push, PR, exact-head Actions, Final PR Review, normal merge after PASS and post-merge verification. **Branch deletion is excluded and always requires separate explicit owner authorization.** Any third path requires task-level authorization.
 
 ## Terminal documentation model
 

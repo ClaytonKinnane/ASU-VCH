@@ -1,5 +1,41 @@
 # История изменений
 
+## 2026-08-08
+
+### Military Positions Directory v1 — PR #36
+
+- merged migration `014_military_positions_directory_v1.sql` and Managed Military Positions Directory v1;
+- evolved the existing catalog without a parallel position entity;
+- seeded one 24-entry synthetic canonical draft with 9 explicit combined flags and no automatic publication;
+- added stable identity, revisions, logical archive/restore, publish/cancel lifecycle and append-only readable history;
+- added four permissions without automatic non-owner grants;
+- preserved existing Staffing pins/history;
+- exact runtime head `c647a933011873048866c75978d3f506634011fd`: PHP lint 171 PASS, migrations 001–014, DB/runtime `167 PASS`, HTTP `200/200/302`;
+- all three managed desktop themes PASS; UI-F04/UI-F05 closed; open findings 0;
+- mobile `OUT OF SCOPE / NOT RUN`;
+- final feature head `3756b2ec53a00f68d5c1f5c098d1c274f6b8d769`;
+- merge commit `a6cfceb421fac8d0985e409770bb26a62fac0b14`;
+- post-merge Actions SUCCESS.
+
+### Branch cleanup
+
+After separate explicit owner approvals, obsolete `design/military-positions-directory-v1`, `feature/military-positions-directory-v1`, `docs/handoff-lowest-unit-staffing-design` and `docs/handoff-military-accounting-research` branches were removed. `research/military-accounting-order-700` was intentionally retained because it contains unique unmerged research.
+
+### Documentation current-state audit
+
+Full semantic audit identified stale living state left from before PR #36. A documentation-only reconciliation was authorized through merge; branch deletion was explicitly excluded. Historical gate records remain immutable.
+
+## 2026-08-07
+
+### Lowest Unit Staffing Structure v1 — PR #35
+
+- added migration `013_lowest_unit_staffing_v1.sql`;
+- implemented Staffing registers, version lifecycle, stable individual slots, documents metadata, Organization/catalog pins, rank/VUS requirements, history and compare;
+- added six Staffing permissions without automatic non-owner grants;
+- kept Personnel, person assignments and occupancy/vacancy facts outside v1;
+- merge main anchor `9ae05b9928903cc483ce415d7378b546e419264c`;
+- post-merge Actions SUCCESS.
+
 ## 2026-08-05
 
 ### Terminal Documentation Consistency — PR #28

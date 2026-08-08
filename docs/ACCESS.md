@@ -4,8 +4,7 @@
 
 ```text
 system roles: 4
-main permissions after migration 013: 31
-feature target after migration 014: 35
+current system permissions after migration 014: 35
 owner wildcard: system.*.*
 ```
 
@@ -44,7 +43,7 @@ Migration 009 added six `organization.structures.*` permissions. They are not au
 /admin/directories/military-occupational-specialties.php
 ```
 
-Current behavior:
+Current behavior for these routes:
 
 - owner-only through `system.*.*`;
 - GET-only/read-only user routes;
@@ -59,7 +58,7 @@ Migration 012 adds no permissions. Route supports current v2, historical/superse
 
 Reference-owned compatibility service is read-only and evaluates same-version composition/rank compatibility. It does not grant Staffing or Organization write access.
 
-Migrations 010, 011 and 012 add no permissions. Migration 013 adds six `staffing.registers.*` permissions, producing the current `main` baseline of 31.
+Migrations 010, 011 and 012 add no permissions. Migration 013 adds six `staffing.registers.*` permissions. Migration 014 adds four managed Military Positions permissions, producing the current baseline of 35.
 
 ### Managed Military Positions Directory v1
 
@@ -78,7 +77,7 @@ No permission is automatically assigned to a non-owner role. Owner continues to 
 
 - Military Positions is not a staffing schedule and creates no assignments.
 - Public VUS is not personal military accounting and is not automatically linked to positions/ranks/equipment/personnel.
-- Military Ranks v2 derived semantics do not create Staffing tables, slots or Organization bindings.
+- Military Ranks v2 derived semantics do not create Staffing assignments or Organization write ownership.
 
 ## Mutating operation security
 
@@ -88,17 +87,18 @@ Other domain mutations are POST-only, permission + CSRF protected, validate owne
 
 ```text
 system roles: 4
-main system permissions after migration 013: 31
-feature target after migration 014: 35
+current system permissions after migration 014: 35
 organization permissions: 6
 staffing permissions: 6
 military-position directory permissions: 4
 ordinary automatic organization assignments: 0
-owner access to current directories: PASS
-ordinary-role HTTP 403: PASS
+owner access to read-only reference directories: PASS
+ordinary-role HTTP 403 for owner-only reference routes: PASS
 Military Ranks current/historical read-only boundary: PASS
 automatic non-owner grants from migration 014: 0
-Military Positions runtime/DB/HTTP verification: NOT RUN on this implementation worktree
+Military Positions runtime/DB/HTTP verification: PASS on exact runtime head c647a933011873048866c75978d3f506634011fd
+Military Positions DB/runtime checker: 167 PASS
+HTTP smoke: 200,200,302
 security regressions: PASS
 mobile: OUT OF SCOPE / NOT RUN
 ```

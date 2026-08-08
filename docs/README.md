@@ -1,5 +1,13 @@
 # Документация АСУ-ВЧ
 
+## Операционные документы — читать первыми
+
+1. [Постоянные правила работы](PROJECT-WORKING-RULES.md)
+2. [Текущий handoff для перехода в новый чат](CHAT-HANDOFF.md)
+3. [Текущее состояние проекта](PROJECT-STATUS.md)
+
+`PROJECT-WORKING-RULES.md` — постоянный operational governance. `CHAT-HANDOFF.md` — living operational snapshot, который проверяется и при необходимости обновляется после значимых действий. Live GitHub/Git остаётся canonical source для mutable branches/PR/reviews/Actions/SHA.
+
 ## Актуальные документы
 
 Living documentation описывает текущий durable merged baseline:
@@ -15,6 +23,7 @@ Living documentation описывает текущий durable merged baseline:
 - [План разработки](ROADMAP.md)
 - [История изменений](CHANGELOG.md)
 - [Архитектурные паттерны](ARCHITECTURAL-PATTERNS.md)
+- [Матрица трассируемости](TRACEABILITY.md)
 - [Текущая карта доменов](domains/README.md)
 - [Текущий index migrations](migrations/README.md)
 - [GitHub Local Automation](../tools/github-automation/README.md)
@@ -24,26 +33,28 @@ Living documentation описывает текущий durable merged baseline:
 ## Current baseline
 
 ```text
-latest functional runtime baseline: PR #24 / migration 012
+latest merged functional increment: PR #36 / Military Positions Directory v1 / migration 014
+previous functional increment: PR #35 / Lowest Unit Staffing Structure v1 / migration 013
 static CI baseline: PR #25
-documentation governance baseline: PR #28
+documentation governance baseline: PR #28 + permanent rules/handoff
 local automation foundation: PR #29
 local automation corrected baseline: PR #30
-durable technical capability coverage: through PR #30
-migrations: 001–012
+durable functional capability coverage: through PR #36
+migrations: 001–014
 system roles: 4
-system permissions: 25
+system permissions: 35
 built-in themes: 3
 required CSS assets per theme: 10
 GitHub Actions Static Verification: implemented
 required status check: not enabled
 branch protection: not enabled
-active functional increment: none
-active material technical increment: none
+active functional implementation: none
+active material technical implementation: none
 mobile testing: OUT OF SCOPE / NOT RUN
+production deployment: NOT PERFORMED
 ```
 
-PR #24 добавил Military Ranks Directory v2 и migration 012. PR #25 добавил static CI Stage A. PR #28 закрепил terminal documentation model. PR #29 добавил local Git/GitHub/Codex automation package, а PR #30 исправил и усилил Windows PowerShell 5.1 first-run path и native regression harness.
+PR #35 добавил Lowest Unit Staffing Structure v1. PR #36 добавил Managed Military Positions Directory v1 и migration 014. PR #25 добавил static CI Stage A. PR #28 закрепил terminal documentation model. PR #29 добавил local Git/GitHub/Codex automation package, а PR #30 исправил и усилил Windows PowerShell 5.1 first-run path и native regression harness.
 
 Current HEAD определяется динамически:
 
@@ -52,7 +63,7 @@ git fetch --prune origin
 git rev-parse origin/main
 ```
 
-Living docs не хранят self-referential current-main SHA или transient PR/branch inventory. Exact SHA фиксируются как historical anchors в dated evidence.
+Living docs не считают записанный SHA вечным current pointer. Exact SHA фиксируются как historical/audit anchors, а transient branch/PR inventory перепроверяется live.
 
 ## Классы документации
 
@@ -83,11 +94,35 @@ Living documentation хранит устойчивое состояние про
 - текущий `main` SHA;
 - branch inventory и события удаления веток.
 
-Lifecycle новейшего documentation reconciliation PR не копируется обратно в living Markdown. Его номер, head SHA, merge commit, Actions run и cleanup остаются canonical в GitHub. Отсутствие такой копии после merge не является documentation defect и не требует post-merge Markdown closure.
+Lifecycle новейшего documentation reconciliation PR не копируется обратно в living Markdown solely to record its own merge/run/cleanup. Отсутствие такой копии после merge не является documentation defect и не требует recursive closure.
 
 Новый documentation increment создаётся только при реальной ошибке durable living state, broken normative rule, некорректной ссылке, security/testing claim defect или ином содержательном изменении.
 
 ## Последние завершённые durable increments
+
+### Functional PR #35 — Lowest Unit Staffing Structure v1
+
+- migration 013;
+- versioned Staffing registers and lifecycle;
+- stable individual slots, document metadata, rank/VUS requirements and catalog/Organization pins;
+- history/compare;
+- six Staffing permissions, no automatic non-owner grants;
+- Personnel/Assignments/occupancy facts excluded;
+- post-merge Actions: SUCCESS.
+
+### Functional PR #36 — Military Positions Directory v1
+
+- migration 014;
+- managed canonical versioned military-position directory over the existing catalog;
+- initial 24-entry synthetic canonical draft / 9 explicit combined flags; no auto publication;
+- stable identity, revisions, logical archive/restore and append-only history;
+- four permissions, no automatic non-owner grants;
+- existing Staffing pins/history preserved;
+- exact runtime head `c647a933011873048866c75978d3f506634011fd`;
+- PHP lint 171 PASS, migrations 001–014, DB/runtime `167 PASS`, HTTP `200/200/302`;
+- all three managed desktop themes PASS, open findings 0;
+- mobile: OUT OF SCOPE / NOT RUN;
+- merge commit `a6cfceb421fac8d0985e409770bb26a62fac0b14` and post-merge Actions SUCCESS.
 
 ### Functional PR #24 — Military Ranks Directory v2
 
@@ -149,6 +184,16 @@ Real GitHub/Codex authentication, paid API requests and complete target-machine 
 
 ## Documentation consistency records
 
+### 2026-08-08 — Current-State Reconciliation
+
+- [Immutable audit](DOCUMENTATION-CURRENT-STATE-AUDIT-2026-08-08.md)
+- [Architecture](architecture/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-2026-08-08-ARCHITECTURE.md)
+- [Specification](specification/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-2026-08-08-SPECIFICATION.md)
+- [Formal Review](review/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-2026-08-08-FORMAL-REVIEW.md)
+- [Approval](decisions/DOCUMENTATION-CURRENT-STATE-RECONCILIATION-2026-08-08-APPROVAL.md)
+
+This reconciliation updates living state after PR #35/#36 and establishes the permanent rules/handoff maintenance boundary. Its own mutable PR/merge/Actions lifecycle remains canonical in GitHub and is not recursively copied back solely for self-closure.
+
 ### 2026-08-03 — Current-State Reconciliation v2 — completed
 
 - [Immutable audit](DOCUMENTATION-CURRENT-STATE-AUDIT-2026-08-03.md)
@@ -208,4 +253,4 @@ git branch -vv
 git status --short
 ```
 
-`SAFE TO DELETE` не является authorization. Merge и cleanup имеют отдельные owner gates. Mobile PASS не заявляется без фактической acceptance.
+`SAFE TO DELETE` не является authorization. Branch deletion всегда требует отдельного явного owner gate. Mobile PASS не заявляется без фактической acceptance.

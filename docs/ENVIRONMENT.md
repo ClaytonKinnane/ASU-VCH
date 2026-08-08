@@ -11,7 +11,7 @@ MySQL: 8.4.x
 Shell: Windows PowerShell 5.1
 ```
 
-Последний полный functional post-merge прогон PR #24 выполнен в локальной Windows/Open Server/MySQL среде. GitHub-hosted static runs используют Ubuntu 24.04 и PHP 8.5.x; это CI evidence, а не изменение local runtime requirement.
+Последняя полная accepted functional validation выполнена для PR #36 Military Positions Directory v1 на exact runtime head `c647a933011873048866c75978d3f506634011fd` в локальной Windows/Open Server/MySQL среде. GitHub-hosted static runs используют Ubuntu 24.04 и PHP 8.5.x; это CI evidence, а не изменение local runtime requirement.
 
 ## Local repository tooling
 
@@ -89,16 +89,16 @@ Repeat installer:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1' -SkipDeploy
 ```
 
-Current expected result:
+Current expected result для synchronized current `main`:
 
 ```text
-Применено миграций: 12
+Применено миграций: 14
 Новых миграций нет.
 ```
 
-Migrations 009–012 используют compatibility mechanisms. Migrations 010–011 имеют gzip/base64 packaging; migration 012 использует dedicated loader and fail-closed marker.
+Migrations 009–012 используют compatibility mechanisms. Migrations 010–011 имеют gzip/base64 packaging; migration 012 использует dedicated loader and fail-closed marker. Migrations 013 и 014 являются standalone increment migrations; migration 014 не меняет migration-010 packaging.
 
-Перед schema/data migration требуется SQL backup. Для PR #24 отсутствие pre-migration backup зафиксировано как process deviation; post-migration backup создан и проверен.
+Перед schema/data migration требуется SQL backup. Для PR #24 отсутствие pre-migration backup зафиксировано как process deviation; post-migration backup создан и проверен. Для migration 014 pre-migration backup и repeat initialization были выполнены и прошли.
 
 ## Required theme assets
 
@@ -121,7 +121,19 @@ css/operation-result-modal.css
 
 ## Functional runners
 
-Military Positions:
+Managed Military Positions Directory v1:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File '.\tools\Test-MilitaryPositionsDirectoryV1.ps1' `
+  -RepositoryPath 'C:\Project\ASU-VCH' `
+  -ExpectedHead <EXACT_HEAD> `
+  -RunInitialization `
+  -RunHttpSmoke `
+  -AllowInvalidCertificate
+```
+
+Historical Military Positions classifier:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
@@ -145,7 +157,7 @@ Military Ranks v2 evidence is recorded in:
 - `testing/MILITARY-RANKS-DIRECTORY-V2-MANUAL-DESKTOP-ACCEPTANCE-2026-08-03.md`;
 - `review/MILITARY-RANKS-DIRECTORY-V2-PR-FINAL-REVIEW.md`.
 
-Functional post-merge result:
+Historical PR #24 functional result:
 
 ```text
 applied migrations: 12
@@ -157,6 +169,23 @@ HTTP smoke: PASS
 manual desktop: PASS
 ```
 
+Latest accepted PR #36 functional result:
+
+```text
+PHP lint: 171 PASS
+applied migrations: 14
+repeat initialization: PASS / no new migration
+Military Positions DB/runtime checker: 167 PASS
+HTTP smoke: 200,200,302
+asu-blue desktop: PASS
+asu-light-blue desktop: PASS
+asu-evgeniya-rostova desktop: PASS
+mutual exclusion: PASS
+open findings: 0
+real Staffing data mutation: NONE
+mobile: OUT OF SCOPE / NOT RUN
+```
+
 ## GitHub Actions Static Verification
 
 Workflow `ASU-VCH Static Verification` runs on PR/push/manual events with Ubuntu 24.04 and PHP 8.5. It checks whitespace, tracked PHP syntax, 9 CI-safe checker'ов and final repository integrity.
@@ -166,6 +195,7 @@ PR #25 post-merge push run: 30837637886 / SUCCESS
 PR #25 post-merge manual run: 30839122892 / SUCCESS
 PR #30 exact-head PR run: 31024419654 / SUCCESS
 PR #30 post-merge push run: 31025264683 / SUCCESS
+PR #36 post-merge main run: SUCCESS
 required status check: NOT ENABLED
 branch protection changed: NO
 ```
@@ -180,6 +210,7 @@ CI does not execute MySQL, deploy, HTTP/browser or visual acceptance.
 
 ```text
 functional mobile testing: OUT OF SCOPE / NOT RUN
+production deployment: NOT PERFORMED
 local automation real authentication acceptance: NOT CLAIMED
 paid API request: NOT RUN
 mobile PASS: NOT CLAIMED

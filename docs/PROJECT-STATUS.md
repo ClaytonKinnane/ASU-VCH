@@ -1,212 +1,130 @@
 # Текущее состояние проекта АСУ-ВЧ
 
-Дата актуализации durable functional и active implementation state: `2026-08-07`.
+Дата актуализации durable state: `2026-08-08`.
 
-## Репозиторий и anchors
-
-Live HEAD определяется динамически:
-
-```powershell
-git fetch --prune origin
-git rev-parse origin/main
-```
+## Live snapshot at this reconciliation
 
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
-latest merged functional baseline: PR #35 / migration 013
-current main SHA: 9ae05b9928903cc483ce415d7378b546e419264c
-static CI baseline: PR #25
-documentation governance baseline: PR #28
-local automation foundation: PR #29
-local automation corrected baseline: PR #30
-durable technical capability coverage: through PR #30
-PR #24 merge commit: feac7230616d3a8df98acb48f43a0b60f89f2255
-PR #24 runtime/manual acceptance head: b44aed14ee1a54be213cbc939322ba21b02e7a58
-PR #25 merge commit: c567429b3aa4d629a4e7c11fec7e3dbae907d92e
-PR #29 merge commit: 375f941be3f50f9f1f264da244f0dc31496e2a6f
-PR #30 corrected implementation head: fede2aa8c9c7b896f142075caa69b35219d4016d
-PR #30 merge commit: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
-migrations on main: 001–013
-implementation target migration: 014
+main snapshot: b3dda6cae88072c1e74c25de28f7023a8d73620d
+open Pull Requests: 0
+open Issues: 0
+remote branches before documentation reconciliation: 2
+  main
+  research/military-accounting-order-700
+latest main Static Verification: 31234849967 / SUCCESS
+```
+
+Live values are rechecked through GitHub/Git before actions. The SHA above is an audit anchor, not a permanent pointer.
+
+Current `main` tree is identical to PR #36 merge tree. History-only noop/revert commits occurred after PR #36 and restored the exact content tree; no force rewrite is authorized or required by documentation reconciliation.
+
+## Durable baseline
+
+```text
+latest merged functional increment: PR #36 / Military Positions Directory v1
+previous merged functional increment: PR #35 / Lowest Unit Staffing Structure v1
+migrations: 001–014
 system roles: 4
-system permissions on main: 31
-target permissions after migration 014: 35
+system permissions: 35
 built-in themes: 3
 required CSS assets per theme: 10
-active functional increment: Military Positions Directory v1
-active material technical increment: none
+active functional implementation: none
+active material technical implementation: none
+mobile: NOT RUN / OUT OF SCOPE
+production deployment: NOT PERFORMED
 ```
 
-Documentation-only commits после runtime-tested head не объявляются runtime-tested. Exact merge/test SHA — historical anchors; current Git state определяется через GitHub/Git.
+## Реализованные области
 
-## Реализованные functional области
+### Platform / Security
 
-- bootstrap owner, authentication, protected sessions и CSRF;
-- 4 system roles и 31 permissions on current main;
-- full user lifecycle и required password change;
-- 3 trusted themes и 10 required CSS-assets per theme;
-- owner-only read-only directories: ranks, organizational element types and public VUS;
-- merged Lowest Unit Staffing Structure v1 / migration 013;
-- Organizational Structure v1;
-- migrations 001–013.
+- owner bootstrap and public-registration closure;
+- authentication, protected sessions, CSRF;
+- 4 roles / 35 permissions;
+- user approval/rejection/block/archive/restore lifecycle;
+- required temporary-password change;
+- operation audit and themed access/error UX.
 
-## Functional PR #24 — Military Ranks Directory v2
-
-```text
-status: MERGED
-migration: 012
-v1 lifecycle: superseded / historical
-v2 lifecycle: published / current
-compositions/categories: 8
-version-scoped semantics: 8
-rank records: 20 unchanged codes/names/order
-version sources: 2
-composition sources: 8
-added lifecycle/integrity/immutability triggers: 18
-new system permissions: 0
-```
-
-Реализованы version switching, historical v1 view, current v2, search/filtering, source cards, derived/staffing badges и Reference-owned read-only compatibility service.
-
-Staffing tables/slots and protected management UI were later implemented and merged through PR #35. Personnel assignments and real unit/personnel data remain excluded.
-
-### PR #24 testing and post-merge
-
-```text
-static/source checks: PASS
-migration 012: PASS
-repeat installer: 12 / no new migrations
-DB integration/regression: PASS
-deploy/source parity: PASS
-HTTP smoke: PASS
-manual desktop acceptance: PASS
-post-merge verification: PASS
-mobile: OUT OF SCOPE / NOT RUN
-```
-
-Merge commit не подменяет исходный runtime/manual acceptance head.
-
-## Static CI PR #25 — GitHub Actions Static Verification v1
-
-```text
-workflow: ASU-VCH Static Verification
-job: asu-vch-static-verification
-triggers: pull_request to main / push to main / workflow_dispatch
-runner: ubuntu-24.04
-PHP: 8.5.x
-permissions: contents read
-tracked PHP lint: enabled
-CI-safe checkers: 9
-final worktree guard: enabled
-required status check: NOT ENABLED
-branch protection/settings changed: NO
-```
-
-Post-merge evidence:
-
-```text
-push run: 30837637886 / SUCCESS
-workflow_dispatch run: 30839122892 / SUCCESS
-PHP in recorded runs: 8.5.9
-tracked PHP files: 124 / 0 errors
-Organization UI checker: 64 PASS / 0 FAIL
-```
-
-Static CI не заменяет MySQL, migration, deploy, HTTP/browser и visual testing.
-
-## Documentation governance PR #28
-
-PR #28 закрепил terminal documentation model:
-
-```text
-mutable PR/SHA/run/branch lifecycle: canonical in GitHub/Git
-historical gate records: immutable snapshots
-HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
-recursive post-merge Markdown closure solely for lifecycle copying: prohibited
-```
-
-Living documentation обновляется при substantive durable-state change или реальном content defect, а не только потому, что завершился последний documentation PR.
-
-## Local GitHub/Codex Automation — PR #29 + PR #30
-
-Repository tooling включает:
-
-- one-command Windows PowerShell 5.1 installer;
-- проверку или установку Git через WinGet;
-- проверку или установку GitHub CLI и интерактивный GitHub login flow;
-- Node.js LTS и официальный npm package `@openai/codex@latest`;
-- authentication modes `Auto`, `ChatGPT`, `ApiKey`, `Skip`;
-- secure API-key stdin handling;
-- integrity manifest;
-- atomic helper staging/install/rollback;
-- native PowerShell 5.1 regression harness;
-- Cleanup Doctor и fail-closed `Verify`/`Delete`.
-
-PR #30 historical evidence:
-
-```text
-exact corrected implementation head: fede2aa8c9c7b896f142075caa69b35219d4016d
-native Windows PowerShell: 5.1.28000.2525
-native regression: 58 PASS / 0 FAIL
-repository worktree restoration: PASS
-PATH and LOCALAPPDATA restoration: PASS
-exact-head PR workflow run: 31024419654 / SUCCESS
-post-merge push run: 31025264683 / SUCCESS
-merge commit: 35abf7e29395bc662eeb2cecf5b1ea5a30fd7c77
-```
-
-Эти проверки подтверждают repository/native regression contract. Они не объявляют PASS для реальной GitHub/Codex authentication, account verification, paid OpenAI API request или полной target-machine installation acceptance.
-
-Local automation не меняет PHP runtime, MySQL, migrations, themes, deploy, application routes, GitHub Actions workflow или repository settings. Browser ChatGPT не получает прямого доступа к локальному компьютеру.
-
-## Themes
-
-Три built-in themes:
+### Themes
 
 - `asu-blue`;
 - `asu-light-blue`;
-- `asu-evgeniya-rostova`.
+- `asu-evgeniya-rostova`;
+- 10 required CSS assets per theme.
 
-Каждая тема содержит 10 required CSS-assets, включая `css/military-ranks-v2.css`. Для `asu-evgeniya-rostova` дополнительно обязательны четыре local SVG-assets.
+### Reference / Directories
 
-## Repository governance
+- Military Ranks v2: current published v2 + historical v1;
+- organizational element types;
+- public VUS information;
+- legacy military-position classifier from migration 010;
+- managed Military Positions Directory v1 from migration 014.
 
-PR, merge и branch deletion требуют отдельных owner approvals. Current branch inventory остаётся dynamic:
+Managed positions support draft/version lifecycle, create/update, logical archive/restore, explicit publish/cancel, readable append-only history and four dedicated permissions. Migration 014 seeds one canonical 24-entry synthetic draft and does not publish it automatically.
 
-```powershell
-git fetch --prune origin
-git ls-remote --heads origin
-git branch -vv
-git status --short
-```
+### Organization
 
-## Следующий инкремент
+Organizational Structure v1 implements structures, versions, draft tree, stable elements, document metadata, history and compare.
 
-Active approved functional increment:
+### Staffing
 
-```text
-name: Military Positions Directory v1
-base: main@9ae05b9928903cc483ce415d7378b546e419264c
-branch: feature/military-positions-directory-v1
-migration: 014_military_positions_directory_v1.sql
-design: Architecture/Specification/Formal Review 0.2
-implementation: present in worktree
-allowed paths: 38 / maximum 38
-local MySQL/deploy/HTTP/desktop validation: NOT RUN
-Pull Request: NOT AUTHORIZED / NOT CREATED
-merge: NOT AUTHORIZED
-branch deletion: NOT AUTHORIZED
-```
+Lowest Unit Staffing Structure v1 / migration 013 implements registers, version lifecycle, documents metadata, stable individual slots, rank/VUS requirements, Organization/catalog pins, history and compare.
 
-The increment evolves the existing migration-010 catalog into a managed canonical directory, seeds one 24-entry synthetic draft, preserves legacy/Staffing history and adds four permissions without non-owner grants. No production deployment or mobile acceptance is included.
+Not implemented in Staffing v1: people, assignments, occupied/vacant facts, real unit/personnel data.
 
-## Постоянные gates
+## PR #36 validation evidence
+
+Exact runtime head: `c647a933011873048866c75978d3f506634011fd`.
 
 ```text
-Pull Request: separate explicit owner permission required
-merge: separate explicit owner permission required
-branch deletion: separate post-merge owner permission required
-required branch-protection check: not enabled
-mobile PASS: not claimed
+total allowlist: 38/38
+corrective inventories: 12/12, 9/9, 8/8, 9/9
+PHP lint: 171 files / PASS
+migrations: 001–014
+initialization runs: 2
+DB/runtime checker: 167 PASS
+HTTP smoke: 200, 200, expected 302
+asu-blue desktop: PASS
+asu-light-blue desktop: PASS
+asu-evgeniya-rostova desktop: PASS
+mutual exclusion: PASS
+UI-F04: CLOSED
+UI-F05: CLOSED
+open findings: 0
+real Staffing data mutation: NONE
+mobile: NOT RUN / OUT OF SCOPE
 ```
+
+PR #36 final feature head `3756b2ec53a00f68d5c1f5c098d1c274f6b8d769`; merge commit `a6cfceb421fac8d0985e409770bb26a62fac0b14`; post-merge Actions SUCCESS. Runtime evidence belongs to the runtime head and is not transferred to later documentation-only commits as a new test.
+
+## Branch state and research
+
+Obsolete branches already removed after explicit owner approvals:
+
+- `design/military-positions-directory-v1`;
+- `feature/military-positions-directory-v1`;
+- `docs/handoff-lowest-unit-staffing-design`;
+- `docs/handoff-military-accounting-research`.
+
+`research/military-accounting-order-700` remains and must not be treated as cleanup residue. It is diverged from main with 8 unique commits and six unique research files. Its conclusions are research/analysis material for `PersonnelServiceAccounting`, not merged implementation.
+
+## Current planning
+
+No product implementation increment is active. Possible next directions require a new Research → Approval cycle, for example:
+
+- Personnel Core / military servicemember card;
+- person → Staffing assignment and derived vacancy/occupancy;
+- common Documents/Orders capabilities;
+- common Audit domain;
+- reports/import/export;
+- production deployment infrastructure;
+- branch protection Stage B / required status check;
+- separate mobile verification increment.
+
+Presence in this list is not implementation approval.
+
+## Permanent gates
+
+Ordinary material work follows documentation-first lifecycle. Standing no-prompt maintenance for `docs/PROJECT-WORKING-RULES.md` and `docs/CHAT-HANDOFF.md` is defined in the rules document. Branch deletion always requires separate exact owner authorization.
