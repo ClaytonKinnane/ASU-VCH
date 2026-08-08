@@ -111,6 +111,9 @@ personnel_check(str_contains($specification, 'VERSION=0.2'), 'Specification v0.2
 personnel_check(str_contains($review, 'REVIEW_STATUS=PASS'), 'Formal Review PASS present');
 personnel_check(str_contains($approval, 'APPROVAL_STATUS=APPROVED'), 'Owner Approval present');
 
+$harness = personnel_contents($root, 'tools/Test-PersonnelCoreCardV1.ps1');
+personnel_check(str_contains($harness, '--runtime-bootstrap='), 'runtime checker is wired to deployed bootstrap');
+
 if (is_dir($root . DIRECTORY_SEPARATOR . '.git') && function_exists('exec')) {
     $output = [];
     $code = 0;
@@ -127,8 +130,27 @@ if (is_dir($root . DIRECTORY_SEPARATOR . '.git') && function_exists('exec')) {
 }
 
 $runRuntime = in_array('--runtime', $argv, true);
+$runtimeBootstrap = null;
+foreach ($argv as $argument) {
+    if (is_string($argument) && str_starts_with($argument, '--runtime-bootstrap=')) {
+        $runtimeBootstrap = substr($argument, strlen('--runtime-bootstrap='));
+        break;
+    }
+}
+
 if ($runRuntime) {
-    require_once $root . '/app/bootstrap.php';
+    $bootstrapPath = is_string($runtimeBootstrap) && $runtimeBootstrap !== ''
+        ? $runtimeBootstrap
+        : $root . '/app/bootstrap.php';
+    personnel_check(is_file($bootstrapPath), 'runtime bootstrap exists');
+    $runtimeRoot = dirname(dirname($bootstrapPath));
+    personnel_check(is_file($runtimeRoot . '/config/local.php'), 'runtime local config exists beside deployed bootstrap');
+    if (!is_file($bootstrapPath) || !is_file($runtimeRoot . '/config/local.php')) {
+        fwrite(STDERR, "PERSONNEL_CORE_CARD_V1_RUNTIME_BOOTSTRAP=FAIL\n");
+        exit(1);
+    }
+
+    require_once $bootstrapPath;
     $pdo = db();
     $tables = $pdo->query("SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name LIKE 'personnel_%' ORDER BY table_name")->fetchAll(PDO::FETCH_COLUMN);
     $expectedTables = ['personnel_change_events','personnel_identifier_types','personnel_identifiers','personnel_records'];
