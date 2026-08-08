@@ -18,7 +18,7 @@
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile">
     <div class="site-logo">АСУ</div>
-    <div class="site-heading"><h1 class="site-title">Военнослужащие</h1><p class="site-description">Канонические карточки личного состава — прототип Personnel Core Card v1</p></div>
+    <div class="site-heading"><h1 class="site-title">Военнослужащие</h1><p class="site-description">Канонические карточки личного состава — базовая версия</p></div>
     <a class="secondary-button" href="/admin/content.php">К контенту</a>
 </div></div></header>
 <main class="admin-main"><div class="container organization-layout">
@@ -86,7 +86,7 @@
     </nav>
     <?php endif; ?>
 
-    <p class="organization-footnote">Должность, подразделение, звание, ВУС и фактическая укомплектованность появятся только в будущих доменах Assignments/Service History. В Personnel Core v1 эти сведения не выводятся как факты.</p>
+    <p class="organization-footnote">Должность, подразделение, звание, ВУС и фактическая укомплектованность появятся только в будущих разделах «Назначения» и «История службы». В базовой карточке эти сведения не выводятся как факты.</p>
 </div></main>
 <script>
 document.addEventListener('click', function (event) {
