@@ -538,6 +538,7 @@ Existing theme components are reused. No hardcoded theme colors and no new theme
 - `Добавить идентификатор` находится в heading-row блока идентификаторов, имеет обычную action-width и не растягивается на всю плитку;
 - пользовательское пояснение идентификаторов: `Удаление идентификаторов недоступно. Все изменения сохраняются в истории.`;
 - `Вся история` находится в heading-row блока истории изменений;
+- lifecycle-действия карточки `Архивировать карточку` и `Восстановить карточку` размещаются в отдельной выровненной влево action-row и имеют ширину по содержимому; full-width lifecycle-кнопка запрещена, если отдельное утверждённое UX-требование явно не требует обратного;
 - corrective layout не меняет состав данных, lifecycle, revision, history или identifier semantics.
 
 ### Identifier action/card convention — corrective acceptance
@@ -725,6 +726,7 @@ For each current theme:
 - multiple identifier entries remain visually separable as independent theme-aware nested cards;
 - active identifier entries expose the bottom action-row with explicit actions `Заменить значение` / `Прекратить действие идентификатора`, while historical entries expose no lifecycle actions;
 - the identifier deactivation form explicitly explains that the identifier is retained in history rather than deleted;
+- archive and restore lifecycle submit controls are compact content-width actions aligned to the left and do not expand to the section width;
 - narrow desktop/window responsive behavior as observation only;
 - no Mobile PASS claim.
 
@@ -786,7 +788,7 @@ Runtime manual testing on the local instance may create synthetic records accord
 21. production deployment not claimed;
 22. Final PR Review later has no blocking/major findings;
 23. visible Personnel UI uses Russian user-facing labels and does not expose raw internal event/target codes;
-24. Personnel card corrective layout passes: compact section spacing, clear action grouping and normal-width identifier action;
+24. Personnel card corrective layout passes: compact section spacing, clear action grouping, normal-width identifier action and compact content-width archive/restore lifecycle actions;
 25. identifier corrective UI passes: compact form submit, visually separated neutral nested entries, status conveyed by badge, lifecycle actions placed below entry details and explicit Russian lifecycle action labels.
 
 ## 13. Explicit non-requirements
