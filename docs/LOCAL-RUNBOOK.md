@@ -1,22 +1,36 @@
 # Локальный runbook АСУ-ВЧ
 
-## 1. Current baseline
+## 1. Назначение
+
+Runbook описывает synchronization, deploy, functional verification, static CI inspection, local automation и branch cleanup gates.
 
 ```text
-repo: C:\Project\ASU-VCH
-deploy: C:\OSPanel\home\asu-vch.local
+repository: C:\Project\ASU-VCH
+deploy root: C:\OSPanel\home\asu-vch.local
+web root: C:\OSPanel\home\asu-vch.local\public
 URL: https://asu-vch.local
-latest functional PR: #36 / migration 014
-migrations: 001–014
-roles: 4
-permissions: 35
-themes: 3
-required CSS assets/theme: 10
 ```
 
-Current HEAD is obtained from `origin/main`; documentation-only commits are not runtime-tested.
+## 2. Current anchors
 
-## 2. Synchronization
+```text
+latest functional runtime baseline: PR #36 / migration 014
+previous functional baseline: PR #35 / migration 013
+static CI baseline: PR #25
+documentation governance baseline: PR #28 + permanent rules/handoff
+local automation foundation: PR #29
+local automation corrected baseline: PR #30
+durable functional capability coverage: through PR #36
+migrations: 001–014
+system roles: 4
+system permissions: 35
+built-in themes: 3
+required CSS assets: 10
+```
+
+Current stable HEAD определяется через `origin/main`. Documentation-only commits не считаются runtime-tested.
+
+## 3. Stable synchronization
 
 ```powershell
 Set-Location -LiteralPath 'C:\Project\ASU-VCH'
@@ -30,23 +44,52 @@ git rev-list --left-right --count HEAD...origin/main
 git status --short
 ```
 
-Expected: clean worktree, equal heads, divergence `0 0`.
+Ожидается clean worktree, `HEAD=origin/main`, divergence `0 0`.
 
-## 3. Initialization / repeat
+## 4. Runtime initialization
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1'
+```
+
+Repeat installer:
+
+```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Initialize-Local.ps1' -SkipDeploy
 ```
 
-For current merged schema expect migrations 001–014 and no additional migration on repeat.
+Для synchronized current `main` ожидается:
 
-## 4. Current functional verification
+```text
+Применено миграций: 14
+Новых миграций нет.
+```
 
-Military Positions Directory v1 runner:
+## 5. Latest PR #36 functional verification baseline
+
+Exact accepted runtime head: `c647a933011873048866c75978d3f506634011fd`.
+
+```text
+migration 014: applied
+repeat initialization: PASS / no new migration
+PHP lint: 171 PASS
+Military Positions DB/runtime checker: 167 PASS
+HTTP smoke: 200,200,302
+asu-blue desktop: PASS
+asu-light-blue desktop: PASS
+asu-evgeniya-rostova desktop: PASS
+mutual exclusion: PASS
+UI-F04/UI-F05: CLOSED
+open findings: 0
+real Staffing data mutation: NONE
+mobile: OUT OF SCOPE / NOT RUN
+```
+
+Runner:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Test-MilitaryPositionsDirectoryV1.ps1' `
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File '.\tools\Test-MilitaryPositionsDirectoryV1.ps1' `
   -RepositoryPath 'C:\Project\ASU-VCH' `
   -ExpectedHead <EXACT_HEAD> `
   -RunInitialization `
@@ -54,36 +97,115 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\tools\Test-MilitaryPo
   -AllowInvalidCertificate
 ```
 
-Latest accepted runtime evidence on `c647a933011873048866c75978d3f506634011fd`:
+Later documentation-only/merge commits are not re-labelled as runtime-tested.
+
+### Historical PR #24 baseline
 
 ```text
-inventory 38/38
-PHP lint 171 PASS
-migrations 001–014
-DB/runtime 167 PASS
-HTTP 200,200,302
-three desktop themes PASS
-mutual exclusion PASS
-open findings 0
-mobile NOT RUN / OUT OF SCOPE
+migration 012: applied
+repeat installer: 12 / no new migrations
+Military Ranks source/loader/service checks: PASS
+Military Ranks DB regression: PASS
+deploy/source parity: PASS
+HTTP smoke: PASS
+manual desktop: PASS
+working tree: clean
+mobile: OUT OF SCOPE / NOT RUN
 ```
 
-Do not treat a later docs/merge commit as a new runtime-tested head.
+Evidence:
 
-## 5. Static GitHub Actions
+- `testing/MILITARY-RANKS-DIRECTORY-V2-TEST-REPORT.md`;
+- `testing/MILITARY-RANKS-DIRECTORY-V2-MANUAL-DESKTOP-ACCEPTANCE-2026-08-03.md`;
+- `review/MILITARY-RANKS-DIRECTORY-V2-PR-FINAL-REVIEW.md`.
 
-Workflow: `ASU-VCH Static Verification`.
+## 6. GitHub Actions inspection
 
-Check event, branch, exact SHA, conclusion and job steps. Static CI does not replace local MySQL/deploy/HTTP/visual testing. Required status check is not enabled.
+Workflow:
 
-## 6. Documentation-only validation
+```text
+ASU-VCH Static Verification
+job: asu-vch-static-verification
+```
 
-For a docs branch:
+GitHub UI:
+
+1. открыть **Actions**;
+2. выбрать `ASU-VCH Static Verification`;
+3. проверить event, branch, exact SHA, conclusion и job steps;
+4. для manual diagnostics использовать **Run workflow** на `main`;
+5. не считать `Re-run all jobs` новым `workflow_dispatch` event.
+
+Historical evidence:
+
+```text
+PR #25 push run: 30837637886 / SUCCESS
+PR #25 workflow_dispatch run: 30839122892 / SUCCESS
+PR #30 exact-head PR run: 31024419654 / SUCCESS
+PR #30 post-merge push run: 31025264683 / SUCCESS
+PR #36 post-merge main run: SUCCESS
+required status check: NOT ENABLED
+branch protection/settings changed: NO
+```
+
+Static CI не заменяет local MySQL, deploy, HTTP/browser или manual visual testing.
+
+## 7. GitHub Local Automation
+
+Canonical guide:
+
+- [GitHub Local Automation](../tools/github-automation/README.md)
+
+Installer modes:
+
+```text
+Install
+Doctor
+Repair
+```
+
+Cleanup modes:
+
+```text
+Doctor
+Verify
+Delete
+```
+
+Cleanup exact gates:
+
+```text
+main exact SHA
+merged PR exact head
+exact merge commit
+successful post-merge push run/job/steps
+canonical post-merge PASS evidence
+remote branch exact SHA
+branch ahead of main = 0
+unique unmerged commits = 0
+ApprovalToken == BranchName case-sensitive
+```
+
+`Delete` разрешён только после отдельного owner approval. Единственная разрешённая destructive-команда helper:
+
+```text
+git push origin --delete <approved-branch>
+```
+
+Helper удаляет только утверждённую remote-ветку. Local branch cleanup остаётся отдельным controlled local step после `fetch --prune`. Force deletion запрещён.
+
+Native PR #30 evidence (`58 PASS / 0 FAIL`) не является доказательством реальной GitHub/Codex authentication, account verification или paid API request.
+
+## 8. Documentation-only validation
+
+Для approved documentation branch:
 
 ```powershell
+Set-Location -LiteralPath 'C:\Project\ASU-VCH'
+git status --short
 git fetch --prune origin
-git switch <docs-branch>
-git pull --ff-only origin <docs-branch>
+git switch <approved-docs-branch>
+git pull --ff-only origin <approved-docs-branch>
 git rev-parse HEAD
 git merge-base origin/main HEAD
 git rev-list --left-right --count origin/main...HEAD
@@ -92,17 +214,24 @@ git diff --check origin/main...HEAD
 git status --short
 ```
 
-Review:
+Проверяются:
 
-- exact Markdown allowlist;
-- behind main = 0 before PR/merge gate;
-- baseline facts and historical semantic classification;
-- relative links and stale assertions;
-- migrations 001–014 / 35 permissions;
-- no secret or Mobile PASS claims;
-- no runtime/config/DB/migration/workflow/theme/deploy/tool changes.
+- exact approved path allowlist;
+- Markdown-only diff;
+- branch behind `origin/main` = 0;
+- baseline facts and historical anchors;
+- relative links;
+- stale current assertions;
+- migration 001–014 consistency;
+- system permissions 35 consistency;
+- required CSS asset count 10;
+- separated functional/CI/governance/local-automation baseline;
+- terminal anti-recursion invariant;
+- production/instance secret boundary;
+- no Mobile PASS claim;
+- absence of runtime/config/database/migration/workflow/theme/deploy/tool diff.
 
-## 7. Branch cleanup
+## 9. Branch inventory and cleanup
 
 ```powershell
 git fetch --prune origin
@@ -111,20 +240,59 @@ git branch -vv
 git branch --merged origin/main
 ```
 
-Before deletion: exact main/tip, reachability, unique commits, PR/post-merge state and exact owner-approved deletion batch.
+Для каждой branch проверяются exact tip, reachability, unique commits, PR/post-merge state и exact owner-approved deletion batch.
+
+`SAFE TO DELETE` не является permission. Remote deletion выполняется первой, затем `git fetch --prune` и отдельно approved local deletion через `git branch -d`.
+
+Current branch inventory не хранится как permanent living field.
+
+Standing maintenance authorization for `PROJECT-WORKING-RULES.md`/`CHAT-HANDOFF.md` does **not** include deletion of its documentation branch.
+
+## 10. Historical governance snapshots
+
+PR #21 cleanup и PR #23 documentation audit сохраняются как immutable dated evidence. Их `main only` snapshots не запрещают позднейшие approved branches.
+
+Historical gate markers не являются текущими задачами:
 
 ```text
-SAFE TO DELETE != AUTHORIZED TO DELETE
+HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
 ```
 
-Remote deletion first, then `fetch --prune`; no force deletion without explicit authorization. Standing maintenance of rules/handoff does **not** authorize its docs-branch deletion.
+Lifecycle новейшего documentation PR остаётся в GitHub и не требует recursive post-merge Markdown closure.
 
-## 8. Local automation
+## 11. Security boundaries
 
-Canonical guide: `../tools/github-automation/README.md`. Native PowerShell 5.1 regression baseline is `58 PASS / 0 FAIL` within tooling scope; real GitHub/Codex authentication and paid API request are not inferred.
+Не публикуются:
 
-## 9. Secrets
+- production credentials;
+- instance/environment credentials;
+- real temporary user passwords;
+- session identifiers/data;
+- `config/local.php`;
+- GitHub tokens;
+- OpenAI API keys;
+- OAuth/device codes;
+- cookies;
+- private keys.
 
-Do not publish production/instance credentials, `config/local.php`, sessions, tokens, API keys, OAuth/device codes, private keys or real temporary passwords.
+Existing public local-only fixture:
 
-Approved local-only fixture `Admin / 12315` remains local/bootstrap-only and requires password replacement; it is not production credential material.
+```text
+username: Admin
+password: 12315
+environment: local only
+must_change_password: true
+```
+
+Он не является production/instance secret, запрещён для production и иных accounts/environments, требует смены при первом входе и не отменяет запрет публикации real temporary passwords.
+
+## 12. Permanent gates
+
+```text
+ordinary Pull Request: separate owner permission unless precisely pre-authorized for the task
+ordinary merge: separate owner permission unless precisely pre-authorized for the task
+branch deletion: always separate explicit owner permission
+required status check: not enabled
+mobile PASS: not claimed
+recursive lifecycle-only Markdown closure: prohibited
+```

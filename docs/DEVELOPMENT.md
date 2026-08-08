@@ -1,92 +1,194 @@
 # Правила разработки
 
-Canonical permanent governance: [PROJECT-WORKING-RULES.md](PROJECT-WORKING-RULES.md). Этот файл описывает development conventions и не отменяет более строгие gates постоянного регламента.
+Canonical permanent operational governance: [PROJECT-WORKING-RULES.md](PROJECT-WORKING-RULES.md). Этот файл описывает development conventions и не отменяет более строгие правила постоянного регламента.
 
 ## Source of truth
 
-Repository `ClaytonKinnane/ASU-VCH` on GitHub is source of truth. Current SHA/branches/PR/Actions are checked live. Local clone is for synchronization, deploy and testing within approved scope.
+Repository `ClaytonKinnane/ASU-VCH` on GitHub is the source of truth. Changes are made in separate branches. Local clone is used for synchronization, deploy and testing, not unapproved source editing.
 
-## Mandatory material process
+## Mandatory process
 
 ```text
 Research → Analysis → Architecture → Specification → Review → Approval
-→ Implementation → Testing/Validation → Commit → Push → Pull Request
-→ exact-head Actions → Final PR Review → Merge approval → Merge
-→ post-merge verification → Branch deletion approval → Branch deletion
+→ Implementation → Testing → Commit → Push → Pull Request
+→ Final PR Review → separate merge approval → Merge
+→ post-merge verification → separate branch deletion approval
 ```
 
-Implementation before Approval is prohibited. Ordinary PR, merge and deletion are separate gates unless the owner has already issued a precise task-level authorization. Merge never implicitly authorizes deletion.
+Implementation is prohibited before approved Architecture, Specification, Review and explicit owner Approval.
 
-## Documentation-only work
+Pull Request creation, merge and branch deletion are separate gates. Merge approval does not include deletion approval. A precise task-level owner authorization may pre-authorize named PR/review/merge gates, but branch deletion remains separately explicit.
 
-Documentation reconciliation requires:
+## Change classes
 
-- exact base and branch;
-- Markdown-only allowlist;
-- current-state/historical semantic classification;
-- relative-link/stale-claim/secret/mobile review;
-- no runtime/config/DB/migration/workflow/theme/tool diff;
-- exact-head PR verification and Final PR Review before merge.
+### Runtime increment
 
-Documentation-only commit is not runtime-tested.
+Applicable evidence includes exact scope preflight, backup for schema/data changes, deploy preserving local config, PHP lint, installer/repeat installer, integration/regression checks, parity, HTTP smoke and Specification-defined manual acceptance.
+
+### Documentation-only increment
+
+Required:
+
+- exact approved path allowlist;
+- Markdown-only diff;
+- no runtime/config/database/migration/workflow/theme/tool diff;
+- current baseline and historical-anchor review;
+- relative-link validation;
+- stale-current-state scan;
+- secret/mobile claim review;
+- Final PR Review before merge.
+
+Documentation-only commit is not a runtime-tested head.
 
 ### Standing operational-doc exception
 
-Routine maintenance limited to:
+Routine documentation-only maintenance limited to:
 
 ```text
 docs/PROJECT-WORKING-RULES.md
 docs/CHAT-HANDOFF.md
 ```
 
-may proceed without a repeated permission prompt according to `PROJECT-WORKING-RULES.md`, including documentation PR and merge after PASS. **Branch deletion is excluded and always separately authorized.** Any third path needs task-level authorization.
+may proceed without a repeated permission prompt as defined in `PROJECT-WORKING-RULES.md`, including its own documentation branch, commits/push, PR, exact-head Actions, Final PR Review, normal merge after PASS and post-merge verification. **Branch deletion is excluded and always requires separate explicit owner authorization.** Any third path requires task-level authorization.
 
-## Documentation semantic model
+## Terminal documentation model
 
-- living docs = durable current merged state;
-- target docs may be broader than runtime;
-- historical Architecture/Specification/Review/Approval/Implementation/Testing = gate snapshots;
-- GitHub/Git = mutable lifecycle authority.
+### Documentation classes
+
+**Living documentation** describes durable current merged project state. It must be updated when that durable state changes or when a real living-content defect is found.
+
+**Historical gate records** capture evidence, permissions, decisions and status at a specific stage. They include:
+
+- Architecture;
+- Specification;
+- Formal Review;
+- Approval;
+- Implementation;
+- Validation/Test Report;
+- Final PR Review.
+
+**GitHub lifecycle evidence** is the canonical source for mutable repository state:
+
+- current `main` and PR base/head SHA;
+- open, closed and merged PR state;
+- review submissions and review threads;
+- Actions runs, jobs and logs;
+- current branch inventory;
+- merge and branch-deletion timeline events.
+
+### Historical interpretation
+
+A gate-scoped statement remains historical evidence after later gates complete. Historical `PENDING`, `NEXT GATE`, `NOT AUTHORIZED`, `NOT PERFORMED` and equivalent markers do not become current tasks merely because they are present in a repository file.
+
+Canonical rule:
 
 ```text
 HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK
 ```
 
-Do not create recursive documentation PRs solely to copy the previous documentation PR's own merge/run/cleanup lifecycle.
+Before declaring documentation stale or a task open, an audit must determine:
 
-## Runtime validation expectations
+1. the semantic class of the document or section;
+2. the date/gate to which the statement applies;
+3. the current canonical source of truth;
+4. whether the statement is currently actionable;
+5. whether a later canonical source supersedes it.
 
-Applicable checks include backup before schema/data changes, deploy preserving local config, PHP lint, installer/repeat installer, DB integration/regression, source/deploy parity, HTTP/browser and specification-defined visual/manual acceptance.
+Directory placement alone does not determine semantics.
 
-Static CI is supplementary and does not replace local runtime evidence. Mobile PASS requires actual mobile testing.
+### Terminal invariant
 
-## Branch conventions
+The lifecycle of the newest documentation Pull Request is not copied back into living Markdown solely to record its own review, merge, Actions run or branch cleanup.
 
-- `main` — stable merged state;
-- `feature/...` — functional work;
-- `bugfix/...` — fixes;
-- `docs/...` — documentation;
-- no permanent feature branch.
+Architecture, Specification, Formal Review, Approval, Implementation, Validation and Final PR Review are not rewritten merely because later gates complete.
 
-Completed branches are retained until separately approved deletion. Before deletion verify exact tips, reachability/unique commits, PR/post-merge state and exact approved batch. `SAFE TO DELETE` is not permission.
+A missing Markdown copy of the newest documentation PR lifecycle is not a documentation defect when the authoritative evidence exists in GitHub PR timeline, reviews, Actions and branch inventory.
 
-## Local environment
+Recursive post-merge documentation closure is prohibited when the only missing information is that lifecycle copy.
+
+A new documentation increment remains valid for a genuine durable living-state error, broken normative rule, incorrect link, security/claim defect or other substantive content problem.
+
+This terminal model changes documentation interpretation only. It does not weaken or bypass the mandatory owner-gated process, Final PR Review, separate merge approval, post-merge verification or separately approved branch cleanup.
+
+## GitHub Actions Static Verification
+
+Stage A is implemented through `.github/workflows/static-verification.yml`.
+
+When applicable, it provides an additional signal for:
+
+- Pull Requests to `main`;
+- pushes to `main`;
+- manual `workflow_dispatch` diagnostics;
+- `git diff --check`;
+- tracked PHP lint;
+- 9 explicit CI-safe checker'ов;
+- final clean-worktree verification.
+
+Security boundary:
 
 ```text
-repo: C:\Project\ASU-VCH
-deploy: C:\OSPanel\home\asu-vch.local
-Apache root: C:\OSPanel\home\asu-vch.local\public
-PowerShell: 5.1
-PHP: 8.5.4
-MySQL: 8.4.x
+permissions: contents read
+secrets/environments: none
+write permissions: none
+required status check: not enabled
+branch protection mutation: not performed
 ```
 
-Deploy preserves `config/local.php`. Secrets never enter Git/logs.
+Static CI does not replace local MySQL, migrations, installer, deploy, source/deploy parity, HTTP/browser or manual visual acceptance. A successful static run cannot be used to claim unperformed functional tests as PASS.
 
-## Technology/process constraints
+Stage B — required check, conversation-resolution rule or other branch-protection settings — requires separate Architecture, Specification, Review and Approval.
 
-- no MySQL schema change without migration and approved design;
-- no force-push/rebase remediation unless explicitly authorized;
-- third-party dependency requires justification and Approval;
-- native process exit code is authoritative in PowerShell automation;
-- mobile is `NOT RUN / OUT OF SCOPE` unless specifically tested.
+## Branches
+
+- `main` is stable merged state;
+- `feature/...` for functional work;
+- `bugfix/...` for fixes;
+- `docs/...` for documentation;
+- no permanent feature branch;
+- completed branch retained until separately approved cleanup.
+
+Before deletion:
+
+1. fresh inventory;
+2. reachability/unique-commit proof;
+3. PR and post-merge state;
+4. exact owner-approved batch;
+5. safe deletion without force when applicable;
+6. final main/inventory verification.
+
+`SAFE TO DELETE` is not authorization.
+
+## Local test clone
+
+```text
+C:\Project\ASU-VCH
+```
+
+Allowed: fetch/prune, approved branch switch, SHA/divergence/worktree checks, controlled deploy, installer, lint, checkers, HTTP/browser testing and separately approved cleanup.
+
+Without scope approval prohibited: local source/doc editing, project commit/push, secret disclosure and force branch deletion.
+
+## Repository versus web root
+
+```text
+Git clone:   C:\Project\ASU-VCH
+Deploy root: C:\OSPanel\home\asu-vch.local
+Apache root: C:\OSPanel\home\asu-vch.local\public
+```
+
+Deploy preserves `config/local.php`. SQL backup is required before schema/data migration, subject to explicit documented deviations.
+
+## Commit prefixes
+
+`feat:`, `fix:`, `style:`, `docs:`, `refactor:`, `test:`, `chore:`.
+
+## Technology constraints
+
+- Windows PowerShell 5.1;
+- local PHP 8.5.4;
+- MySQL 8.4.x;
+- GitHub static runner uses PHP 8.5.x independently;
+- third-party dependencies require justification and Approval;
+- secrets/local parameters are not stored in Git;
+- architecture decisions are not introduced silently;
+- mobile is not declared tested without actual acceptance.

@@ -4,34 +4,65 @@
 
 ```text
 system roles: 4
-system permissions: 35
+current system permissions after migration 014: 35
 owner wildcard: system.*.*
 ```
 
-Roles: `system_owner`, `administrator`, `operator`, `viewer`.
+System roles: `system_owner`, `administrator`, `operator`, `viewer`.
 
-## Owner / user lifecycle
+## First owner
 
-First user of empty installation becomes `system_owner`; public registration closes after successful owner creation. Last active owner protections remain in force. Ordinary role management cannot assign `system_owner`.
+First user of an empty installation is created through bootstrap registration and transactionally receives `system_owner`. Public registration closes after successful owner creation.
 
-User lifecycle includes pending/approval/rejection, block/unblock, archive/restore and required temporary-password change. Authorization never bypasses authentication/status, CSRF, validation, revisions, transactions or DB invariants.
+Invariants:
 
-## Domain permissions
+- one active owner;
+- last active owner cannot be blocked, archived or deprived of critical access;
+- ordinary role management cannot assign `system_owner`;
+- later users do not receive owner automatically.
 
-Migration 009 added six `organization.structures.*` permissions.
+## Authorization
 
-Migration 013 added six Staffing permissions:
+Permission never bypasses authentication/status, required password change, CSRF, validation, transactions, DB invariants, revisions, audit, privacy or last-owner protection.
+
+Unauthorized authenticated access returns themed HTTP 403. Anonymous admin access redirects to login.
+
+## User lifecycle
+
+Implemented: pending creation with reason, approval/activation, rejection audit, block/unblock, archive/restore, required temporary-password change and status-based login prohibition. Restore does not activate automatically.
+
+## Organizational Structure permissions
+
+Migration 009 added six `organization.structures.*` permissions. They are not auto-assigned to ordinary roles; owner access is via wildcard.
+
+## Reference directories
 
 ```text
-staffing.registers.view
-staffing.registers.create
-staffing.registers.update
-staffing.registers.publish
-staffing.registers.archive
-staffing.registers.history
+/admin/directories/military-ranks.php
+/admin/directories/organizational-elements.php
+/admin/directories/military-occupational-specialties.php
 ```
 
-Migration 014 added four Military Positions Directory permissions:
+Current behavior for these routes:
+
+- owner-only through `system.*.*`;
+- GET-only/read-only user routes;
+- prepared statements and escaped output;
+- safe official external links;
+- no mutation controls/endpoints;
+- ordinary roles without wildcard receive HTTP 403.
+
+### Military Ranks v2
+
+Migration 012 adds no permissions. Route supports current v2, historical/superseded v1, version switch, search/filtering and source evidence.
+
+Reference-owned compatibility service is read-only and evaluates same-version composition/rank compatibility. It does not grant Staffing or Organization write access.
+
+Migrations 010, 011 and 012 add no permissions. Migration 013 adds six `staffing.registers.*` permissions. Migration 014 adds four managed Military Positions permissions, producing the current baseline of 35.
+
+### Managed Military Positions Directory v1
+
+Migration 014 adds:
 
 ```text
 directories.military_positions.view
@@ -40,49 +71,40 @@ directories.military_positions.publish
 directories.military_positions.history
 ```
 
-Migration 014 performs no automatic non-owner grants. Owner continues via `system.*.*`.
-
-## Reference routes
-
-Owner-only/read-only catalog routes remain for:
-
-```text
-/admin/directories/military-ranks.php
-/admin/directories/organizational-elements.php
-/admin/directories/military-occupational-specialties.php
-```
-
-Managed Military Positions is different:
-
-```text
-/admin/directories/military-positions.php
-/admin/directories/military-positions/version.php
-/admin/directories/military-positions/history.php
-```
-
-Its navigation/read access is permission-aware; draft mutations require `manage`, publication requires `publish`, history requires applicable view/history access. Mutations are POST-only, permission-first, CSRF-protected, revision-guarded, transactional and PRG-redirected.
+No permission is automatically assigned to a non-owner role. Owner continues to use `system.*.*`. `/admin/content.php` and `/admin/directories.php` expose the module only to owner or a holder of the view permission. Read pages require view/history as applicable; every mutation is POST-only, permission-first, CSRF-protected, revision-guarded, transactional and PRG-redirected.
 
 ## Scope boundaries
 
-- Military Positions catalog is not Staffing and creates no person assignment.
-- Staffing v1 does not claim occupancy/vacancy facts.
-- Public VUS is not personal military accounting and is not automatically linked to position/rank/equipment/personnel.
-- Military Ranks semantics do not create Staffing assignments.
+- Military Positions is not a staffing schedule and creates no assignments.
+- Public VUS is not personal military accounting and is not automatically linked to positions/ranks/equipment/personnel.
+- Military Ranks v2 derived semantics do not create Staffing assignments or Organization write ownership.
 
-## Verification
+## Mutating operation security
 
-Military Positions runtime/DB/HTTP verification completed on exact runtime head `c647a933011873048866c75978d3f506634011fd` as part of the `167 PASS` gate with HTTP `200/200/302`, four permission/no-grant checks and zero open findings.
+Other domain mutations are POST-only, permission + CSRF protected, validate ownership/lifecycle/revision, run in transactions, use prepared statements and record audit/events as specified.
+
+## Latest verification
 
 ```text
 system roles: 4
-system permissions: 35
+current system permissions after migration 014: 35
 organization permissions: 6
 staffing permissions: 6
 military-position directory permissions: 4
-automatic non-owner grants from 014: 0
-mobile: NOT RUN / OUT OF SCOPE
+ordinary automatic organization assignments: 0
+owner access to read-only reference directories: PASS
+ordinary-role HTTP 403 for owner-only reference routes: PASS
+Military Ranks current/historical read-only boundary: PASS
+automatic non-owner grants from migration 014: 0
+Military Positions runtime/DB/HTTP verification: PASS on exact runtime head c647a933011873048866c75978d3f506634011fd
+Military Positions DB/runtime checker: 167 PASS
+HTTP smoke: 200,200,302
+security regressions: PASS
+mobile: OUT OF SCOPE / NOT RUN
 ```
 
-## Secrets
+## Secret terminology
 
-Production/instance credentials, sessions, tokens, private keys, `config/local.php` and real temporary user passwords are prohibited in docs/logs. Public local-only fixture `Admin / 12315` is restricted to local bootstrap and must be changed; it must not be reused as production/instance credential.
+Production/instance credentials, session data, tokens, private keys, `config/local.php` and real temporary user passwords are prohibited in documentation/logs.
+
+The approved public `Admin / 12315` local-only fixture is not a production/instance secret, is restricted to local bootstrap, requires first-login replacement and must not be reused for other accounts/environments.
