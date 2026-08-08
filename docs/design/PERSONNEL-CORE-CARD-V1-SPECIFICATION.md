@@ -540,6 +540,18 @@ Existing theme components are reused. No hardcoded theme colors and no new theme
 - `Вся история` находится в heading-row блока истории изменений;
 - corrective layout не меняет состав данных, lifecycle, revision, history или identifier semantics.
 
+### Identifier action/card convention — corrective acceptance
+
+Для форм и вложенных плиток идентификаторов:
+
+- submit-действия форм добавления, замены и завершения идентификатора размещаются в отдельной action-row, выравниваются по левому краю и имеют ширину по содержимому, а не на всю форму;
+- запись идентификатора в карточке военнослужащего отображается как нейтральная вложенная карточка, визуально подчинённая родительской секции `Идентификаторы`;
+- состояние записи передаётся через status badge `Действует` или `История`, а не через специальный акцентный фон всей вложенной карточки;
+- название идентификатора и группа действий находятся в одной heading-row; значение, период и примечание выводятся ниже единым информационным блоком;
+- для действующего идентификатора действия называются `Заменить значение` и `Завершить действие`, имеют одинаковую высоту, ширину по содержимому и компактный одинаковый gap;
+- для исторического идентификатора lifecycle actions не отображаются;
+- корректировка не добавляет hardcoded theme colors и не меняет identifier semantics, историю значений, правила never-reuse или запрет физического удаления.
+
 Desktop acceptance: all three managed themes.
 
 Responsive markup required; mobile actual test remains `NOT RUN / OUT OF SCOPE`.
@@ -707,6 +719,8 @@ For each current theme:
 - visible Personnel UI uses Russian labels and does not expose raw internal event/target codes or unnecessary English domain names;
 - summary actions are grouped clearly and working card sections have compact consistent top spacing;
 - identifier add action has normal action width next to its section heading and the identifier retention explanation is user-facing Russian text;
+- identifier form submit controls are compact content-width actions rather than full-width bars;
+- nested identifier cards are visually subordinate to the parent section, use the status badge for lifecycle state and expose the explicit actions `Заменить значение` / `Завершить действие` when active;
 - narrow desktop/window responsive behavior as observation only;
 - no Mobile PASS claim.
 
@@ -768,7 +782,8 @@ Runtime manual testing on the local instance may create synthetic records accord
 21. production deployment not claimed;
 22. Final PR Review later has no blocking/major findings;
 23. visible Personnel UI uses Russian user-facing labels and does not expose raw internal event/target codes;
-24. Personnel card corrective layout passes: compact section spacing, clear action grouping and normal-width identifier action.
+24. Personnel card corrective layout passes: compact section spacing, clear action grouping and normal-width identifier action;
+25. identifier corrective UI passes: compact form submit, neutral nested entry, status conveyed by badge and explicit lifecycle action labels.
 
 ## 13. Explicit non-requirements
 

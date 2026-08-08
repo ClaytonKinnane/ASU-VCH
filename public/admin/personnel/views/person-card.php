@@ -25,9 +25,15 @@ foreach ($activeIdentifiers as $identifier) {
         .personnel-section-note { margin: 0 0 14px; color: var(--text-secondary); }
         .personnel-section .organization-form-grid { margin-top: 0; }
         .personnel-history-list { margin: 0; padding-left: 20px; }
+        .personnel-identifier-card { display: block; padding: 14px 16px; }
+        .personnel-identifier-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 8px 0 10px; }
+        .personnel-identifier-heading h3 { margin: 0; }
+        .personnel-identifier-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+        .personnel-identifier-actions .secondary-button { width: auto; }
+        .personnel-identifier-details p { margin: 4px 0; }
         @media (max-width: 980px) {
             .personnel-summary-card { grid-template-columns: 1fr; }
-            .personnel-card-actions { justify-content: flex-start; }
+            .personnel-card-actions, .personnel-identifier-actions { justify-content: flex-start; }
         }
     </style>
 </head>
@@ -80,20 +86,22 @@ foreach ($activeIdentifiers as $identifier) {
         <?php if ($identifiers === []): ?><p>Идентификаторы пока не внесены.</p><?php else: ?>
         <div class="organization-list">
             <?php foreach ($identifiers as $identifier): ?>
-                <article class="organization-card glass-tile">
-                    <div>
-                        <span class="status-badge <?= $identifier['valid_to'] === null ? '' : 'is-muted' ?>"><?= $identifier['valid_to'] === null ? 'Действует' : 'История' ?></span>
+                <article class="organization-card personnel-identifier-card">
+                    <span class="status-badge <?= $identifier['valid_to'] === null ? '' : 'is-muted' ?>"><?= $identifier['valid_to'] === null ? 'Действует' : 'История' ?></span>
+                    <div class="personnel-identifier-heading">
                         <h3><?= e((string) $identifier['type_name']) ?></h3>
+                        <?php if ($person['record_status'] === 'active' && $identifier['valid_to'] === null): ?>
+                        <div class="personnel-identifier-actions" aria-label="Действия идентификатора">
+                            <a class="secondary-button" href="/admin/personnel/identifiers/replace.php?personnel_id=<?= (int) $person['id'] ?>&type_id=<?= (int) $identifier['identifier_type_id'] ?>">Заменить значение</a>
+                            <a class="secondary-button" href="/admin/personnel/identifiers/end.php?personnel_id=<?= (int) $person['id'] ?>&type_id=<?= (int) $identifier['identifier_type_id'] ?>">Завершить действие</a>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="personnel-identifier-details">
                         <p><strong><?= e((string) $identifier['value']) ?></strong></p>
                         <p>Период: <?= e((string) ($identifier['valid_from'] ?? 'не указан')) ?> — <?= e((string) ($identifier['valid_to'] ?? 'действует')) ?></p>
                         <?php if ($identifier['note'] !== null): ?><p><?= e((string) $identifier['note']) ?></p><?php endif; ?>
                     </div>
-                    <?php if ($person['record_status'] === 'active' && $identifier['valid_to'] === null): ?>
-                    <div>
-                        <a class="secondary-button" href="/admin/personnel/identifiers/replace.php?personnel_id=<?= (int) $person['id'] ?>&type_id=<?= (int) $identifier['identifier_type_id'] ?>">Заменить</a>
-                        <a class="secondary-button" href="/admin/personnel/identifiers/end.php?personnel_id=<?= (int) $person['id'] ?>&type_id=<?= (int) $identifier['identifier_type_id'] ?>">Завершить</a>
-                    </div>
-                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
         </div>

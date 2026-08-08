@@ -17,6 +17,8 @@ $action = match ($mode) { 'replace' => '/admin/personnel/identifiers/replace.php
         .personnel-date-control input[type="date"]::-webkit-calendar-picker-indicator { width: 0; height: 0; margin: 0; padding: 0; opacity: 0; pointer-events: none; }
         .personnel-date-picker { width: 44px; min-width: 44px; height: 42px; min-height: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
         .personnel-date-picker svg { pointer-events: none; }
+        .personnel-form-actions { display: flex; justify-content: flex-start; align-items: center; }
+        .personnel-form-actions .primary-button { width: auto; }
     </style>
 </head>
 <body>
@@ -63,7 +65,7 @@ $action = match ($mode) { 'replace' => '/admin/personnel/identifiers/replace.php
                 </label>
                 <label>Причина<input name="reason" maxlength="500"></label>
             <?php endif; ?>
-            <div class="span-2"><button class="primary-button" type="submit"><?= e($title) ?></button></div>
+            <div class="span-2 personnel-form-actions"><button class="primary-button" type="submit"><?= e($title) ?></button></div>
         </form>
     </section>
 </div></main>
