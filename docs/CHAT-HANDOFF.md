@@ -5,8 +5,8 @@
 1. Прочитать `docs/PROJECT-WORKING-RULES.md` и этот файл.
 2. Проверить live GitHub: `main`, remote branches, open PR, open Issues, relevant Actions.
 3. Сопоставить live state с snapshot ниже; GitHub/Git имеет приоритет для mutable lifecycle.
-4. Проверить, появился ли новый approved increment после этого snapshot.
-5. Если active implementation отсутствует, не начинать новый material scope без Research → Analysis → Architecture → Specification → Review → Approval.
+4. Если существует `design/personnel-core-card-v1`, продолжить с exact active gate этого increment и не перепрыгивать Approval.
+5. Не начинать Personnel runtime implementation до explicit owner Approval Architecture/Specification/Review и exact path allowlist.
 6. Не повторять уже действующие standing permissions для routine maintenance rules/handoff.
 
 ## 2. Repository / local environment
@@ -14,7 +14,7 @@
 ```text
 repository: ClaytonKinnane/ASU-VCH
 default branch: main
-main audit snapshot: b3dda6cae88072c1e74c25de28f7023a8d73620d
+selected Personnel design base: dadc2dd2c1151a797cfc2f6690bcf19b1f73e4b8
 local repository: C:\Project\ASU-VCH
 deploy: C:\OSPanel\home\asu-vch.local
 URL: https://asu-vch.local
@@ -25,171 +25,232 @@ MySQL: 8.4.x
 PowerShell: 5.1
 ```
 
-`main` SHA выше — snapshot 2026-08-08; всегда получить live value заново.
+Exact live `main` must always be re-read before the next material gate.
 
-## 3. Current durable state
+## 3. Current durable main state
 
 ```text
 latest functional PR: #36 / Military Positions Directory v1
 previous functional PR: #35 / Lowest Unit Staffing Structure v1
+latest docs PR: #37 / current-state reconciliation
 migrations: 001–014
 system roles: 4
 system permissions: 35
 themes: asu-blue, asu-light-blue, asu-evgeniya-rostova
 required CSS assets/theme: 10
-active product implementation increment: NONE
-open functional findings: 0
+open functional findings at baseline: 0
 production deployment: NOT PERFORMED
 mobile: NOT RUN / OUT OF SCOPE
 ```
 
-Current `main` tree equals PR #36 merge tree. После merge PR #36 были history-only noop/revert commits, которые восстановили exact tree; не переписывать `main`/history без отдельного explicit authorization.
+Current durable runtime remains through PR #36. Personnel runtime has not been implemented.
 
 ## 4. Completed recent functional increments
 
 ### Lowest Unit Staffing Structure v1 — PR #35
 
 ```text
-merge main anchor: 9ae05b9928903cc483ce415d7378b546e419264c
 migration: 013_lowest_unit_staffing_v1.sql
 status: MERGED
-post-merge Actions: SUCCESS
 ```
 
-Реализованы Staffing registers, version lifecycle, document metadata, stable individual slots, Organization/catalog pins, rank/VUS requirements, history and compare. Personnel, assignments, vacancy/occupancy and real staffing data remain outside v1.
+Implemented Staffing registers, version lifecycle, document metadata, stable individual slots, Organization/catalog pins, rank/VUS requirements, history and compare. Persons, assignments and actual occupancy remain outside Staffing v1.
 
 ### Military Positions Directory v1 — PR #36
 
 ```text
-base: main@9ae05b9928903cc483ce415d7378b546e419264c
 final feature head: 3756b2ec53a00f68d5c1f5c098d1c274f6b8d769
 runtime validated head: c647a933011873048866c75978d3f506634011fd
 merge commit: a6cfceb421fac8d0985e409770bb26a62fac0b14
 migration: 014_military_positions_directory_v1.sql
 status: MERGED
-post-merge Actions: SUCCESS
 ```
 
 Core behavior:
 
-- evolves existing position catalog; no second parallel catalog;
-- initial canonical draft: 24 synthetic entries / 9 explicit combined flags;
-- no automatic publication;
-- lifecycle `draft → published → superseded` and `draft → cancelled`;
-- stable identity, optimistic revision guards, logical archive/restore and append-only readable history;
-- four permissions `view/manage/publish/history`; no automatic non-owner grants;
-- existing Staffing pins/history preserved; archived canonical entries excluded from new selectors;
-- no VUS/rank/unit/person/equipment/occupancy properties in canonical position entity.
+- existing position catalog evolved in place;
+- canonical draft lifecycle without auto-publication;
+- stable identity and append-only history;
+- no automatic non-owner grants;
+- existing Staffing pins/history preserved;
+- no VUS/rank/unit/person/equipment/occupancy properties inferred from position name.
 
-Validation on exact runtime head:
+Validation claims belong only to exact runtime head `c647a933...`; later documentation/merge commits are not relabeled runtime-tested.
 
-```text
-TOTAL_INCREMENT_ALLOWLIST=38/38
-CORRECTIVE_ALLOWLISTS=12/12,9/9,8/8,9/9
-PHP_LINT=171_PASS
-MIGRATIONS=001-014
-INITIALIZATION_RUNS=2
-DB_RUNTIME_CHECKER=167_PASS
-HTTP_SMOKE=200,200,302
-ASU_BLUE_DESKTOP=PASS
-ASU_LIGHT_BLUE_DESKTOP=PASS
-ASU_EVGENIYA_ROSTOVA_DESKTOP=PASS
-MUTUAL_EXCLUSION=PASS
-UI_F04=CLOSED
-UI_F05=CLOSED
-OPEN_FINDINGS=0
-REAL_STAFFING_DATA_MUTATION=NONE
-MOBILE=NOT_RUN_OUT_OF_SCOPE
-```
+## 5. Remote branches / preservation rule
 
-Exact corrective history remains in `docs/design/MILITARY-POSITIONS-DIRECTORY-V1-*` and Git history; it does not need to be duplicated here.
-
-## 5. Branch inventory at 2026-08-08 audit
-
-Before the current documentation reconciliation, remote inventory was exactly:
+At the start of Personnel design, live remote inventory was:
 
 ```text
-main @ b3dda6cae88072c1e74c25de28f7023a8d73620d
+main @ dadc2dd2c1151a797cfc2f6690bcf19b1f73e4b8
 research/military-accounting-order-700 @ 69bf9c9e1609a40c7f4c27ff41b0ddeebabe2ffe
 ```
 
-Already deleted after explicit owner authorization:
+A new branch was then explicitly created for the selected next task:
 
 ```text
-design/military-positions-directory-v1
-feature/military-positions-directory-v1
-docs/handoff-lowest-unit-staffing-design
-docs/handoff-military-accounting-research
+design/personnel-core-card-v1
+base = main@dadc2dd2c1151a797cfc2f6690bcf19b1f73e4b8
 ```
 
-Do not infer that the research branch is safe to delete.
+Branch deletion is not authorized for this branch or the research branch.
 
 ## 6. Unique research branch
 
-`research/military-accounting-order-700` is diverged and currently has 8 commits unique relative to `main`. It contains six unique documents:
+`research/military-accounting-order-700` remains unique unmerged research for `PersonnelServiceAccounting` and must be preserved until intentional reconciliation/decision.
+
+Research target:
 
 ```text
-docs/research/military-accounting-order-700/README.md
-docs/research/military-accounting-order-700/OFFICIAL-SOURCE-REGISTER.md
-docs/research/military-accounting-order-700/LEGAL-AND-PROCESS-ANALYSIS.md
-docs/research/military-accounting-order-700/TARGET-ACCOUNTING-MODEL.md
-docs/research/military-accounting-order-700/ASU-VCH-MODERNIZATION-ROADMAP.md
-docs/research/military-accounting-order-700/SCOPE-DECISION-PERSONNEL-SERVICE-ONLY.md
+PersonnelServiceAccounting
+CitizenMilitaryAccounting = EXCLUDED
 ```
 
-Research target is `PersonnelServiceAccounting`; `CitizenMilitaryAccounting` is excluded. Research is not merged implementation and requires reconciliation/decision before any deletion or implementation use.
+The Personnel design may reuse/reconcile relevant ideas but must not claim the research branch itself was merged or approved as runtime.
 
-## 7. Current planning stage
+## 7. New owner decision — Personnel target
+
+On 2026-08-08 the owner selected the next product direction: block «Военнослужащие».
+
+Owner provided four document templates without real servicemember values:
 
 ```text
-ACTIVE_FUNCTIONAL_INCREMENT=NONE
-ACTIVE_MATERIAL_TECHNICAL_INCREMENT=NONE
-NEXT_PRODUCT_INCREMENT=NOT_SELECTED
+Анкета
+Индивидуальные данные военнослужащих
+Объективка
+Контрольно-розыскная карта на военнослужащего
+```
+
+Project decision:
+
+- ASU-VCH target Personnel model may contain the full necessary set of active-servicemember data, including medical, physical-identification, legal, financial, digital and special-case data when required by the relevant military process;
+- sensitivity does not remove a data category from the target model;
+- who may access which data will later be governed by a separately designed role/authority model based on orders/other approved authority documents;
+- fine-grained Personnel security is postponed to a future increment;
+- the current objective is a working Personnel data/accounting prototype;
+- military position is not automatically a Security role;
+- paper/report forms are projections of one canonical Personnel model, not independent duplicate stores;
+- permanent/temporal person facts are separate from situational case snapshots.
+
+Future access conclusions are stored in:
+
+```text
+docs/design/PERSONNEL-ACCESS-FUTURE-DESIGN-NOTES.md
+```
+
+## 8. Active design increment
+
+```text
+ACTIVE_DESIGN_INCREMENT=Personnel Core Card v1
+DESIGN_BRANCH=design/personnel-core-card-v1
+BASE_SHA=dadc2dd2c1151a797cfc2f6690bcf19b1f73e4b8
+ACTIVE_RUNTIME_IMPLEMENTATION=NONE
 NEXT_IMPLEMENTATION_APPROVAL=NONE
 ```
 
-Potential future directions are planning only: Personnel Core/card, Staffing assignments, common Documents/Orders, common Audit, reporting/import/export, production deployment, branch protection Stage B and separate mobile verification.
-
-## 8. Permanent operating rules
-
-Ordinary material work uses documentation-first lifecycle and exact fail-closed gates. Mobile PASS is prohibited without actual mobile acceptance. Production deploy is never inferred.
-
-Routine updates of only:
+Design documents:
 
 ```text
-docs/PROJECT-WORKING-RULES.md
-docs/CHAT-HANDOFF.md
+docs/domains/PERSONNEL.md
+docs/design/PERSONNEL-ACCESS-FUTURE-DESIGN-NOTES.md
+docs/design/PERSONNEL-CORE-CARD-V1-ARCHITECTURE.md
+docs/design/PERSONNEL-CORE-CARD-V1-SPECIFICATION.md
 ```
 
-may be performed without repeated owner permission prompts, including documentation branch/commits/PR/Final Review/merge when exact and documentation-only. **Branch deletion is excluded and always needs separate owner authorization.**
+Formal Review must be performed against an exact documentation head before owner Approval.
 
-## 9. Documentation model
+## 9. Personnel Core Card v1 proposed runtime scope
 
-Living docs describe current durable state. Historical Architecture/Specification/Review/Approval/Implementation/Testing and dated audits remain snapshots. `HISTORICAL_GATE_PENDING != OPEN_PROJECT_TASK`.
+V1 proposes:
 
-The lifecycle of the latest documentation reconciliation is checked live in GitHub and is not recursively copied into a new PR solely to record its own merge. This handoff should be updated when substantive project state changes.
+- canonical PersonnelRecord;
+- ФИО;
+- date/place of birth;
+- citizenship, nationality, religion;
+- typed identifiers: personal number, dog tag, table number, call sign;
+- list/search/card;
+- aggregate revision / stale-write protection;
+- active/archive/restore card lifecycle;
+- append-only change history;
+- migration `015_personnel_core_card_v1.sql`;
+- owner-only prototype access using existing `system_owner`;
+- no new Personnel permissions/grants;
+- no real Personnel seeds/fixtures.
 
-## 10. Safety boundaries
+V1 explicitly does not implement yet:
+
+- person→Staffing assignment;
+- position/unit/occupancy truth;
+- rank/VUS/service history/contracts/orders;
+- contacts/family;
+- files/photos/documents;
+- medical/physical-identification tables;
+- legal/financial/digital data;
+- SpecialCases;
+- generated forms;
+- fine-grained access model;
+- production deployment;
+- mobile acceptance.
+
+These remain target Personnel requirements, not rejected functionality.
+
+## 10. Core architecture boundary with Staffing
+
+Target relation:
+
+```text
+PersonnelRecord
+→ Assignment (future)
+→ StaffingSlot
+→ OrganizationalElement / MilitaryPosition
+```
+
+Therefore Personnel Core v1 must not introduce duplicate current `position_id`/`department_id` fields. Actual occupied/vacant state appears only when Assignments exists.
+
+## 11. Prototype access boundary
+
+Until the separately approved Personnel Security increment:
+
+```text
+Personnel routes = system_owner only
+new Personnel permissions = 0
+new non-owner grants = 0
+fine-grained organizational scope = NOT IMPLEMENTED
+```
+
+This is a development/prototype boundary, not the final access architecture.
+
+## 12. Permanent operating rules
+
+Ordinary material work uses:
+
+```text
+Research → Analysis → Architecture → Specification → Review → Approval
+→ Implementation → Testing/Validation → Commit → Push → Pull Request
+→ exact-head Actions → Final PR Review → Merge approval → Merge
+→ Post-merge verification → Branch deletion approval → Branch deletion
+```
+
+No runtime implementation before Personnel owner Approval.
+
+Routine updates of only `PROJECT-WORKING-RULES.md` and `CHAT-HANDOFF.md` retain standing authorization, but branch deletion always requires separate explicit owner approval.
+
+## 13. Safety / evidence boundaries
 
 - no real personnel/staffing/unit data in migrations/docs/test fixtures;
+- runtime prototype may be tested with synthetic records;
 - no secret/local config in Git;
 - no production deployment claim without execution;
-- no mobile PASS without testing;
+- no mobile PASS without actual mobile testing;
 - no branch deletion without separate exact approval;
 - no force-push/history rewrite without explicit authorization;
-- `research/military-accounting-order-700` must be preserved until its unique content is intentionally reconciled.
+- no silent scope expansion beyond the approved Personnel implementation allowlist.
 
-## 11. Action log — documentation reconciliation 2026-08-08
+## 14. Current next gate
 
-Owner explicitly authorized a full documentation current-state audit and all required documentation-only actions through normal merge, while excluding branch deletion. During this cycle:
+```text
+CURRENT_GATE=Architecture + Specification prepared; Formal Review pending/exact-head dependent
+IMPLEMENTATION=PROHIBITED
+```
 
-- live `main`, branches, PRs, Issues and Actions were audited;
-- PR #35/#36, migrations 001–014 and 35-permission durable baseline were reconciled into living docs;
-- historical/target records were classified and preserved instead of being rewritten as current state;
-- `PROJECT-WORKING-RULES.md` was retained as permanent governance and the standing two-document maintenance rule was corrected so branch deletion is always separate;
-- this handoff was rebuilt as the new-chat operational snapshot;
-- `research/military-accounting-order-700` was confirmed as unique unmerged research and preserved;
-- documentation reconciliation branch: `docs/current-state-reconciliation-2026-08-08`;
-- branch deletion for this reconciliation is **NOT AUTHORIZED**.
-
-The mutable head/PR/Actions/review/merge state of this documentation cycle must be read live from GitHub. This action-log entry is historical context and does not become stale merely because the PR later advances or merges.
+After Formal Review PASS, present exact reviewed head, implementation scope and changed-path allowlist to the owner for explicit Approval. Do not interpret the general instruction to develop Personnel as permission to bypass the Approval gate.

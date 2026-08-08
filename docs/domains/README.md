@@ -17,20 +17,36 @@ Documentation governance    — PR #28 + permanent rules/handoff
 Local automation foundation — PR #29
 Local automation corrected  — PR #30
 Active functional implementation — NONE
-Active material technical implementation — NONE
+Active design increment     — Personnel Core Card v1 / pre-Approval
 ```
 
 ## Current domain map
 
 | Domain | Current state |
 |---|---|
-| Security | users, authentication, RBAC, approval, password change, rejection, archive/restore |
+| Security | users, authentication, RBAC, approval, password change, rejection, archive/restore; fine-grained Personnel access deferred |
 | Reference | Military Ranks v2/historical v1, organizational element types, public VUS, legacy position classifier and Managed Military Positions Directory v1 |
 | Organization | Organizational Structure v1: structures, versions, draft tree, document metadata, history, compare |
 | Staffing | Lowest Unit Staffing Structure v1: registers, versions, stable individual slots, document metadata, catalog/Organization pins, history/compare; no persons/assignments |
+| Personnel | target domain defined; Personnel Core Card v1 Architecture/Specification in design; runtime not started |
 | Audit | critical operation audit/events inside implemented domains; common domain log not implemented |
 | Infrastructure | installer, migrations, deploy, theme registry, health, CLI checkers, static CI Stage A and local Git/GitHub/Codex automation through PR #30 |
 | Documents | common Documents runtime not implemented; Organization/Staffing own only their scoped metadata |
+
+## Personnel target direction
+
+`PERSONNEL.md` is the current target domain architecture for active servicemember data.
+
+Core principles:
+
+- one servicemember = one canonical PersonnelRecord;
+- complete required servicemember data may be represented by separate related subject entities;
+- document/report forms do not own duplicate person databases;
+- current position/unit/occupancy will be derived through future Assignments + existing Staffing;
+- permanent/temporal person facts are separated from event/case snapshots;
+- military position is not a Security role;
+- fine-grained order-backed Personnel authorization is recorded as deferred design and is not part of Personnel Core Card v1;
+- prototype v1 is system-owner only.
 
 ## Infrastructure tooling capability
 
@@ -49,7 +65,7 @@ Infrastructure tooling:
 - is not a business domain;
 - is not application runtime;
 - is not deployed to the web root;
-- does not change Security, Reference, Organization or Staffing ownership;
+- does not change Security, Reference, Organization, Staffing or Personnel ownership;
 - does not imply real authentication or paid API request acceptance without separate evidence.
 
 ## Specialized Reference catalogs
@@ -87,38 +103,40 @@ The Military Ranks, organizational-elements and public VUS user-facing routes re
 ## Future directions
 
 ```text
-Personnel Core and person cards
-Staffing personnel assignments / derived vacancy-occupancy
+Personnel Core Card v1
+Personnel assignments / derived vacancy-occupancy
+Personnel service record / contracts / ranks / VUS
+Personnel contacts and family
+Personnel documents and media
+Medical and physical identification
+Legal / financial / additional Personnel data
+Special Cases
+Personnel forms and reports
+Fine-grained Personnel access model
 Orders
-Medical
-Equipment
-Transport
-Training
-Archive domain
-Notifications
+Common Audit
+Production deployment
 ```
 
-Staffing v1 already exists; Personnel/Assignments and any catalog remapping are separate future approved increments.
+Staffing v1 already exists; Personnel Core is the next selected design increment. Dependent runtime work does not start before required gates.
 
 ## Domain ownership
 
 Each business concept has one owning domain. The owner defines invariants, write operations, lifecycle and contracts. Reading another domain's data does not grant write ownership.
 
-## Organization and Staffing boundary
+## Organization, Staffing and Personnel boundary
 
 Organizational Structure v1 implements structure/version lifecycle, stable elements, version-scoped tree, draft mutation, catalog-version bindings, document metadata, immutable change events, history and compare.
 
 Lowest Unit Staffing Structure v1 implements normative registers/versions/stable individual slots, rank/VUS requirements, document metadata, catalog/Organization pins, history and compare.
 
-Not implemented:
+Personnel target architecture owns canonical active-servicemember identity and related person-centric facts. Future Assignments own person→staffing-slot relations.
 
-- personnel cards;
-- person→slot assignments;
-- occupied/vacant factual state;
-- real personnel/unit operational data;
-- common Documents and Audit domains.
+Until Assignments is implemented:
 
-Public catalogs and Military Ranks/Military Positions semantics do not remove these boundaries.
+- Personnel Core does not store current position/unit as duplicate truth;
+- Staffing does not claim occupied/vacant factual state;
+- no runtime relation between person and staffing slot exists.
 
 ## Allowed dependencies
 
@@ -128,15 +146,19 @@ Security       → Reference
 Organization   → Reference
 Organization   → Audit
 Staffing       → Organization / Reference / Audit
-Documents      → Security / Reference / Organization / Audit
+Personnel      → Security / Audit
+Assignments    → Personnel / Staffing / Organization / Audit
+Documents      → Security / Reference / Organization / Personnel / Audit
 Infrastructure → external technical systems
 ```
 
-Reference does not depend on Organization or Staffing. Static CI and local automation belong to Infrastructure and do not change business-domain ownership.
+Reference does not depend on Organization, Staffing or Personnel. Personnel Core v1 does not write Organization/Staffing/Reference.
 
 ## Current research boundary
 
-`research/military-accounting-order-700` contains unique unmerged research for `PersonnelServiceAccounting`. It is not current runtime and is not automatically an implementation approval. `CitizenMilitaryAccounting` remains excluded from the current target contour unless separately reconsidered.
+`research/military-accounting-order-700` contains unique unmerged research for `PersonnelServiceAccounting`. It remains preserved and is not automatically merged implementation. Relevant Personnel concepts may be reconciled through the active design process without declaring the research branch merged.
+
+`CitizenMilitaryAccounting` remains excluded.
 
 ## New domain increment workflow
 
@@ -151,4 +173,4 @@ For DB increments, ERD/Migration Specification are included before Implementatio
 
 ## Target documents
 
-Security, Reference, Organization and Documents architecture files may describe a broader target. They are not proof that a runtime capability exists.
+Security, Reference, Organization, Documents and Personnel architecture files may describe a broader target. They are not proof that a runtime capability exists.
