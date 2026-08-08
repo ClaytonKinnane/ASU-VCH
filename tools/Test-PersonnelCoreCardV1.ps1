@@ -64,7 +64,15 @@ if ($RunInitialization) {
 }
 if ($RunRuntimeChecker) {
     if (-not $RunInitialization) { throw 'RunRuntimeChecker requires -RunInitialization.' }
-    Invoke-NativeChecked -FilePath $phpCommand.Source -Arguments @((Join-Path $RepositoryPath 'tools\check-personnel-core-card-v1.php'),'--runtime')
+    $runtimeBootstrap = Join-Path $DeployPath 'app\bootstrap.php'
+    if (-not (Test-Path -LiteralPath $runtimeBootstrap -PathType Leaf)) { throw "Deployed runtime bootstrap not found: $runtimeBootstrap" }
+    $runtimeLocalConfig = Join-Path $DeployPath 'config\local.php'
+    if (-not (Test-Path -LiteralPath $runtimeLocalConfig -PathType Leaf)) { throw "Deployed runtime config not found: $runtimeLocalConfig" }
+    Invoke-NativeChecked -FilePath $phpCommand.Source -Arguments @(
+        (Join-Path $RepositoryPath 'tools\check-personnel-core-card-v1.php'),
+        '--runtime',
+        ('--runtime-bootstrap=' + $runtimeBootstrap)
+    )
 }
 if ($RunHttpSmoke) {
     $smoke = Join-Path $RepositoryPath 'tools\Test-LocalSmoke.ps1'
