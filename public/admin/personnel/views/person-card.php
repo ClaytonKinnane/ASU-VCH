@@ -31,6 +31,8 @@ foreach ($activeIdentifiers as $identifier) {
         .personnel-identifier-details p { margin: 4px 0; }
         .personnel-identifier-actions { display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--input-border); }
         .personnel-identifier-actions .secondary-button { width: auto; }
+        .personnel-lifecycle-actions { display: flex; align-items: center; justify-content: flex-start; gap: 10px; flex-wrap: wrap; }
+        .personnel-lifecycle-actions .primary-button, .personnel-lifecycle-actions .secondary-button { width: auto; }
         @media (max-width: 980px) {
             .personnel-summary-card { grid-template-columns: 1fr; }
             .personnel-card-actions { justify-content: flex-start; }
@@ -132,12 +134,12 @@ foreach ($activeIdentifiers as $identifier) {
                 <input type="hidden" name="id" value="<?= (int) $person['id'] ?>">
                 <input type="hidden" name="expected_revision" value="<?= (int) $person['revision'] ?>">
                 <label class="span-2">Основание архивирования<textarea name="reason" maxlength="500" required></textarea></label>
-                <div class="span-2"><button class="secondary-button" type="submit">Архивировать карточку</button></div>
+                <div class="span-2 personnel-lifecycle-actions"><button class="secondary-button" type="submit">Архивировать карточку</button></div>
             </form>
         <?php else: ?>
             <p>Основание архивирования: <?= e((string) ($person['archive_reason'] ?? '—')) ?></p>
             <p>Дата архивирования: <?= e((string) ($person['archived_at'] ?? '—')) ?></p>
-            <form method="post" action="/admin/personnel/persons/restore.php">
+            <form method="post" action="/admin/personnel/persons/restore.php" class="personnel-lifecycle-actions">
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="id" value="<?= (int) $person['id'] ?>">
                 <input type="hidden" name="expected_revision" value="<?= (int) $person['revision'] ?>">
