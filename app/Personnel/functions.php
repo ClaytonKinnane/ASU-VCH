@@ -130,7 +130,7 @@ function personnel_history_summary(array $event): string
         'personnel.restored' => 'Карточка восстановлена из архива.',
         'identifier.added' => 'Добавлен идентификатор.',
         'identifier.replaced' => 'Идентификатор заменён с сохранением истории.',
-        'identifier.ended' => 'Действие идентификатора завершено.',
+        'identifier.ended' => 'Прекращено действие идентификатора.',
         default => 'Зафиксировано изменение карточки.',
     };
 }
