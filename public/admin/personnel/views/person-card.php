@@ -12,18 +12,36 @@ foreach ($activeIdentifiers as $identifier) {
     <title><?= e(personnel_full_name($person)) ?> — АСУ-ВЧ</title>
     <link rel="stylesheet" href="<?= e(theme_asset('css/theme.css')) ?>">
     <link rel="stylesheet" href="<?= e(theme_asset('css/organization.css')) ?>">
+    <style>
+        .personnel-summary-card { grid-template-columns: minmax(0, 1fr) auto; align-items: start; padding: 16px 18px; }
+        .personnel-summary-card h2 { margin: 8px 0 4px; }
+        .personnel-card-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+        .personnel-card-actions .primary-button, .personnel-card-actions .secondary-button { width: auto; }
+        .personnel-section { padding: 16px 18px; }
+        .personnel-section > h2 { margin: 0 0 14px; }
+        .personnel-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 14px; }
+        .personnel-section-heading h2 { margin: 0; }
+        .personnel-section-heading .primary-button, .personnel-section-heading .secondary-button { width: auto; }
+        .personnel-section-note { margin: 0 0 14px; color: var(--text-secondary); }
+        .personnel-section .organization-form-grid { margin-top: 0; }
+        .personnel-history-list { margin: 0; padding-left: 20px; }
+        @media (max-width: 980px) {
+            .personnel-summary-card { grid-template-columns: 1fr; }
+            .personnel-card-actions { justify-content: flex-start; }
+        }
+    </style>
 </head>
 <body>
 <header class="site-header"><div class="container"><div class="header-content glass-tile">
     <div class="site-logo">АСУ</div>
-    <div class="site-heading"><h1 class="site-title">Карточка военнослужащего</h1><p class="site-description">Personnel Core Card v1</p></div>
+    <div class="site-heading"><h1 class="site-title">Карточка военнослужащего</h1><p class="site-description">Базовая карточка военнослужащего · версия 1</p></div>
     <a class="secondary-button" href="/admin/personnel/persons.php">К списку</a>
 </div></div></header>
 <main class="admin-main"><div class="container organization-layout">
     <?php if ($domainError !== null): ?><div class="form-message is-error is-visible"><?= e($domainError) ?></div><?php endif; ?>
     <?php if ($domainSuccess !== null): ?><div class="form-message is-success is-visible"><?= e($domainSuccess) ?></div><?php endif; ?>
 
-    <section class="organization-card glass-tile">
+    <section class="organization-card glass-tile personnel-summary-card">
         <div>
             <span class="status-badge <?= $person['record_status'] === 'archived' ? 'is-muted' : '' ?>"><?= $person['record_status'] === 'archived' ? 'Архив' : 'Активна' ?></span>
             <h2><?= e(personnel_full_name($person)) ?></h2>
@@ -31,7 +49,7 @@ foreach ($activeIdentifiers as $identifier) {
             <p>Личный номер: <?= e((string) ($activeByCode['personal_number']['value'] ?? '—')) ?> · Жетон: <?= e((string) ($activeByCode['service_dog_tag']['value'] ?? '—')) ?> · Позывной: <?= e((string) ($activeByCode['call_sign']['value'] ?? '—')) ?></p>
             <p>Версия карточки: <?= (int) $person['revision'] ?> · Изменена: <?= e((string) $person['updated_at']) ?></p>
         </div>
-        <div>
+        <div class="personnel-card-actions" aria-label="Действия карточки">
             <?php if ($person['record_status'] === 'active'): ?>
                 <a class="primary-button" href="/admin/personnel/persons/update.php?id=<?= (int) $person['id'] ?>">Изменить</a>
             <?php endif; ?>
@@ -39,7 +57,7 @@ foreach ($activeIdentifiers as $identifier) {
         </div>
     </section>
 
-    <section class="organization-panel glass-tile">
+    <section class="organization-panel glass-tile personnel-section">
         <h2>Персональные данные</h2>
         <dl class="organization-metrics">
             <div><dt>Фамилия</dt><dd><?= e((string) $person['last_name']) ?></dd></div>
@@ -53,9 +71,12 @@ foreach ($activeIdentifiers as $identifier) {
         </dl>
     </section>
 
-    <section class="organization-panel glass-tile">
-        <div class="organization-toolbar"><div><h2>Идентификаторы</h2><p>История значений сохраняется, физическое удаление отсутствует.</p></div>
-        <?php if ($person['record_status'] === 'active'): ?><a class="primary-button" href="/admin/personnel/identifiers/create.php?personnel_id=<?= (int) $person['id'] ?>">Добавить идентификатор</a><?php endif; ?></div>
+    <section class="organization-panel glass-tile personnel-section">
+        <div class="personnel-section-heading">
+            <h2>Идентификаторы</h2>
+            <?php if ($person['record_status'] === 'active'): ?><a class="primary-button" href="/admin/personnel/identifiers/create.php?personnel_id=<?= (int) $person['id'] ?>">Добавить идентификатор</a><?php endif; ?>
+        </div>
+        <p class="personnel-section-note">Удаление идентификаторов недоступно. Все изменения сохраняются в истории.</p>
         <?php if ($identifiers === []): ?><p>Идентификаторы пока не внесены.</p><?php else: ?>
         <div class="organization-list">
             <?php foreach ($identifiers as $identifier): ?>
@@ -79,20 +100,23 @@ foreach ($activeIdentifiers as $identifier) {
         <?php endif; ?>
     </section>
 
-    <section class="organization-panel glass-tile">
-        <div class="organization-toolbar"><h2>История изменений</h2><a class="secondary-button" href="/admin/personnel/history.php?id=<?= (int) $person['id'] ?>">Вся история</a></div>
-        <?php if ($history === []): ?><p>История пока отсутствует.</p><?php else: ?><ul>
+    <section class="organization-panel glass-tile personnel-section">
+        <div class="personnel-section-heading">
+            <h2>История изменений</h2>
+            <a class="secondary-button" href="/admin/personnel/history.php?id=<?= (int) $person['id'] ?>">Вся история</a>
+        </div>
+        <?php if ($history === []): ?><p>История пока отсутствует.</p><?php else: ?><ul class="personnel-history-list">
             <?php foreach ($history as $event): ?><li><strong><?= e((string) $event['occurred_at']) ?></strong> — <?= e(personnel_history_summary($event)) ?> · <?= e((string) ($event['actor_display_name'] ?? 'Система')) ?></li><?php endforeach; ?>
         </ul><?php endif; ?>
     </section>
 
     <section class="organization-list" aria-label="Будущие разделы досье">
         <?php foreach (['Служба и назначения','Контакты и семья','Документы и фото','Медицинские сведения','Опознавательные сведения','Особые случаи','Формы и отчеты'] as $futureSection): ?>
-            <article class="organization-card glass-tile"><div><span class="status-badge is-muted">Не реализовано в v1</span><h3><?= e($futureSection) ?></h3><p>Раздел предусмотрен целевой моделью Personnel и будет добавлен отдельным утверждённым инкрементом.</p></div></article>
+            <article class="organization-card glass-tile"><div><span class="status-badge is-muted">Не реализовано в v1</span><h3><?= e($futureSection) ?></h3><p>Раздел предусмотрен целевой моделью личного состава и будет добавлен отдельным утверждённым инкрементом.</p></div></article>
         <?php endforeach; ?>
     </section>
 
-    <section class="organization-panel glass-tile">
+    <section class="organization-panel glass-tile personnel-section">
         <h2>Состояние карточки</h2>
         <?php if ($person['record_status'] === 'active'): ?>
             <form method="post" action="/admin/personnel/persons/archive.php" class="organization-form-grid">
