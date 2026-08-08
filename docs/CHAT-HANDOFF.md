@@ -178,3 +178,18 @@ The lifecycle of the latest documentation reconciliation is checked live in GitH
 - no branch deletion without separate exact approval;
 - no force-push/history rewrite without explicit authorization;
 - `research/military-accounting-order-700` must be preserved until its unique content is intentionally reconciled.
+
+## 11. Action log — documentation reconciliation 2026-08-08
+
+Owner explicitly authorized a full documentation current-state audit and all required documentation-only actions through normal merge, while excluding branch deletion. During this cycle:
+
+- live `main`, branches, PRs, Issues and Actions were audited;
+- PR #35/#36, migrations 001–014 and 35-permission durable baseline were reconciled into living docs;
+- historical/target records were classified and preserved instead of being rewritten as current state;
+- `PROJECT-WORKING-RULES.md` was retained as permanent governance and the standing two-document maintenance rule was corrected so branch deletion is always separate;
+- this handoff was rebuilt as the new-chat operational snapshot;
+- `research/military-accounting-order-700` was confirmed as unique unmerged research and preserved;
+- documentation reconciliation branch: `docs/current-state-reconciliation-2026-08-08`;
+- branch deletion for this reconciliation is **NOT AUTHORIZED**.
+
+The mutable head/PR/Actions/review/merge state of this documentation cycle must be read live from GitHub. This action-log entry is historical context and does not become stale merely because the PR later advances or merges.
